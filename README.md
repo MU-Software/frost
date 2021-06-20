@@ -5,7 +5,7 @@
   ***S***erver  
   ***T***emplate
 
-FROST is a flask template that supports built-in JWT authentication, request input verification, OpenAPI YAML document creation, and more.
+FROST is a flask template that supports built-in JWT authentication, request input verification, OpenAPI YAML document creation, and more. This was used for college graduation work. The code is dirty because it was written in haste. Pull-Requests are always welcome!
 
 
 ## Setup & Run
