@@ -73,6 +73,9 @@ resource_routes.update(route_demo.resource_route)
 3. Good! You just created a new route!  
 Test this route using `curl {your_domain}/api/dev/demo/42`!
 
+4. You can create a OpenAPI3.0 document using `flask create-openapi-doc`. [See Tools section](#Tools)
+![Swagger document result of demo route that we just created](./.github/readme/demo_swagger_result.png)
+
 ## Setup & Run
 ### Setup
 #### Windows
