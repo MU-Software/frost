@@ -1,0 +1,48 @@
+{
+    "PROJECT_NAME" : "FROST",
+    "BACKEND_NAME" : "FROST",
+    "SERVER_NAME" : "example.com",
+    "SERVER_PORT" : "8808",
+    "__comment_0" : "SERVER_IS_ON_PROXY must be enabled only on NGINX reverse proxy",
+    "SERVER_IS_ON_PROXY" : "true",
+    "__line_break_1" : "true",
+
+    "FLASK_APP" : "app",
+    "FLASK_ENV" : "development",
+    "FLASK_RUN_PORT" : "8000",
+    "RESTAPI_VERSION" : "dev",
+    "LOCAL_DEV_CLIENT_PORT" : "3000",
+    "__line_break_2" : "true",
+
+    "REFERER_CHECK": "false",
+    "SECRET_KEY" : "secret_key",
+    "__line_break_3" : "true",
+
+    "DB_TYPE" : "postgresql",
+    "DB_DRIVER" : "psycopg2",
+    "DB_ADDRESS" : "127.0.0.1",
+    "DB_PORT" : "5432",
+    "DB_NAME" : "db_name",
+    "DB_USER" : "db_user",
+    "DB_PASSWORD" : "db_password",
+    "DB_URL" : {
+        "bash" : "$DB_TYPE+$DB_DRIVER://$DB_USER:$DB_PASSWORD@$DB_ADDRESS:$DB_PORT/$DB_NAME",
+        "powershell" : "$env:DB_TYPE+$env:DB_DRIVER\" + \"://$env:DB_USER\" + \":$env:DB_PASSWORD@$env:DB_ADDRESS\" + \":$env:DB_PORT/$env:DB_NAME",
+        "vscode_launch": "{DB_TYPE}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
+    },
+    "__line_break_4" : "true",
+
+    "REDIS_HOST" : "127.0.0.1",
+    "REDIS_PORT" : "6379",
+    "REDIS_DB" : "0",
+    "__comment_1" : "REDIS_PASSWORD=redis_password0!",
+    "__line_break_5" : "true",
+
+    "MAIL_DOMAIN": "example.com",
+    "__line_break_6": "true",
+
+    "__comment_2" : "For GMail access",
+    "GOOGLE_CLIENT_ID" : "google_client_id",
+    "GOOGLE_CLIENT_SECRET" : "google_client_secret",
+    "GOOGLE_REFRESH_TOKEN" : "google_refresh_token"
+}
