@@ -1,0 +1,217 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<!-- Revoke Register UI -->
+<div>
+  <!-- Implement got from https://www.w3schools.com/howto/howto_js_tabs.asp -->
+  <style>
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #333;
+      background-color: #f1f1f1;
+      animation: fadeEffect 1s; /* Fading effect takes 1 second */
+    }
+
+    /* Style the buttons that are used to open the tab content */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #333;
+      border-top: none;
+    }
+
+    /* Go from zero to full opacity */
+    @keyframes fadeEffect {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+  </style>
+  <script>
+    function openTab(evt, tabName) {
+      // Declare all variables
+      var i, tabcontent, tablinks;
+
+      // Get all elements with class="tabcontent" and hide them
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+
+      // Get all elements with class="tablinks" and remove the class "active"
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+
+      // Show the current tab, and add an "active" class to the button that opened the tab
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    function formToJson(formElement){
+      var inputElements = formElement.getElementsByTagName("input"),
+          jsonObject = {};
+      for(var i = 0; i < inputElements.length; i++){
+        var inputElement = inputElements[i];
+        console.log(inputElement);
+        if (inputElement.type == "checkbox") {
+          if (inputElement.checked) {
+            jsonObject[inputElement.name] = true;
+          }
+        }
+        else if (inputElement.type != "submit") {
+          jsonObject[inputElement.name] = inputElement.value;
+        }
+      }
+      return JSON.stringify(jsonObject);
+    }
+
+    function simpleFormPostRequest(formElement) {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => { console.log(xhr.response) }
+      xhr.open('POST', formElement.action);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(formToJson(formElement));
+    }
+  </script>
+
+  <!-- Tab links -->
+  <div class="tab">
+    <button class="tablinks" onclick="openTab(event, 'tabRevokeUser')"  id="defaultOpen">
+      Revoke using user UUID
+    </button>
+    <button class="tablinks" onclick="openTab(event, 'tabRevokeJTI')">
+      Revoke using JTI
+    </button>
+  </div>
+
+  <!-- Tab contents -->
+  <div>
+    <div class="tabcontent" id="tabRevokeUser"> <!-- Revoke using user UUID -->
+      <form method="post" id='formRevokeUser'>
+        <label for="user_uuid">Revoke시킬 유저 UUID</label>
+        <input type="number" name="user_uuid" id="user_uuid" />
+        <input type="checkbox" name="do_delete" id="do_delete">토큰 삭제</input>
+        <input
+        type="submit"
+        onclick="simpleFormPostRequest(document.getElementById('formRevokeUser')); return false;" />
+      </form>
+    </div>
+    <div class="tabcontent" id="tabRevokeJTI"> <!-- Revoke using JTI -->
+      <form method="post" id='formRevokeJTI'>
+        <label for="target_jti">Revoke시킬 JWT JTI</label>
+        <input type="number" name="target_jti" id="target_jti" />
+        <input type="checkbox" name="do_delete" id="do_delete">토큰 삭제</input>
+        <input
+          type="submit"
+          onclick="simpleFormPostRequest(document.getElementById('formRevokeJTI')); return false;" />
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+  </script>
+</div>
+
+<!-- Token & Revoke List UI -->
+<div>
+  <style>
+    table {
+      width: 100%;
+      margin-top: 16px;
+    }
+    table, td, th {
+      border: 1px solid #333;
+      padding: 8px;
+    }
+    th {
+      text-align: center;
+      background-color: #888;
+    }
+  </style>
+  <script>
+
+  </script>
+
+  <!-- User list -->
+  <div>
+    <table>
+      <thead>
+        <th>User UUID</th>
+        <th>ID</th>
+        <th>E-mail</th>
+      </thead>
+      {% for row in user_result %}
+      <tr>
+        <td>{{ row.uuid }}</td>
+        <td>{{ row.id }}</td>
+        <td>{{ row.email }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Token list -->
+  <div>
+    <table>
+      <thead>
+        <th>JTI</th>
+        <th>User UUID</th>
+        <th>ID</th>
+        <th>E-mail</th>
+      </thead>
+      {% for row in token_result %}
+      <tr>
+        <td>{{ row.jti }}</td>
+        <td>{{ row.usertable.uuid }}</td>
+        <td>{{ row.usertable.id }}</td>
+        <td>{{ row.usertable.email }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Revoked list -->
+  <div>
+    <table style="table-layout: fixed;">
+      <thead>
+        <th>Index</th>
+        <th>JTI</th>
+        <th>Status</th>
+      </thead>
+      {% for k, v in revoked_result.items() %}
+      <tr>
+        <td>{{ loop.index0 }}</td>
+        <td>{{ k }}</td>
+        <td>{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+{% endblock %}
