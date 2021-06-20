@@ -7,6 +7,71 @@
 
 FROST is a flask template that supports built-in JWT authentication, request input verification, OpenAPI YAML document creation, and more. This was used for college graduation work. The code is dirty because it was written in haste. Pull-Requests are always welcome!
 
+## Usage
+1. Create `demo` on directory on app/api, create `__init__.py` and write below
+```PYTHON
+import flask
+import flask.views
+import typing
+
+import app.api.helper_class as api_class
+import app.database.jwt as jwt_module
+
+
+class DemoResponseCase(api_class.ResponseCaseCollector):
+    demo_ok = api_class.Response(
+        description='Hooray! Successfully Responded',
+        code=200, success=True,
+        public_sub_code='demo.ok')
+
+    demo_authed_ok = api_class.Response(
+        description='Hooray! Successfully Responded with JWT auth!',
+        code=200, success=True,
+        public_sub_code='demo.authed_ok')
+
+    demo_error = api_class.Response(
+        description='Oh... some error raised',
+        code=500, success=False,
+        private_sub_code='demo.some_serious_error',
+        public_sub_code='demo.error')
+
+
+class DemoRoute(flask.views.MethodView, api_class.MethodViewMixin):
+    @api_class.RequestHeader(
+        required_fields={},
+        optional_fields={'X-Csrf-Token': {'type': 'string', }, },
+        auth={api_class.AuthType.Bearer: False, })
+    def get(self,
+            demo_id: int,
+            req_header: dict,
+            access_token: typing.Optional[jwt_module.AccessToken] = None):
+        '''
+        description: This is a demo route, write description here!
+        responses:
+            - demo_ok
+            - demo_authed_ok
+            - demo_error
+        '''
+        if access_token:
+            return DemoResponseCase.demo_authed_ok.create_response()
+
+        if demo_id % 2:
+            return DemoResponseCase.demo_error.create_response()
+
+        return DemoResponseCase.demo_ok.create_response(data=req_header)
+
+
+resource_route = {
+    '/demo/<int:demo_id>': DemoRoute,
+}
+```
+2. Add these lines on `app/api/__init__.py`
+```PYTHON
+import app.api.demo as route_demo  # noqa
+resource_routes.update(route_demo.resource_route)
+```
+3. Good! You just created a new route!  
+Test this route using `curl {your_domain}/api/dev/demo/42`!
 
 ## Setup & Run
 ### Setup
@@ -48,7 +113,7 @@ Key                    | Required | Explain
 `LOCAL_DEV_CLIENT_PORT`|   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then CORS header for `http://localhost:{LOCAL_DEV_CLIENT_PORT}` will be set. You must set this as integer string.
 `FLASK_APP`            | O | Same as Flask's `FLASK_APP`. You must set this to `app`.
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
-`RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `/dev/account/login` if `dev` set, `/v2/posts/123456` if `v2` set.
+`RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
 `DB_URL`               | O | Database URL to connect, `sqlite:///:memory:` if not set on `RESTAPI_VERSION = dev`.
 `REDIS_HOST`           | O | Hostname of Redis database.
 `REDIS_PORT`           | O | Port of Redis database. You must set this as integer string.
