@@ -44,6 +44,7 @@ class DemoRoute(flask.views.MethodView, api_class.MethodViewMixin):
         # AuthType.Bearer: False means that access token authorization is not compulsory.
         # If you set this to True, then access token must be given.
         # (Also, X-Csrf-Token must be on required_fields, not optional_fields)
+        # Or, you can leave auth parameter as blank if you don't need any authorizations on this route.
         auth={api_class.AuthType.Bearer: False, })
     def get(self,
             demo_id: int,
