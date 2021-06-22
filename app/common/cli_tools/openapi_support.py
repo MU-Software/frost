@@ -5,6 +5,7 @@ import flask.cli
 import pathlib as pt
 import re
 import typing
+import weakref
 import werkzeug.routing
 import yaml
 
@@ -17,13 +18,6 @@ routes_cache: dict[str, tuple[str, typing.Any]] = dict()
 response_cases_cache: dict[str, api_class.Response] = dict()
 
 
-# FROST was the original name of this project.
-# "F"lask based
-# "R"ESTful api
-# "O"riented
-# "S"ource
-# "T"emplate
-# I know... It sucks, I just wanted to name this as "FROST"...
 class FrostRoutePlugin(apispec.BasePlugin):
     def path_helper(self, path: str, operations: typing.OrderedDict, *, view, app: flask.Flask = None, **kwargs):
         app: flask.Flask = app or flask.current_app
@@ -65,19 +59,16 @@ class FrostRoutePlugin(apispec.BasePlugin):
             for resp in doc_resps:
                 resp_case_obj: api_class.Response = response_cases_cache[resp]
                 if resp_case_obj.code not in openapi_resp:
-                    openapi_resp[resp_case_obj.code] = {
-                        'description': '',
-                        'content': {
-                            'application/json': {
-                                'schema': {
-                                    'oneOf': [
+                    # Add default structure on this response code as this is the first oneOf component.
+                    openapi_resp[resp_case_obj.code] = {'description': '', 'content': {}, }
+                # Create weakref to openapi_resp[resp_case_obj.code] to shorten the code
+                resp_case_code_content = weakref.ref(openapi_resp[resp_case_obj.code]['content'])()
 
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                openapi_resp[resp_case_obj.code]['content']['application/json']['schema']['oneOf'].append(
+                if resp_case_obj.content_type not in resp_case_code_content:
+                    # Add default structure for this content type as this is the first oneOf component.
+                    resp_case_code_content[resp_case_obj.content_type] = {'schema': {'oneOf': [], }, }
+
+                resp_case_code_content[resp_case_obj.content_type]['schema']['oneOf'].append(
                     {'$ref': f'#/components/schemas/{resp}'}
                 )
                 response_case_description = f'### {resp}: {resp_case_obj.description}  \n'
@@ -142,10 +133,7 @@ def create_openapi_doc():
             response_cases_cache[resp_case_name] = resp_case_obj
             spec.components.schema(
                 name=resp_case_name,
-                component={
-                    'type': 'object',
-                    'properties': resp_case_obj.to_openapi_obj(),
-                }
+                component=resp_case_obj.to_openapi_obj(),
             )
 
     # Register all routes

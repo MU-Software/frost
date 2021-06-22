@@ -106,35 +106,48 @@ def create_response(
 class Response:
     description: str = ''
     code: int = 500
+    header: tuple[tuple[str, str]] = ()
+    content_type: str = 'application/json'
+
+    success: bool = ''
     public_sub_code: str = ''
     private_sub_code: str = ''
-    success: bool = ''
+
+    # Data can be dict (for JSON) and string (for HTML)
+    data: typing.Union[dict, str] = dataclasses.field(default_factory=dict)
     message: str = ''
-    header: tuple[tuple[str, str]] = ()
-    data: dict = dataclasses.field(default_factory=dict)
 
     def to_openapi_obj(self):
-        return {
-            'success': {
-                'type': 'boolean',
-                'enum': [self.success, ],
-            },
-            'code': {
-                'type': 'integer',
-                'enum': [self.code, ],
-            },
-            'sub_code': {
-                'type': 'string',
-                'enum': [self.public_sub_code, ],
-            },
-            'message': {
-                'type': 'string',
-            },
-            'data': {
+        if self.content_type == 'application/json':
+            return {
                 'type': 'object',
-                'properties': recursive_dict_to_openapi_obj(self.data)
-            },
-        }
+                'properties': {
+                    'success': {
+                        'type': 'boolean',
+                        'enum': [self.success, ],
+                    },
+                    'code': {
+                        'type': 'integer',
+                        'enum': [self.code, ],
+                    },
+                    'sub_code': {
+                        'type': 'string',
+                        'enum': [self.public_sub_code, ],
+                    },
+                    'message': {
+                        'type': 'string',
+                    },
+                    'data': {
+                        'type': 'object',
+                        'properties': recursive_dict_to_openapi_obj(self.data)
+                    },
+                },
+            }
+        elif self.content_type == 'text/html':
+            return {
+                'type': 'string',
+                'example': self.data,
+            }
 
     def create_response(self,
                         code: int = None,
