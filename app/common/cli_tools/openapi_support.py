@@ -5,7 +5,6 @@ import flask.cli
 import pathlib as pt
 import re
 import typing
-import weakref
 import werkzeug.routing
 import yaml
 
@@ -61,8 +60,8 @@ class FrostRoutePlugin(apispec.BasePlugin):
                 if resp_case_obj.code not in openapi_resp:
                     # Add default structure on this response code as this is the first oneOf component.
                     openapi_resp[resp_case_obj.code] = {'description': '', 'content': {}, }
-                # Create weakref to openapi_resp[resp_case_obj.code] to shorten the code
-                resp_case_code_content = weakref.ref(openapi_resp[resp_case_obj.code]['content'])()
+                # Create short reference to openapi_resp[resp_case_obj.code] to shorten the code
+                resp_case_code_content = openapi_resp[resp_case_obj.code]['content']
 
                 if resp_case_obj.content_type not in resp_case_code_content:
                     # Add default structure for this content type as this is the first oneOf component.
