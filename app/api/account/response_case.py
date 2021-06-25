@@ -104,7 +104,20 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='user.sign_out',
         header=delete_refresh_token)
 
-    # Account deactivate
+    # Password change related
+    password_changed = api_class.Response(
+        description='Successfully changed user\'s password.',
+        code=200, success=True,
+        public_sub_code='password.changed')
+    password_change_failed = api_class.Response(
+        description='Could not change user password.\n'
+                    'Notes that if original password is incorrect, '
+                    'then result will be user.wrong_password, not password.change_failed.',
+        code=400, success=True,
+        public_sub_code='password.change_failed',
+        data={'reason': ''})
+
+    # Account deactivation
     user_deactivate_success = api_class.Response(
         description='Successfully deactivated a account. This is different with user_deactivated.',
         code=204, success=True,
