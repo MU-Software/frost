@@ -1,11 +1,18 @@
 # FROST backend template
 > ***F***lask based  
-  ***R***estful-api  
+  ***R***est-API  
   ***O***riented  
   ***S***erver  
   ***T***emplate
 
-FROST is a flask template that supports built-in JWT authentication, request input verification, OpenAPI YAML document creation, and more. This was used for college graduation work. The code is dirty because it was written in haste. Pull-Requests are always welcome!
+FROST is a flask template that supports various built-in functions, such as...  
+
+- JWT authentication  
+- Request input verification  
+- OpenAPI 3.0 YAML document generation  
+- ER Diagram generation  
+
+and more!  
 
 ## Usage
 1. Create `demo` on directory on app/api, create `__init__.py` and write below
@@ -76,17 +83,17 @@ import app.api.demo as route_demo  # noqa
 resource_routes.update(route_demo.resource_route)
 ```
 3. Good! You just created a new route!  
-Test this route using `curl {your_domain}/api/dev/demo/42`!
+Test this route using `curl {your_domain}/api/dev/demo/42`
 
-4. You can create a OpenAPI3.0 document using `flask create-openapi-doc`. [See Tools section](#Tools)
+4. You can create a OpenAPI 3.0 document using `flask create-openapi-doc`. [See Tools section  below](#Tools)
 ![Swagger document result of demo route that we just created](./.github/readme/demo_swagger_result.png)
 
 ## Setup & Run
 ### Setup
 #### Windows
 ```POWERSHELL
-git clone "https://github.com/MU-software/frost.git"
-cd frost
+# Create your project using this template repository on Github
+cd {YOUR-PROJECT-DIRECTORY}
 python -m venv ./
 ./Scripts/activate
 python -m pip install -U -r "requirements-dev.txt"
@@ -96,8 +103,8 @@ You have to install `git for windows` and `Python3.9 (or above)` to run these co
 
 #### Debian based(Ubuntu/Linux Mint/etc.)
 ```BASH
-git clone "https://github.com/MU-software/frost.git"
-cd frost
+# Create your project using this template repository on Github
+cd {YOUR-PROJECT-DIRECTORY}
 python3.9 -m venv ./
 source ./bin/activate
 python3.9 -m pip install -U -r "requirements-dev.txt"
@@ -107,7 +114,7 @@ You also needs `git`, `python3.9`, `python3.9-pip`, `python3.9-venv` to run thes
 
 ### Environment variables
 Before you run, you have to set environment variables. Notes that some variables are from Flask configuration, see [Flask document](https://flask.palletsprojects.com/en/master/config/) And there's a tool named `env_creator.py` on `env_collection` directory. This will create `.sh`(bash shell script), `.ps1`(Powershell script), and `.vscode/launch.json`(VS Code Configuration file for launch) files that set environment variables when being executed.
-Modify `dev.json` file properly and pass the file as cli argument.  
+Modify `dev.json` file properly and pass the file as cli argument.(About cli tool, [See Tools section below](#Tools))  
 ex) `python3.9 ./env_collection/env_creator.py ./env_collection/dev.json`
 
 Key                    | Required | Explain
