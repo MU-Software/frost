@@ -5,6 +5,7 @@ import app.api.account.deactivate as deactivate
 import app.api.account.refresh as refresh
 import app.api.account.duplicate_check as duplicate_check
 import app.api.account.email_action as email_action
+import app.api.account.password_change as password_change
 
 resource_route = {
     '/account/signup': signup.SignUpRoute,
@@ -14,4 +15,5 @@ resource_route = {
     '/account/deactivate': deactivate.AccountDeactivationRoute,
     '/account/duplicate': duplicate_check.AccountDuplicateCheckRoute,
     '/account/email/<string:email_token>': email_action.EmailActionRoute,
+    '/account/change-password': password_change.PasswordChangeRoute,
 }
