@@ -113,8 +113,10 @@ class Response:
     public_sub_code: str = ''
     private_sub_code: str = ''
 
-    # Data can be dict (for JSON) and string (for HTML)
-    data: typing.Union[dict, str] = dataclasses.field(default_factory=dict)
+    # data can be JSON body or HTML format data.
+    data: dict = dataclasses.field(default_factory=dict)
+    # template should be a path to a html template file that can be found by flask.
+    template_path: str = ''
     message: str = ''
 
     def to_openapi_obj(self):
@@ -144,16 +146,19 @@ class Response:
                 },
             }
         elif self.content_type == 'text/html':
+            if not self.template_path:
+                raise Exception('template_path must be set when content_type is \'text/html\'')
             return {
                 'type': 'string',
-                'example': self.data,
+                'example': flask.render_template(self.template_path, **self.data),
             }
 
     def create_response(self,
                         code: int = None,
                         header: tuple[tuple[str]] = (),
                         data: dict = {},
-                        message: typing.Optional[str] = None) -> ResponseType:
+                        message: typing.Optional[str] = None,
+                        template_path: str = '') -> ResponseType:
 
         resp_code: int = code if code is not None else self.code
 
@@ -161,23 +166,32 @@ class Response:
         resp_header += (tuple(self.header.items()) if type(self.header) == dict else tuple(self.header))
         result_header = (
             *header,
-            # We don't need to add Content-Type: application/json here
-            # because flask.jsonify will add it.
             ('Server', flask.current_app.config.get('BACKEND_NAME', 'Backend Core')),
         )
 
-        # TODO: Parse YAML file and get response message using public_sub_code
         resp_data = copy.deepcopy(data)
         resp_data.update(data)
-        response_body = {
-            'success': self.success,
-            'code': self.code,
-            'sub_code': self.public_sub_code,
-            'message': message or self.message,
-            'data': resp_data
-        }
 
-        return (flask.jsonify(response_body), resp_code, result_header)
+        resp_template_path = template_path | self.template_path
+
+        if self.content_type == 'application/json':
+            # TODO: Parse YAML file and get response message using public_sub_code
+
+            response_body = {
+                'success': self.success,
+                'code': self.code,
+                'sub_code': self.public_sub_code,
+                'message': message or self.message,
+                'data': resp_data
+            }
+
+            return (flask.jsonify(response_body), resp_code, result_header)
+        elif self.content_type == 'text/html':
+            if not resp_template_path:
+                raise Exception('template_path must be set when content_type is \'text/html\'')
+            return flask.render_template(resp_template_path, **resp_data)
+        else:
+            raise NotImplementedError(f'Response type {self.content_type} is not supported.')
 
 
 class ResponseCaseCollector(AutoRegisterClass):
