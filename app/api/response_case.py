@@ -78,3 +78,7 @@ class CommonResponseCase(api_class.ResponseCaseCollector):
         description='This request blocked because you don\'t have a permission to do this.',
         code=403, success=False,
         public_sub_code='http.forbidden')
+    http_unsupported_content_type = api_class.Response(
+        description='Requested response Content-Type is not accepted.',
+        code=415, success=False,
+        public_sub_code='http.content_type_unsupport')
