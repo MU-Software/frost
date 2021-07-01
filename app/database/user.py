@@ -58,7 +58,7 @@ class User(db_module.DefaultModelMixin, db.Model):
         except Exception:
             return False
 
-    def change_password(self, orig_pw: str, new_pw: str) -> tuple[bool, str]:
+    def change_password(self, orig_pw: str, new_pw: str, force_change: bool = False) -> tuple[bool, str]:
         # Returns False if this fails, and returns True when it success
         # We'll trim space on user input, Google also do this.
         # https://ux.stackexchange.com/q/75686
@@ -69,7 +69,7 @@ class User(db_module.DefaultModelMixin, db.Model):
         if pw_str_check:
             return False, pw_str_check
 
-        if not self.check_password(orig_pw):
+        if force_change or not self.check_password(orig_pw):
             return False, 'WRONG_PASSWORD'
 
         try:
