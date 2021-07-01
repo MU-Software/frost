@@ -1,3 +1,4 @@
+import enum
 import typing
 from passlib.hash import argon2
 
@@ -171,6 +172,11 @@ class User(db_module.DefaultModelMixin, db.Model):
         }
 
 
+class EmailTokenAction(enum.Enum):
+    EMAIL_VERIFICATION = enum.auto()
+    PASSWORD_RESET = enum.auto()
+
+
 class EmailToken(db_module.DefaultModelMixin, db.Model):
     __tablename__ = 'TB_EMAILTOKEN'
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence('SQ_EmailToken_UUID'), primary_key=True)
@@ -181,6 +187,6 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
                                  backref=db.backref('email_tokens',
                                                     order_by='EmailToken.created_at.desc()'))
 
-    action = db.Column(db.String, nullable=False)
+    action = db.Column(db.Enum(EmailTokenAction), nullable=False)
     token = db.Column(db.String, unique=True, nullable=False)
     expired_at = db.Column(db.DateTime, nullable=False)
