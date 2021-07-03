@@ -10,18 +10,19 @@ import typing
 # We'll manage redis here too.
 import redis
 
-# ---------- REDIS SETUP ----------
+# ---------- REDIS Setup ----------
 redis_db: redis.StrictRedis = None
 
+# ---------- RDB Setup ----------
 # Create db object when module loads, but do not connect to app context yet.
 db: fsql.SQLAlchemy = fsql.SQLAlchemy(session_options={"autoflush": False})
 
+# ---------- RDB Type Handler ----------
 PrimaryKeyType = db.BigInteger().with_variant(sqldlc_psql.BIGINT(), 'postgresql')
 PrimaryKeyType = db.BigInteger().with_variant(sqldlc_mysql.BIGINT(), 'mysql')
 PrimaryKeyType = db.BigInteger().with_variant(sqldlc_sqlite.INTEGER(), 'sqlite')
 
-
-# ---------- IntegrityError Case Checker ---------
+# ---------- RDB IntegrityError Case Checker ---------
 IntegrityCase = [
     'FAILED_NOT_NULL',
     'FAILED_UNIQUE',
