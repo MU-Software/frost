@@ -124,7 +124,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='user.deactivate_success',
         message='Goodbye, Dear Friend!')
 
-    # Email auth related
+    # Email auth related (JSON)
     email_token_not_given = api_class.Response(
         description='Email token is not provided on URL',
         code=400, success=False,
@@ -150,6 +150,28 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         code=200, success=True,
         public_sub_code='email.success',
         message='Email Action done successfully.')
+
+    # Email auth related (HTML)
+    email_token_not_given_html = api_class.Response(
+        description='Email token is not provided on URL',
+        code=400, success=False,
+        content_type='text/html', template_path='template/email_action/error/email_token_not_given.html')
+    email_expired_html = api_class.Response(
+        description='Email is expired.',
+        code=410, success=False,
+        content_type='text/html', template_path='template/email_action/error/email_token_expired.html')
+    email_invalid_html = api_class.Response(
+        description='Token in Email is invalid.',
+        code=410, success=False,
+        content_type='text/html', template_path='template/email_action/error/email_token_invalid.html')
+    email_not_found_html = api_class.Response(
+        description='Token in Email is not found on DB.',
+        code=404, success=False,
+        content_type='text/html', template_path='template/email_action/error/email_token_not_found.html')
+    email_success_html = api_class.Response(
+        description='Email Action done successfully.',
+        code=200, success=True,
+        content_type='text/html', template_path='template/email_action/email_action_success.html')
 
     # Access Token related
     access_token_refreshed = api_class.Response(  # Access token refreshing success
