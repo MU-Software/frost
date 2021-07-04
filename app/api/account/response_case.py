@@ -113,7 +113,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='Could not change user password.\n'
                     'Notes that if original password is incorrect, '
                     'then result will be user.wrong_password, not password.change_failed.',
-        code=400, success=True,
+        code=400, success=False,
         public_sub_code='password.change_failed',
         data={'reason': ''})
 
