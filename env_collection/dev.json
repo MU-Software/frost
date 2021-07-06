@@ -2,13 +2,15 @@
     "PROJECT_NAME" : "FROST",
     "BACKEND_NAME" : "FROST",
     "SERVER_NAME" : "example.com",
-    "SERVER_PORT" : "8808",
-    "__comment_0" : "SERVER_IS_ON_PROXY must be enabled only on NGINX reverse proxy",
+    "__comment_0" : "PORT env var works with Gunicorn, see https://docs.gunicorn.org/en/stable/settings.html#bind",
+    "PORT" : "8808",
+    "__comment_1" : "SERVER_IS_ON_PROXY must be enabled only on NGINX reverse proxy",
     "SERVER_IS_ON_PROXY" : "true",
     "__line_break_1" : "true",
 
     "FLASK_APP" : "app",
     "FLASK_ENV" : "development",
+    "__comment_2" : "FLASK_RUN_PORT will only works on `flask run`. This is intended",
     "FLASK_RUN_PORT" : "8000",
     "RESTAPI_VERSION" : "dev",
     "LOCAL_DEV_CLIENT_PORT" : "3000",
@@ -35,13 +37,13 @@
     "REDIS_HOST" : "127.0.0.1",
     "REDIS_PORT" : "6379",
     "REDIS_DB" : "0",
-    "__comment_1" : "REDIS_PASSWORD=redis_password0!",
+    "__comment_3" : "REDIS_PASSWORD=redis_password0!",
     "__line_break_5" : "true",
 
     "MAIL_DOMAIN": "example.com",
     "__line_break_6": "true",
 
-    "__comment_2" : "For GMail access",
+    "__comment_4" : "For GMail access",
     "GOOGLE_CLIENT_ID" : "google_client_id",
     "GOOGLE_CLIENT_SECRET" : "google_client_secret",
     "GOOGLE_REFRESH_TOKEN" : "google_refresh_token"
