@@ -172,7 +172,7 @@ class Response:
         resp_data = copy.deepcopy(data)
         resp_data.update(data)
 
-        resp_template_path = template_path | self.template_path
+        resp_template_path = template_path or self.template_path
 
         if self.content_type == 'application/json':
             # TODO: Parse YAML file and get response message using public_sub_code
