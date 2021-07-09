@@ -9,6 +9,7 @@ import sqlalchemy as sql
 import app.api.helper_class as api_class
 import app.common.utils as utils
 import app.common.mailgun.aws_ses as mailgun_aws
+import app.common.mailgun.gmail as mailgun_gmail
 import app.database as db_module
 import app.database.user as user
 import app.database.jwt as jwt_module
@@ -114,11 +115,25 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     email_key=email_token,
                     language='kor'
                 )
-                mailgun_aws.send_mail(
-                    fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
-                    toaddr=new_user.email,
-                    subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
-                    message=email_result)
+
+                mail_provider = flask.current_app.config.get('MAIL_PROVIDER', 'AMAZON')
+                if mail_provider == 'AMAZON':
+                    mailgun_aws.send_mail(
+                        fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
+                        toaddr=new_user.email,
+                        subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
+                        message=email_result)
+                elif mail_provider == 'GOOGLE':
+                    mailgun_gmail.send_mail(
+                        google_client_id=flask.current_app.config.get('GOOGLE_CLIENT_ID'),
+                        google_client_secret=flask.current_app.config.get('GOOGLE_CLIENT_SECRET'),
+                        google_refresh_token=flask.current_app.config.get('GOOGLE_REFRESH_TOKEN'),
+                        fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
+                        toaddr=new_user.email,
+                        subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
+                        message=email_result)
+                else:
+                    raise NotImplementedError(f'Mail provider "{mail_provider}" is not supported')
                 mail_sent = True
             except Exception:
                 mail_sent = False

@@ -137,10 +137,11 @@ Key                    | Required | Explain
 `REDIS_DB`             | O | DB number of Redis database. You must set this as integer string.
 `REDIS_PASSWORD`       |   | Password of Redis database. You don't need to set this when there's no password on Redis.
 `MAIL_ENABLE`          |   | This enables email ability, like register confirmation mail. Enabled by default. This will be disabled only when the value is set to `false`
+`MAIL_PROVIDER`        | O | Set mail provider. Value can be `AMAZON` or `GOOGLE`. Default value is `AMAZON`. This value is not required when MAIL_ENABLE is `false`.
 `MAIL_DOMAIN`          |   | Set mail domain here.
-`GOOGLE_CLIENT_ID`     |   | Set this when you use Gmail.
-`GOOGLE_CLIENT_SECRET` |   | Set this when you use Gmail.
-`GOOGLE_REFRESH_TOKEN` |   | Set this when you use Gmail.
+`GOOGLE_CLIENT_ID`     |   | Set this when you use Google as mail provider.
+`GOOGLE_CLIENT_SECRET` |   | Set this when you use Google as mail provider.
+`GOOGLE_REFRESH_TOKEN` |   | Set this when you use Google as mail provider.
 
 ### Run
 Run server with ```python -m flask run``` on Windows, or ```python3.9 -m flask run``` on Linux.  
