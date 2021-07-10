@@ -3,7 +3,7 @@
 <div>
   이 메일은 {{ user_nick }}님의 계정을 인증하기 위해 <a href = "{{ domain_url }}">{{ project_name }}</a>에서 전송되었어요.
   <br />
-  <a href = '{{ domain_url }}/account/email/{{ email_key }}'>
+  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
   이 계정은 제 계정이 맞아요!
   </a>
   <br />
@@ -17,7 +17,7 @@
 <div>
   このメールは、が登録してアカウント「{{ user_nick }}」をチェックするために<a href = "{{ domain_url }}">{{ project_name }}</a>で送信ました。
   <br />
-  <a href = '{{ domain_url }}/account/email/{{ email_key }}'>
+  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
   このアカウントは、私のアカウントです！
   </a>
   <br />
@@ -31,7 +31,7 @@
 <div>
   This email was sent from <a href = "{{ domain_url }}">{{ project_name }}</a> to authenticate your account {{ user_nick }} and activate it.
   <br />
-  <a href = '{{ domain_url }}/account/email/{{ email_key }}'>
+  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
   That's my account!
   </a>
   <br />

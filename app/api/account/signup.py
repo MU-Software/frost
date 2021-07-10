@@ -110,6 +110,8 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 email_result = flask.render_template(
                     'email/email_verify.html',
                     domain_url=flask.current_app.config.get('SERVER_NAME'),
+                    api_base_url=(flask.current_app.config.get('SERVER_NAME')
+                                  + '/api/' + flask.current_app.config.get('RESTAPI_VERSION')),
                     project_name=flask.current_app.config.get('PROJECT_NAME'),
                     user_nick=new_user.nickname,
                     email_key=email_token,
