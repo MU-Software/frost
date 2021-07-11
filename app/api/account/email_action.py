@@ -47,7 +47,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 return AccountResponseCase.email_invalid_html.create_response()
             return AccountResponseCase.email_invalid.create_response()
 
-        target_token: user.EmailToken = user.EmailToken.query.filter(user.EmailToken.token == jwt_token).first()
+        target_token: user.EmailToken = user.EmailToken.query.filter(user.EmailToken.token == email_token).first()
         if not target_token:
             if request_content_type == 'text/html':
                 return AccountResponseCase.email_not_found_html.create_response()
