@@ -32,6 +32,7 @@ class Config:
 
     # This will enable only if $env:MAIL_ENABLE is 'false'
     MAIL_ENABLE = os.environ.get('MAIL_ENABLE', True) != 'false'
+    MAIL_PROVIDER = os.environ.get('MAIL_PROVIDER', 'AMAZON')
     MAIL_DOMAIN = os.environ.get('MAIL_DOMAIN', None)
 
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', None)
