@@ -82,7 +82,7 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 'sub': 'Email Auth',
                 'jti':  secrets.randbits(64),
                 'user': new_user.uuid,
-                'data': {'action': user.EmailTokenAction.EMAIL_VERIFICATION, },
+                'data': {'action': user.EmailTokenAction.EMAIL_VERIFICATION.value, },
             }, key=flask.current_app.config.get('SECRET_KEY'), algorithm='HS256')
 
             new_email_token: user.EmailToken = user.EmailToken()

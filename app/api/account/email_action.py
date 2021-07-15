@@ -37,6 +37,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
 
         try:
             jwt_token = jwt.decode(email_token, key=flask.current_app.config.get('SECRET_KEY'), algorithms='HS256')
+            jwt_token['data']['action'] = user.EmailTokenAction(jwt_token['data']['action'])
         except jwt.exceptions.ExpiredSignatureError:
             # TODO: We need to delete this from DB, or at least, garbage collect this.
             if request_content_type == 'text/html':
