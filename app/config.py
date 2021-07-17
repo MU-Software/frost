@@ -11,9 +11,11 @@ class Config:
     PROJECT_NAME = os.environ.get('PROJECT_NAME')
     BACKEND_NAME = os.environ.get('BACKEND_NAME')
     SERVER_NAME = os.environ.get('SERVER_NAME', None)
+    # `HTTPS_ENABLE` will be disabled only if $env:HTTPS_ENABLE is 'false'
+    HTTPS_ENABLE = os.environ.get('HTTPS_ENABLE', True) != 'false'
 
     # Referer is not a typo. See HTTP referer header.
-    # This will enable only if $env:REFERER_CHECK is 'false'
+    # This will be enabled only if $env:REFERER_CHECK is 'false'
     REFERER_CHECK = os.environ.get('REFERER_CHECK', True) != 'false'
     SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(32))
     DEVELOPMENT_KEY = os.environ.get('DEVELOPMENT_KEY')

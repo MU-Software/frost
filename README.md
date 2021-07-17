@@ -124,6 +124,7 @@ Key                    | Required | Explain
 `PROJECT_NAME`         | O | This will be shown on automatically created documents or some server-rendered pages.
 `BACKEND_NAME`         |   | Set `Server` field on response header. `Backend Core` is default
 `SERVER_NAME`          | O | Same as Flask's `SERVER_NAME`. Set domain name here.
+`HTTPS_ENABLE`         |   | If `HTTPS_ENABLE` env var is `false`, then `secure` option on cookie will be disabled. Default value is `true` and will be disabled only when the value is set to `false`
 `PORT`                 |   | `PORT` environment variable works with Gunicorn, see https://docs.gunicorn.org/en/stable/settings.html#bind
 `SECRET_KEY`           | O | Secret key used in JWT, some builtin functions in flask, etc. Random string will be applied if not set. This is same as Flask's `SECRET_KEY`
 `DEVELOPMENT_KEY`      |   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then only request that contains same string as `X-Development-Key` in header will be allowed.
