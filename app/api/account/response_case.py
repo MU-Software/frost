@@ -7,13 +7,14 @@ import app.api.helper_class as api_class
 
 server_name = os.environ.get('SERVER_NAME')
 restapi_version = os.environ.get('RESTAPI_VERSION')
+https_enable = os.environ.get('HTTPS_ENABLE', True)
 
 refresh_token_remover_cookie = utils.delete_cookie(
                                     name='refresh_token',
                                     path=f'/api/{restapi_version}/account',
                                     domain=server_name if restapi_version != 'dev' else None,
                                     samesite='None' if restapi_version == 'dev' else 'strict',
-                                    secure=True)
+                                    secure=https_enable)
 delete_refresh_token: tuple[str, str] = ('Set-Cookie', refresh_token_remover_cookie)
 
 

@@ -295,6 +295,7 @@ def create_login_data(user_data: user_module.User,
                             -> tuple[list[tuple[str, str]], dict[str, str]]:
     restapi_version = flask.current_app.config.get('RESTAPI_VERSION')
     server_name = flask.current_app.config.get('SERVER_NAME')
+    https_enable = flask.current_app.config.get('HTTPS_ENABLE', True)
     response_header: list[tuple[str, str]] = list()
     response_data: dict[str, dict[str, str]] = dict()
 
@@ -310,7 +311,7 @@ def create_login_data(user_data: user_module.User,
         path=f'/api/{refresh_token.api_ver}/account',
         expires=utils.cookie_datetime(refresh_token.exp),
         samesite='None' if restapi_version == 'dev' else 'strict',
-        secure=True)
+        secure=https_enable)
     response_header.append(('Set-Cookie', refresh_token_cookie))
 
     access_token = AccessToken.from_refresh_token(refresh_token)
@@ -334,6 +335,7 @@ def refresh_login_data(refresh_token_jwt: str,
                             -> tuple[list[tuple[str, str]], dict[str, str]]:
     restapi_version = flask.current_app.config.get('RESTAPI_VERSION')
     server_name = flask.current_app.config.get('SERVER_NAME')
+    https_enable = flask.current_app.config.get('HTTPS_ENABLE', True)
     response_header: list[tuple[str, str]] = list()
     response_data: dict[str, dict[str, str]] = dict()
 
@@ -383,7 +385,7 @@ def refresh_login_data(refresh_token_jwt: str,
                 path=f'/api/{refresh_token.api_ver}/account',
                 expires=utils.cookie_datetime(refresh_token.exp),
                 samesite='None' if restapi_version == 'dev' else 'strict',
-                secure=True)
+                secure=https_enable)
 
             response_header.append(('Set-Cookie', refresh_token_cookie))
         except Exception:
