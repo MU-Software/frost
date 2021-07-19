@@ -6,7 +6,7 @@
     "PORT" : "8808",
     "__comment_1" : "SERVER_IS_ON_PROXY must be enabled only on NGINX reverse proxy",
     "SERVER_IS_ON_PROXY" : "true",
-    "__comment_2" : "SERVER_IS_ON_PROXY must be enabled only on NGINX reverse proxy",
+    "__comment_2" : "HTTPS_ENABLE will be disabled only when the value is set to `false`",
     "HTTPS_ENABLE": "true",
     "__line_break_1" : "true",
 
