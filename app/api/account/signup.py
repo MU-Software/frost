@@ -94,9 +94,10 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
             db.session.add(new_email_token)
         except Exception as err:
             try:
-                err_diag = db_module.IntegrityCaser(err)
-                if err_diag[0] == 'FAILED_UNIQUE':
-                    return AccountResponseCase.user_already_used.create_response(data={'duplicate': dict(err_diag[1])})
+                err_reason, err_column_name = db_module.IntegrityCaser(err)
+                if err_reason == 'FAILED_UNIQUE':
+                    return AccountResponseCase.user_already_used.create_response(
+                        data={'duplicate': [err_column_name, ]})
                 else:
                     raise err
             except Exception:

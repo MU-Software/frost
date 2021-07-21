@@ -34,9 +34,7 @@ IntegrityCase = [
 
 def IntegrityCaser_sqlite(err_str):
     def default_column_extractor(errstr):
-        errstr = errstr.split(':')[1]
-        errstr = errstr.split(',')
-        return list(map(lambda x: x.strip(), errstr))
+        return errstr.split(':')[1].split(',')[0].split('.')[1].strip()
 
     case_data = {
         # https://github.com/sqlite/sqlite/blob/master/src/vdbe.c#L1055
@@ -58,19 +56,19 @@ def IntegrityCaser_sqlite(err_str):
 
 def IntegrityCaser_psycopg2(err, pgcode):
     def unique_column_extractor(err):
-        return [re.findall(
-                r'Key \((\S+)\)=\((\S+)\) already exists.',
-                err.__cause__.diag.message_detail)[0], ]
+        return re.findall(
+                    r'Key \((\S+)\)=\((\S+)\) already exists.',
+                    err.__cause__.diag.message_detail)[0][0]
 
     def null_column_extractor(err):
-        return [re.findall(
-                r'null value in column "(\S+)" violates not-null constraint',
-                err.__cause__.diag.message_primary), ]
+        return re.findall(
+                    r'null value in column "(\S+)" violates not-null constraint',
+                    err.__cause__.diag.message_primary)
 
     def fk_column_extractor(err):
-        return [re.findall(
-                r'Key \((\S+)\)=\((\S+)\) is not present in table "(\S+)".',
-                err.__cause__.diag.message_detail)[0], ]
+        return re.findall(
+                    r'Key \((\S+)\)=\((\S+)\) is not present in table "(\S+)".',
+                    err.__cause__.diag.message_detail)[0][0]
 
     case_data = {
         '23000': ('', lambda x: []),  # INTEGRITY_CONSTRAINT_VIOLATION @ PSQL
