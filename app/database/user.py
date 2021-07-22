@@ -1,10 +1,16 @@
+import datetime
 import enum
+import flask
+import jwt
+import secrets
 import typing
 from passlib.hash import argon2
 
 import app.common.utils as utils
 import app.database as db_module
+
 db = db_module.db
+redis_db = db_module.redis_db
 
 
 class User(db_module.DefaultModelMixin, db.Model):
@@ -172,6 +178,12 @@ class User(db_module.DefaultModelMixin, db.Model):
         }
 
 
+class EmailAlreadySentOnSpecificHoursException(Exception):
+    def __init__(self, message, errors):
+        super().__init__(message)
+        self.errors = errors
+
+
 class EmailTokenAction(enum.Enum):
     EMAIL_VERIFICATION = enum.auto()
     PASSWORD_RESET = enum.auto()
@@ -190,3 +202,100 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
     action = db.Column(db.Enum(EmailTokenAction), nullable=False)
     token = db.Column(db.String, unique=True, nullable=False)
     expired_at = db.Column(db.DateTime, nullable=False)
+
+    @classmethod
+    def query_using_token(cls, email_token: str) -> typing.Optional['EmailToken']:
+        if not email_token or type(email_token) != str:
+            raise ValueError('Attribute `email_token` not set or type is not `str`')
+
+        current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
+        jwt_token: dict = None
+        try:
+            jwt_token = jwt.decode(email_token, key=flask.current_app.config.get('SECRET_KEY'), algorithms='HS256')
+            jwt_token['data']['action'] = EmailTokenAction(jwt_token['data']['action'])
+
+            # Query Email data
+            query_result: 'EmailToken' = EmailToken.query\
+                .filter(EmailToken.token == email_token)\
+                .filter(EmailToken.action == jwt_token['data']['action'])\
+                .filter(EmailToken.user_id == jwt_token['user'])\
+                .first()
+
+            # Check if email token is expired or not.
+            if query_result and query_result.expired_at < current_time:
+                # Email token is expired, raise jwt.exceptions.ExpiredSignatureError.
+                raise jwt.exceptions.ExpiredSignatureError
+
+            return query_result
+
+        except jwt.exceptions.ExpiredSignatureError as err:
+            # We need to delete this token from DB as this is not a valid token anymore.
+            db.session.delete(EmailToken.query.filter(EmailToken.token == email_token).first())
+            db.session.commit()
+            raise err
+        except Exception as err:
+            raise err
+
+    @classmethod
+    def create(cls, target_user: User, action: EmailTokenAction, expiration_delta: datetime.datetime) -> 'EmailToken':
+        try:
+            # Check if any mail sent to this address with this action on 48 hours using redis.
+            # This can block attacker from spamming to the mail address user.
+            redis_block_key = f'{action.name}={target_user.uuid}'
+            redis_result = redis_db.get(redis_block_key)
+            if redis_result:
+                raise EmailAlreadySentOnSpecificHoursException(
+                    'There was a request to send password reset mail on this email address on 48 hours.')
+
+            current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
+
+            # Remove old token if exists
+            try:
+                old_mail_tokens: list[EmailToken] = EmailToken.query\
+                    .filter(EmailToken.user_id == target_user.uuid)\
+                    .filter(EmailToken.action == EmailTokenAction.PASSWORD_RESET)\
+                    .all()
+            except Exception:
+                pass
+            if not old_mail_tokens:
+                for old_mail_token in old_mail_tokens:
+                    # Do not db.session.commit here (performance issue)
+                    if old_mail_token.expired_at < current_time:
+                        # It's just a really old token, delete it.
+                        db.session.delete(old_mail_token)
+                    else:
+                        # Wait, why did this not filtered on Redis checking?
+                        raise EmailAlreadySentOnSpecificHoursException(
+                            'There was a request to send password reset mail on this email address on 48 hours.')
+
+            # Create email jwt token
+            email_token_exp = current_time + expiration_delta
+            email_token = jwt.encode({
+                'api_ver': flask.current_app.config.get('RESTAPI_VERSION'),
+                'iss': flask.current_app.config.get('SERVER_NAME'),
+                'exp': email_token_exp,
+                'sub': 'Email Auth',
+                'jti':  secrets.randbits(64),
+                'user': target_user.uuid,
+                'data': {'action': action, },
+            }, key=flask.current_app.config.get('SECRET_KEY'), algorithm='HS256')
+
+            new_email_token: EmailToken = cls()
+            new_email_token.user = target_user
+            new_email_token.action = action
+            new_email_token.token = email_token
+            new_email_token.expired_at = email_token_exp
+
+            # Save token data on RDB
+            db.session.add(new_email_token)
+
+            # Set 48 hours request blocker
+            redis_db.set(redis_block_key, 'true', expiration_delta)
+
+            # Commit email token data
+            db.session.commit()
+
+            return new_email_token
+        except Exception as err:
+            db.session.rollback()
+            raise err
