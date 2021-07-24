@@ -1,3 +1,4 @@
+import datetime
 import flask
 import flask.views
 import jwt
@@ -10,6 +11,8 @@ import app.database.jwt as jwt_module
 
 from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
+
+password_reset_mail_valid_duration: datetime.timedelta = datetime.timedelta(hours=48)
 
 
 class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
@@ -43,9 +46,6 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - password_change_failed
         '''
         try:
-            secret_key: str = flask.current_app.config.get('SECRET_KEY')
-
-            # Find target user
             target_user: user_module.User = None
             original_password: typing.Optional[str] = req_body.get('original_password', None)
             new_password = req_body['new_password']
@@ -58,33 +58,33 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     data={'reason': 'RETYPE_MISMATCH'})
 
             if refresh_token:
+                # Change password using Refresh Token Auth. Normal situation.
                 if not original_password:
                     return CommonResponseCase.body_required_omitted.create_response(
                         data={'lacks': ['original_password']})
                 target_user = refresh_token.usertable
 
             elif 'email_token' in req_query:
+                # Change password using EmailToken Auth. Maybe user forgot their password?
                 email_jwt_token: str = req_query['email_token']
                 try:
-                    # Validate jwt token before querying on DB
-                    jwt.decode(email_jwt_token, key=secret_key, algorithms='HS256')
+                    # Validate jwt token while querying on DB
+                    target_email_token = user_module.EmailToken.query_using_token(email_jwt_token)
                 except jwt.exceptions.ExpiredSignatureError:
                     return AccountResponseCase.email_expired.create_response()
                 except Exception:
                     return AccountResponseCase.email_invalid.create_response()
-
-                target_email_token: user_module.EmailToken = user_module.EmailToken.query\
-                    .filter(user_module.EmailToken.token == email_jwt_token).first()
                 if target_email_token is None:
                     return AccountResponseCase.email_not_found.create_response()
+
                 target_user = target_email_token.user
 
-                # User forgot their password, so want to reset it.
+                # Maybe user forgot their password, so want to reset it.
                 # This means that user cannot provide original password, and need to force-change password
                 is_forced_password_change = True
 
             if not target_user:
-                AccountResponseCase.email_token_not_given.create_response()
+                AccountResponseCase.user_not_found.create_response()
 
             pw_change_success, fail_reason = target_user.change_password(
                 orig_pw=original_password, new_pw=new_password,

@@ -1,5 +1,3 @@
-from app.api.response_case import CommonResponseCase
-from app.api.account.response_case import AccountResponseCase
 import flask
 import flask.views
 import jwt
@@ -8,6 +6,9 @@ import jwt.exceptions
 import app.api.helper_class as api_class
 import app.database as db_module
 import app.database.user as user
+
+from app.api.response_case import CommonResponseCase
+from app.api.account.response_case import AccountResponseCase
 
 db = db_module.db
 
@@ -36,8 +37,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return AccountResponseCase.email_token_not_given.create_response()
 
         try:
-            jwt_token = jwt.decode(email_token, key=flask.current_app.config.get('SECRET_KEY'), algorithms='HS256')
-            jwt_token['data']['action'] = user.EmailTokenAction(jwt_token['data']['action'])
+            target_token = user.EmailToken.query_using_token(email_token)
         except jwt.exceptions.ExpiredSignatureError:
             # TODO: We need to delete this from DB, or at least, garbage collect this.
             if 'text/html' in request_content_type:
@@ -48,15 +48,10 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 return AccountResponseCase.email_invalid_html.create_response()
             return AccountResponseCase.email_invalid.create_response()
 
-        target_token: user.EmailToken = user.EmailToken.query.filter(user.EmailToken.token == email_token).first()
         if not target_token:
             if 'text/html' in request_content_type:
                 return AccountResponseCase.email_not_found_html.create_response()
             return AccountResponseCase.email_not_found.create_response()
-        if target_token.action != jwt_token['data']['action'] or target_token.user_id != jwt_token['user']:
-            if 'text/html' in request_content_type:
-                return AccountResponseCase.email_invalid_html.create_response()
-            return AccountResponseCase.email_invalid.create_response()
 
         # OK, now we can assumes that email is verified,
         # Do what token says.

@@ -1,15 +1,12 @@
 import datetime
 import flask
 import flask.views
-import jwt
 from passlib.hash import argon2
-import secrets
 import sqlalchemy as sql
 
 import app.api.helper_class as api_class
 import app.common.utils as utils
-import app.common.mailgun.aws_ses as mailgun_aws
-import app.common.mailgun.gmail as mailgun_gmail
+import app.common.mailgun as mailgun
 import app.database as db_module
 import app.database.user as user
 import app.database.jwt as jwt_module
@@ -72,40 +69,21 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
 
         try:
             db.session.commit()
-
-            email_token_exp = datetime.datetime.utcnow().replace(tzinfo=utils.UTC) + signup_verify_mail_valid_duration
-            # Send account verification & confirmation mail
-            email_token = jwt.encode({
-                'api_ver': flask.current_app.config.get('RESTAPI_VERSION'),
-                'iss': flask.current_app.config.get('SERVER_NAME'),
-                'exp': email_token_exp,
-                'sub': 'Email Auth',
-                'jti':  secrets.randbits(64),
-                'user': new_user.uuid,
-                'data': {'action': user.EmailTokenAction.EMAIL_VERIFICATION.value, },
-            }, key=flask.current_app.config.get('SECRET_KEY'), algorithm='HS256')
-
-            new_email_token: user.EmailToken = user.EmailToken()
-            new_email_token.user = new_user
-            new_email_token.action = user.EmailTokenAction.EMAIL_VERIFICATION
-            new_email_token.token = email_token
-            new_email_token.expired_at = email_token_exp
-
-            db.session.add(new_email_token)
         except Exception as err:
-            try:
-                err_reason, err_column_name = db_module.IntegrityCaser(err)
-                if err_reason == 'FAILED_UNIQUE':
-                    return AccountResponseCase.user_already_used.create_response(
-                        data={'duplicate': [err_column_name, ]})
-                else:
-                    raise err
-            except Exception:
-                return CommonResponseCase.server_error.create_response()
+            err_reason, err_column_name = db_module.IntegrityCaser(err)
+            if err_reason == 'FAILED_UNIQUE':
+                return AccountResponseCase.user_already_used.create_response(
+                    data={'duplicate': [err_column_name, ]})
+            else:
+                raise err
 
-        mail_sent: bool = True
+        mail_sent = True
         if flask.current_app.config.get('MAIL_ENABLE'):
             try:
+                # Create email token to verification & confirmation mail
+                email_token = user.EmailToken.create(
+                    new_user, user.EmailTokenAction.EMAIL_VERIFICATION, signup_verify_mail_valid_duration)
+
                 http_or_https = 'https://' if flask.current_app.config.get('HTTPS_ENABLE', True) else 'http://'
                 email_result = flask.render_template(
                     'email/email_verify.html',
@@ -114,42 +92,27 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                                   + '/api/' + flask.current_app.config.get('RESTAPI_VERSION')),
                     project_name=flask.current_app.config.get('PROJECT_NAME'),
                     user_nick=new_user.nickname,
-                    email_key=email_token,
-                    language='kor'
-                )
+                    email_key=email_token.token,
+                    language='kor')
 
-                mail_provider = flask.current_app.config.get('MAIL_PROVIDER', 'AMAZON')
-                if mail_provider == 'AMAZON':
-                    mailgun_aws.send_mail(
-                        fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
-                        toaddr=new_user.email,
-                        subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
-                        message=email_result)
-                elif mail_provider == 'GOOGLE':
-                    mailgun_gmail.send_mail(
-                        google_client_id=flask.current_app.config.get('GOOGLE_CLIENT_ID'),
-                        google_client_secret=flask.current_app.config.get('GOOGLE_CLIENT_SECRET'),
-                        google_refresh_token=flask.current_app.config.get('GOOGLE_REFRESH_TOKEN'),
-                        fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
-                        toaddr=new_user.email,
-                        subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
-                        message=email_result)
-                else:
-                    raise NotImplementedError(f'Mail provider "{mail_provider}" is not supported')
-                mail_sent = True
+                mail_sent = mailgun.send_mail(
+                    fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
+                    toaddr=new_user.email,
+                    subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
+                    message=email_result)
+
+                jwt_data_header, jwt_data_body = jwt_module.create_login_data(
+                                                    new_user,
+                                                    req_header.get('User-Agent'),
+                                                    req_header.get('X-Csrf-Token'),
+                                                    req_header.get('X-Client-Token', None),
+                                                    flask.request.remote_addr,
+                                                    flask.current_app.config.get('SECRET_KEY'))
+
+                response_body = {'user': new_user.to_dict()}
+                response_body['user'].update(jwt_data_body)
             except Exception:
                 mail_sent = False
-
-        jwt_data_header, jwt_data_body = jwt_module.create_login_data(
-                                            new_user,
-                                            req_header.get('User-Agent'),
-                                            req_header.get('X-Csrf-Token'),
-                                            req_header.get('X-Client-Token', None),
-                                            flask.request.remote_addr,
-                                            flask.current_app.config.get('SECRET_KEY'))
-
-        response_body = {'user': new_user.to_dict()}
-        response_body['user'].update(jwt_data_body)
 
         response_type: api_class.Response = AccountResponseCase.user_signed_up
         if not mail_sent:
