@@ -105,6 +105,19 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='user.sign_out',
         header=delete_refresh_token)
 
+    # Password reset related
+    password_reset_mail_sent = api_class.Response(
+        description='Tell user that we successfully sent mail that can reset user\'s password.\n'
+                    'Notes that even though there aren\'t any user with requested mail,\n'
+                    'this response will be returned to prevent attacker from finding out if a user has joined.',
+        code=201, success=True,
+        public_sub_code='password.reset_mail_sent')
+    password_reset_mail_send_failed = api_class.Response(
+        description='Failed to send user password reset mail',
+        code=409, success=False,
+        public_sub_code='password.reset_mail_send_fail',
+        data={'reason': ''})
+
     # Password change related
     password_changed = api_class.Response(
         description='Successfully changed user\'s password.',
