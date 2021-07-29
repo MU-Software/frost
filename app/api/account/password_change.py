@@ -16,9 +16,6 @@ password_reset_mail_valid_duration: datetime.timedelta = datetime.timedelta(hour
 
 
 class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
-    @api_class.RequestQuery(
-        required_fields={},
-        optional_fields={'email_token': {'type': 'string', }, })
     @api_class.RequestHeader(
         required_fields={},
         optional_fields={},
