@@ -18,6 +18,8 @@ resource_route = {
     '/account/email/<string:email_token>': email_action.EmailActionRoute,
     '/account/reset-password': password_reset.PasswordResetRoute,
     # Both routes for PasswordChangeRoute are needed.
-    '/account/change-password': password_change.PasswordChangeRoute,
-    '/account/change-password/<string:email_token>': password_change.PasswordChangeRoute,
+    '/account/change-password/<string:email_token>': {
+        'view_func': password_change.PasswordChangeRoute,
+        'defaults': {'email_token': None},
+    },
 }
