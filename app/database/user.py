@@ -277,7 +277,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
                 'sub': 'Email Auth',
                 'jti':  secrets.randbits(64),
                 'user': target_user.uuid,
-                'data': {'action': action, },
+                'data': {'action': action.value, },
             }, key=flask.current_app.config.get('SECRET_KEY'), algorithm='HS256')
 
             new_email_token: EmailToken = cls()
