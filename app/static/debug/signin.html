@@ -156,7 +156,7 @@
             isSuccess = 'SUCCESS!';
             if (isAuth) {
               response = JSON.parse(xhr.response);
-              accessToken = response.data.access_token.token;
+              accessToken = response.data.user.access_token.token;
             }
           } else {
             isSuccess = 'FAILED!';
