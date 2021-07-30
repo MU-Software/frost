@@ -222,7 +222,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
                 .first()
 
             # Check if email token is expired or not.
-            if query_result and query_result.expired_at < current_time:
+            if query_result and query_result.expired_at.replace(tzinfo=utils.UTC) < current_time:
                 # Email token is expired, raise jwt.exceptions.ExpiredSignatureError.
                 raise jwt.exceptions.ExpiredSignatureError
 
@@ -260,7 +260,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             if not old_mail_tokens:
                 for old_mail_token in old_mail_tokens:
                     # Do not db.session.commit here (performance issue)
-                    if old_mail_token.expired_at < current_time:
+                    if old_mail_token.expired_at.replace(tzinfo=utils.UTC) < current_time:
                         # It's just a really old token, delete it.
                         db.session.delete(old_mail_token)
                     else:
