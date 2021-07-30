@@ -189,7 +189,7 @@ class Response:
         elif self.content_type == 'text/html':
             if not resp_template_path:
                 raise Exception('template_path must be set when content_type is \'text/html\'')
-            return flask.render_template(resp_template_path, **resp_data)
+            return (flask.render_template(resp_template_path, **resp_data), resp_code, result_header)
         else:
             raise NotImplementedError(f'Response type {self.content_type} is not supported.')
 
