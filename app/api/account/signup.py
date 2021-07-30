@@ -101,18 +101,19 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
                     message=email_result)
 
-                jwt_data_header, jwt_data_body = jwt_module.create_login_data(
-                                                    new_user,
-                                                    req_header.get('User-Agent'),
-                                                    req_header.get('X-Csrf-Token'),
-                                                    req_header.get('X-Client-Token', None),
-                                                    flask.request.remote_addr,
-                                                    flask.current_app.config.get('SECRET_KEY'))
-
-                response_body = {'user': new_user.to_dict()}
-                response_body['user'].update(jwt_data_body)
             except Exception:
                 mail_sent = False
+
+        jwt_data_header, jwt_data_body = jwt_module.create_login_data(
+                                            new_user,
+                                            req_header.get('User-Agent'),
+                                            req_header.get('X-Csrf-Token'),
+                                            req_header.get('X-Client-Token', None),
+                                            flask.request.remote_addr,
+                                            flask.current_app.config.get('SECRET_KEY'))
+
+        response_body = {'user': new_user.to_dict()}
+        response_body['user'].update(jwt_data_body)
 
         response_type: api_class.Response = AccountResponseCase.user_signed_up
         if not mail_sent:
