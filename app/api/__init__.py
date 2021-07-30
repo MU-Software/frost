@@ -42,11 +42,11 @@ def init_app(app: flask.Flask):
         view_name: str = ''
         view_func = None
         defaults: dict = dict()
-        if issubclass(route_model, flask.views.MethodView):
-            view_name = route_model.__name__
-            view_func = route_model.as_view(view_name)
-        elif type(route_model) == dict:
+        if type(route_model) == dict:
             view_name = route_model['view_func'].__name__
             view_func = route_model['view_func'].as_view(view_name)
             defaults = route_model['defaults']
+        elif type(route_model) == flask.views.MethodViewType:
+            view_name = route_model.__name__
+            view_func = route_model.as_view(view_name)
         app.add_url_rule('/api/' + restapi_version + path, view_func=view_func, defaults=defaults)
