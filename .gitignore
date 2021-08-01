@@ -164,3 +164,6 @@ docs/*
 
 # We don't want to commit service files
 *.service
+
+# Exclude temporary directories
+[Tt]mp
