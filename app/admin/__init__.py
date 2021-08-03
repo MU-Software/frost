@@ -36,7 +36,7 @@ def check_admin_authenticate(in_jwt: str, csrf_token: str) -> tuple[bool, api_cl
 def fadmin_is_accessible_mod(self: fadmin.base.BaseView):
     csrf_token = flask.request.headers.get('X-Csrf-Token', '')
     access_token_bearer = flask.request.headers.get('Authorization', '').replace('Bearer ', '')
-    return check_admin_authenticate(access_token_bearer, csrf_token)[0]
+    return check_admin_authenticate(access_token_bearer, csrf_token)
 
 
 def fadmin__handle_view(self: fadmin.base.BaseView, name: str, **kwargs):
