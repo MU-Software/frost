@@ -33,10 +33,23 @@ def check_admin_authenticate(in_jwt: str, csrf_token: str) -> tuple[bool, api_cl
         return (False, CommonResponseCase.http_forbidden.create_response())
 
 
-def is_accessible_mod(self: fadmin.base.BaseView):
+def fadmin_is_accessible_mod(self: fadmin.base.BaseView):
     csrf_token = flask.request.headers.get('X-Csrf-Token', '')
     access_token_bearer = flask.request.headers.get('Authorization', '').replace('Bearer ', '')
     return check_admin_authenticate(access_token_bearer, csrf_token)[0]
+
+
+def fadmin__handle_view(self: fadmin.base.BaseView, name: str, **kwargs):
+    is_accessible_result = self.is_accessible()
+    if not is_accessible_result[0]:
+        kwargs['expected_response'] = is_accessible_result[1]
+        return self.inaccessible_callback(name, **kwargs)
+
+
+def fadmin_inaccessible_callback(self: fadmin.base.BaseView, name: str, **kwargs):
+    if 'expected_response' in kwargs:
+        return kwargs['expected_response']
+    return flask.abort(403)
 
 
 def init_app(app: flask.Flask, add_model_to_view: bool = True):
@@ -44,7 +57,9 @@ def init_app(app: flask.Flask, add_model_to_view: bool = True):
     restapi_version = app.config.get('RESTAPI_VERSION')
 
     # Register flask-admin authenticate
-    fadmin.base.BaseView.is_accessible = is_accessible_mod
+    fadmin.base.BaseView.is_accessible = fadmin_is_accessible_mod
+    fadmin.base.BaseView._handle_view = fadmin__handle_view
+    fadmin.base.BaseView.inaccessible_callback = fadmin_inaccessible_callback
     admin = fadmin.Admin(
                 app,
                 name=app_name,
