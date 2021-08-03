@@ -6,37 +6,39 @@ import jwt
 import app.api.helper_class as api_class
 import app.database.jwt as jwt_module
 
-from app.api.response_case import CommonResponseCase
-from app.api.account.response_case import AccountResponseCase
+from app.admin.response_case import AdminResponseCase
 
 
-def check_admin_authenticate(in_jwt: str, csrf_token: str) -> tuple[bool, api_class.Response]:
+def fadmin_is_accessible_mod(self: fadmin.base.BaseView) -> tuple[bool, api_class.Response]:
     '''
     This returns (True, None) if authenticaion succeed,
     else (False, <One of AccountResponseCase>) if it fails to authenticate.
     '''
-    access_token: jwt_module.AccessToken = None
+    secret_key = flask.current_app.config.get('SECRET_KEY')
+    request_content_type: str = flask.request.accept_mimetypes
+    admin_token: jwt_module.AdminToken = None
     try:
-        access_token = jwt_module.AccessToken.from_token(in_jwt, flask.current_app.config.get('SECRET_KEY')+csrf_token)
+        admin_token_cookie = flask.request.cookies.get('admin_token', type=str, default='')
+        if not admin_token_cookie:
+            if 'text/html' in request_content_type:
+                return (False, AdminResponseCase.admin_forbidden_html.create_response())
+            return (False, AdminResponseCase.admin_forbidden.create_response())
+        admin_token = jwt_module.AdminToken.from_token(admin_token_cookie, secret_key)
+
     except jwt.exceptions.ExpiredSignatureError:
-        # AccessToken Expired error must be raised when bearer auth is softly required,
-        # so that client can re-request after refreshing AccessToken
-        return (False, AccountResponseCase.access_token_expired.create_response())
+        if 'text/html' in request_content_type:
+            return (False, AdminResponseCase.admin_token_expired_html.create_response())
+        return (False, AdminResponseCase.admin_token_expired.create_response())
     except Exception:
-        return (False, AccountResponseCase.access_token_invalid.create_response())
-    if not access_token:
-        return (False, AccountResponseCase.user_not_signed_in.create_response())
+        if 'text/html' in request_content_type:
+            return (False, AdminResponseCase.admin_token_invalid_html.create_response())
+        return (False, AdminResponseCase.admin_token_invalid.create_response())
+    if not admin_token:
+        if 'text/html' in request_content_type:
+            return (False, AdminResponseCase.admin_forbidden_html.create_response())
+        return (False, AdminResponseCase.admin_forbidden.create_response())
 
-    if 'admin' in access_token.role:
-        return (True, None)
-    else:
-        return (False, CommonResponseCase.http_forbidden.create_response())
-
-
-def fadmin_is_accessible_mod(self: fadmin.base.BaseView):
-    csrf_token = flask.request.headers.get('X-Csrf-Token', '')
-    access_token_bearer = flask.request.headers.get('Authorization', '').replace('Bearer ', '')
-    return check_admin_authenticate(access_token_bearer, csrf_token)
+    return (True, None)
 
 
 def fadmin__handle_view(self: fadmin.base.BaseView, name: str, **kwargs):
