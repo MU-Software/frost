@@ -44,7 +44,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='User is not signed in.',
         code=401, success=False,
         public_sub_code='user.not_signed_in',
-        header=delete_refresh_token)
+        header=[delete_refresh_token, ])
 
     # Sign Up related
     user_signed_up = api_class.Response(  # User signing up success
@@ -103,7 +103,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='User signed out.',
         code=200, success=True,
         public_sub_code='user.sign_out',
-        header=delete_refresh_token)
+        header=[delete_refresh_token, ])
 
     # Password reset related
     password_reset_mail_sent = api_class.Response(
