@@ -334,7 +334,7 @@ def create_login_data(user_data: user_module.User,
         'token': access_token_jwt,
     }
 
-    if 'admin' in refresh_token.role:
+    if refresh_token.role and 'admin' in refresh_token.role:
         # This user is admin, so we need to issue admin token and send this with cookie.
         admin_token = AdminToken.from_refresh_token(refresh_token)
         admin_token_jwt = admin_token.create_token(key)
@@ -428,7 +428,7 @@ def refresh_login_data(refresh_token_jwt: str,
     }
 
     # Re-issue Admin token if user is admin
-    if 'admin' in refresh_token.role:
+    if refresh_token.role and 'admin' in refresh_token.role:
         admin_token = AdminToken.from_refresh_token(refresh_token)
         admin_token_jwt = admin_token.create_token(key)
         admin_token_cookie = utils.cookie_creator(
