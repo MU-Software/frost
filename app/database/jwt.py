@@ -69,7 +69,6 @@ class TokenBase:
             if attr_name in allowed_claim_in_jwt:
                 result_payload[attr_name] = attr_value
 
-        print(result_payload)
         return jwt.encode(payload=result_payload, key=key, algorithm=algorithm)
 
     @classmethod
@@ -133,7 +132,6 @@ class AccessToken(TokenBase):
         # Check if token's revoked
         redis_result = redis_db.get('refresh_revoke=' + str(parsed_token.jti))
         if redis_result and redis_result == b'revoked':
-            redis_db.delete('refresh_revoke=' + str(parsed_token.jti))
             raise jwt.exceptions.InvalidTokenError('This token was revoked')
 
         return parsed_token
