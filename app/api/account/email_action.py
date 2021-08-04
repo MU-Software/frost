@@ -62,7 +62,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             if 'text/html' in request_content_type:
                 return AccountResponseCase.email_success_html.create_response()
             return AccountResponseCase.email_success.create_response()
-        elif target_token.action == user.EmailTokenAction.PASSWORD_RESET:
+        elif target_token.action == user.EmailTokenAction.EMAIL_PASSWORD_RESET:
             if 'text/html' in request_content_type:
                 return AccountResponseCase.email_success_html.create_response(
                     template_path='email_action/password_reset.html')
