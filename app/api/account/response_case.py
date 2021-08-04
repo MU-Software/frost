@@ -17,6 +17,14 @@ refresh_token_remover_cookie = utils.delete_cookie(
                                     secure=https_enable)
 delete_refresh_token: tuple[str, str] = ('Set-Cookie', refresh_token_remover_cookie)
 
+admin_token_remover_cookie = utils.delete_cookie(
+                                    name='admin_token',
+                                    path=f'/api/{restapi_version}/admin',
+                                    domain=server_name if restapi_version != 'dev' else None,
+                                    samesite='None' if restapi_version == 'dev' else 'strict',
+                                    secure=https_enable)
+delete_admin_token: tuple[str, str] = ('Set-Cookie', admin_token_remover_cookie)
+
 
 @dataclasses.dataclass
 class UserResponseModel(api_class.ResponseDataModel):
@@ -44,7 +52,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='User is not signed in.',
         code=401, success=False,
         public_sub_code='user.not_signed_in',
-        header=[delete_refresh_token, ])
+        header=[delete_refresh_token, delete_admin_token, ])
 
     # Sign Up related
     user_signed_up = api_class.Response(  # User signing up success
@@ -103,7 +111,7 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='User signed out.',
         code=200, success=True,
         public_sub_code='user.sign_out',
-        header=[delete_refresh_token, ])
+        header=[delete_refresh_token, delete_admin_token, ])
 
     # Password reset related
     password_reset_mail_sent = api_class.Response(
@@ -207,9 +215,9 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         description='Refresh token is invalid. Please re-signin.',
         code=401, success=False,
         public_sub_code='refresh_token.invalid',
-        header=[delete_refresh_token, ])
+        header=[delete_refresh_token, delete_admin_token, ])
     refresh_token_expired = api_class.Response(
         description='Refresh token is expired. Please re-signin.',
         code=401, success=False,
         public_sub_code='refresh_token.expired',
-        header=[delete_refresh_token, ])
+        header=[delete_refresh_token, delete_admin_token, ])
