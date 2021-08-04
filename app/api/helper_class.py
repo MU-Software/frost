@@ -163,8 +163,9 @@ class Response:
 
         resp_code: int = code if code is not None else self.code
 
+        resp_header = header or self.header
         result_header = wz_dt.MultiDict((
-            *header,
+            *resp_header,
             ('Server', flask.current_app.config.get('BACKEND_NAME', 'Backend Core')),
         ))
 
