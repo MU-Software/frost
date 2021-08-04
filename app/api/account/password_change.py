@@ -31,10 +31,9 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
         optional_fields={
             'original_password': {'type': 'string', }, })
     def post(self,
-             req_query: dict[str, typing.Any],
-             req_header: dict[str, typing.Any],
              req_body: dict[str, typing.Any],
-             refresh_token:  jwt_module.RefreshToken):
+             refresh_token:  jwt_module.RefreshToken,
+             email_token: typing.Optional[str] = None):
         '''
         description: Change account password. Either email token or refresh token must be given.
         responses:
@@ -65,12 +64,11 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                         data={'lacks': ['original_password']})
                 target_user = refresh_token.usertable
 
-            elif 'email_token' in req_query:
+            elif email_token:
                 # Change password using EmailToken Auth. Maybe user forgot their password?
-                email_jwt_token: str = req_query['email_token']
                 try:
                     # Validate jwt token while querying on DB
-                    target_email_token = user_module.EmailToken.query_using_token(email_jwt_token)
+                    target_email_token = user_module.EmailToken.query_using_token(email_token)
                 except jwt.exceptions.ExpiredSignatureError:
                     return AccountResponseCase.email_expired.create_response()
                 except Exception:
