@@ -181,9 +181,8 @@ class User(db_module.DefaultModelMixin, db.Model):
 
 
 class EmailAlreadySentOnSpecificHoursException(Exception):
-    def __init__(self, message, errors):
+    def __init__(self, message):
         super().__init__(message)
-        self.errors = errors
 
 
 class EmailTokenAction(enum.Enum):
