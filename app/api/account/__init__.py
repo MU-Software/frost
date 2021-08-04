@@ -20,6 +20,7 @@ resource_route = {
     # Both routes for PasswordChangeRoute are needed.
     '/account/change-password/<string:email_token>': {
         'view_func': password_change.PasswordChangeRoute,
+        'base_path': '/account/change-password/',
         'defaults': {'email_token': None},
     },
 }
