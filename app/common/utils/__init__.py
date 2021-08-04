@@ -7,6 +7,7 @@ import json
 import math
 import string
 import sqlalchemy as sql
+import sqlalchemy.ext.declarative as sqldec
 import time
 import traceback
 import typing
@@ -359,3 +360,24 @@ def has_model_changed(model):
     Return True if there are any unsaved changes on the model.
     """
     return bool(get_model_changes(model))
+
+
+def create_dynamic_orm_table(
+        base: sqldec.DeclarativeMeta,
+        engine: sql.engine.base.Engine,
+        class_name: str, table_name: str,
+        columns: typing.Optional[list[str]] = None,
+        mixins: tuple = ()):
+
+    table_attrs: dict = {
+        '__tablename__': table_name,
+        '__table_args__': {
+            'sqlite_autoincrement': True,
+            'autoload': True,
+            'autoload_with': engine,
+        },
+    }
+    table_attrs.update(columns if columns else {})
+
+    DynamicORMTable = type(class_name, (*mixins, base), table_attrs)
+    return DynamicORMTable
