@@ -308,6 +308,8 @@ def create_login_data(user_data: user_module.User,
     restapi_version = flask.current_app.config.get('RESTAPI_VERSION')
     server_name = flask.current_app.config.get('SERVER_NAME')
     https_enable = flask.current_app.config.get('HTTPS_ENABLE', True)
+    cookie_samesite = ('None' if https_enable else 'Lax') if restapi_version == 'dev' else 'strict'
+
     response_header: list[tuple[str, str]] = list()
     response_data: dict[str, dict[str, str]] = dict()
 
@@ -322,7 +324,7 @@ def create_login_data(user_data: user_module.User,
         domain=server_name if restapi_version != 'dev' else None,
         path=f'/api/{refresh_token.api_ver}/account',
         expires=utils.cookie_datetime(refresh_token.exp),
-        samesite='None' if restapi_version == 'dev' else 'strict',
+        samesite=cookie_samesite,
         secure=https_enable)
     response_header.append(('Set-Cookie', refresh_token_cookie))
     response_data['refresh_token'] = {'exp': refresh_token.exp, }
@@ -344,7 +346,7 @@ def create_login_data(user_data: user_module.User,
             domain=server_name if restapi_version != 'dev' else None,
             path=f'/api/{refresh_token.api_ver}/admin',
             expires=utils.cookie_datetime(refresh_token.exp),
-            samesite='None' if restapi_version == 'dev' else 'strict',
+            samesite=cookie_samesite,
             secure=https_enable)
         response_header.append(('Set-Cookie', admin_token_cookie))
         response_data['admin_token'] = {'exp': admin_token.exp, }
@@ -359,6 +361,8 @@ def refresh_login_data(refresh_token_jwt: str,
     restapi_version = flask.current_app.config.get('RESTAPI_VERSION')
     server_name = flask.current_app.config.get('SERVER_NAME')
     https_enable = flask.current_app.config.get('HTTPS_ENABLE', True)
+    cookie_samesite = ('None' if https_enable else 'Lax') if restapi_version == 'dev' else 'strict'
+
     response_header: list[tuple[str, str]] = list()
     response_data: dict[str, dict[str, str]] = dict()
 
@@ -407,7 +411,7 @@ def refresh_login_data(refresh_token_jwt: str,
                 domain=server_name if restapi_version != 'dev' else None,
                 path=f'/api/{refresh_token.api_ver}/account',
                 expires=utils.cookie_datetime(refresh_token.exp),
-                samesite='None' if restapi_version == 'dev' else 'strict',
+                samesite=cookie_samesite,
                 secure=https_enable)
 
             response_header.append(('Set-Cookie', refresh_token_cookie))
@@ -437,7 +441,7 @@ def refresh_login_data(refresh_token_jwt: str,
             domain=server_name if restapi_version != 'dev' else None,
             path=f'/api/{refresh_token.api_ver}/admin',
             expires=utils.cookie_datetime(refresh_token.exp),
-            samesite='None' if restapi_version == 'dev' else 'strict',
+            samesite=cookie_samesite,
             secure=https_enable)
         response_header.append(('Set-Cookie', admin_token_cookie))
         response_data['admin_token'] = {'exp': admin_token.exp, }
