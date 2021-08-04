@@ -8,6 +8,7 @@ import inspect
 import jwt.exceptions
 import typing
 import unicodedata
+import werkzeug.datastructures as wz_dt
 import yaml
 
 
@@ -162,12 +163,10 @@ class Response:
 
         resp_code: int = code if code is not None else self.code
 
-        resp_header = (tuple(header.items()) if type(header) == dict else header)
-        resp_header += (tuple(self.header.items()) if type(self.header) == dict else tuple(self.header))
-        result_header = (
+        result_header = wz_dt.MultiDict((
             *header,
             ('Server', flask.current_app.config.get('BACKEND_NAME', 'Backend Core')),
-        )
+        ))
 
         resp_data = copy.deepcopy(data)
         resp_data.update(data)
@@ -176,7 +175,6 @@ class Response:
 
         if self.content_type == 'application/json':
             # TODO: Parse YAML file and get response message using public_sub_code
-
             response_body = {
                 'success': self.success,
                 'code': self.code,
