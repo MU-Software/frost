@@ -15,7 +15,6 @@ from app.api.account.response_case import AccountResponseCase
 password_reset_mail_valid_duration: datetime.timedelta = datetime.timedelta(hours=48)
 
 db = db_module.db
-redis_db = db_module.redis_db
 
 
 class PasswordResetMailSendFailCase(enum.Enum):
@@ -47,7 +46,7 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 # 'OK, mail will be sent if there's a matching user
                 return AccountResponseCase.password_reset_mail_sent.create_response()
 
-            # Create email token
+            # Create email token. This also checks redis to block spamming.
             try:
                 new_email_token = user_module.EmailToken.create(
                     target_user,
@@ -75,8 +74,10 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 subject='비밀번호 초기화 안내 메일입니다.',
                 message=email_result)
             if not mail_sent:
-                raise AccountResponseCase.password_reset_mail_send_failed.create_response(
+                return AccountResponseCase.password_reset_mail_send_failed.create_response(
                     data={'reason': PasswordResetMailSendFailCase.MAIL_SEND_FAILURE.name, })
+
+            return AccountResponseCase.password_reset_mail_sent.create_response()
 
         except Exception:
             return CommonResponseCase.server_error.create_response()
