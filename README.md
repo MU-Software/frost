@@ -8,6 +8,8 @@
 FROST is a flask template that supports various built-in functions, such as...  
 
 - JWT authentication  
+- Flask-Admin authentication  
+- Manual Token Revoke ablilty  
 - Request input verification  
 - OpenAPI 3.0 YAML document generation  
 - ER Diagram generation  
