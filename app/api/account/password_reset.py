@@ -51,7 +51,7 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
             try:
                 new_email_token = user_module.EmailToken.create(
                     target_user,
-                    user_module.EmailTokenAction.PASSWORD_RESET,
+                    user_module.EmailTokenAction.EMAIL_PASSWORD_RESET,
                     password_reset_mail_valid_duration)
             except user_module.EmailAlreadySentOnSpecificHoursException:
                 return AccountResponseCase.password_reset_mail_send_failed.create_response(
