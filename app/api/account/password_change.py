@@ -76,20 +76,22 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 if target_email_token is None:
                     return AccountResponseCase.email_not_found.create_response()
 
-                # Clear spam-block record
-                redis_key = RedisKeyType[target_email_token.action].as_redis_key(target_email_token.user_id)
-                redis_result = redis_db.get(redis_key)
-                if redis_result:
-                    redis_db.delete(redis_key)
-
                 target_user = target_email_token.user
 
                 # Maybe user forgot their password, so want to reset it.
                 # This means that user cannot provide original password, and need to force-change password
                 is_forced_password_change = True
 
+                # Clear spam-block record
+                redis_key = RedisKeyType[target_email_token.action].as_redis_key(target_email_token.user_id)
+                redis_result = redis_db.get(redis_key)
+                if redis_result:
+                    redis_db.delete(redis_key)
+            else:
+                return AccountResponseCase.user_not_signed_in.create_response()
+
             if not target_user:
-                AccountResponseCase.user_not_found.create_response()
+                return AccountResponseCase.user_not_found.create_response()
 
             pw_change_success, fail_reason = target_user.change_password(
                 orig_pw=original_password, new_pw=new_password,
