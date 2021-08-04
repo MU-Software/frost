@@ -13,6 +13,7 @@ import app.database.jwt as jwt_module
 from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
 
+db = db_module.db
 redis_db = db_module.redis_db
 RedisKeyType = db_module.RedisKeyType
 
@@ -87,6 +88,10 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 redis_result = redis_db.get(redis_key)
                 if redis_result:
                     redis_db.delete(redis_key)
+
+                # Remove this email token
+                db.session.delete(target_email_token)
+                db.session.commit()
             else:
                 return AccountResponseCase.user_not_signed_in.create_response()
 
