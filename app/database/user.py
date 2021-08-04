@@ -70,14 +70,13 @@ class User(db_module.DefaultModelMixin, db.Model):
         # Returns False if this fails, and returns True when it success
         # We'll trim space on user input, Google also do this.
         # https://ux.stackexchange.com/q/75686
-        orig_pw = utils.normalize(orig_pw).strip()
+        new_pw = utils.normalize(new_pw).strip()
+        pw_str_check = utils.is_passwordsafe(new_pw)
+        if pw_str_check:
+            return False, pw_str_check
 
         if not force_change:
-            new_pw = utils.normalize(new_pw).strip()
-
-            pw_str_check = utils.is_passwordsafe(new_pw)
-            if pw_str_check:
-                return False, pw_str_check
+            orig_pw = utils.normalize(orig_pw).strip()
 
             if not self.check_password(orig_pw):
                 return False, 'WRONG_PASSWORD'
