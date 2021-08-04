@@ -14,6 +14,7 @@ import app.database.user as user_module
 
 db = db_module.db
 redis_db: redis.StrictRedis = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 # Refresh token will expire after 61 days
 refresh_token_valid_duration: datetime.timedelta = datetime.timedelta(days=61)
@@ -121,9 +122,10 @@ class AccessToken(TokenBase):
         new_token = super().create_token(key, algorithm=algorithm)
 
         # If new token safely issued, then remove revoked history
-        redis_result = redis_db.get('refresh_revoke='+str(self.jti))
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(self.jti)
+        redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b'revoked':
-            redis_db.delete('refresh_revoke=' + str(self.jti))
+            redis_db.delete(redis_key)
 
         return new_token
 
@@ -132,7 +134,8 @@ class AccessToken(TokenBase):
         parsed_token = super().from_token(jwt_input, key, algorithm)
 
         # Check if token's revoked
-        redis_result = redis_db.get('refresh_revoke=' + str(parsed_token.jti))
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(parsed_token.jti)
+        redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b'revoked':
             raise jwt.exceptions.InvalidTokenError('This token was revoked')
 
@@ -268,7 +271,8 @@ class AdminToken(TokenBase):
         parsed_token = super().from_token(jwt_input, key, algorithm)
 
         # Check if token's revoked
-        redis_result = redis_db.get('refresh_revoke=' + str(parsed_token.jti))
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(parsed_token.jti)
+        redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b'revoked':
             raise jwt.exceptions.InvalidTokenError('This token was revoked')
 

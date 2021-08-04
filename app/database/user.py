@@ -11,6 +11,7 @@ import app.database as db_module
 
 db = db_module.db
 redis_db = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 
 class User(db_module.DefaultModelMixin, db.Model):
@@ -185,8 +186,9 @@ class EmailAlreadySentOnSpecificHoursException(Exception):
 
 
 class EmailTokenAction(enum.Enum):
+    # Add enum cases on RedisAction enum class, too
     EMAIL_VERIFICATION = enum.auto()
-    PASSWORD_RESET = enum.auto()
+    EMAIL_PASSWORD_RESET = enum.auto()
 
 
 class EmailToken(db_module.DefaultModelMixin, db.Model):
@@ -241,8 +243,8 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
         try:
             # Check if any mail sent to this address with this action on 48 hours using redis.
             # This can block attacker from spamming to the mail address user.
-            redis_block_key = f'{action.name}={target_user.uuid}'
-            redis_result = redis_db.get(redis_block_key)
+            redis_key = RedisKeyType[action.name].as_redis_key(target_user.uuid)
+            redis_result = redis_db.get(redis_key)
             if redis_result:
                 raise EmailAlreadySentOnSpecificHoursException(
                     'There was a request to send password reset mail on this email address on 48 hours.')
@@ -253,7 +255,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             try:
                 old_mail_tokens: list[EmailToken] = EmailToken.query\
                     .filter(EmailToken.user_id == target_user.uuid)\
-                    .filter(EmailToken.action == EmailTokenAction.PASSWORD_RESET)\
+                    .filter(EmailToken.action == EmailTokenAction.EMAIL_PASSWORD_RESET)\
                     .all()
             except Exception:
                 pass
@@ -290,7 +292,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             db.session.add(new_email_token)
 
             # Set 48 hours request blocker
-            redis_db.set(redis_block_key, 'true', expiration_delta)
+            redis_db.set(redis_key, 'true', expiration_delta)
 
             # Commit email token data
             db.session.commit()

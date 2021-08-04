@@ -11,6 +11,7 @@ from app.api.account.response_case import AccountResponseCase
 
 db = db_module.db
 redis_db = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 
 class SignOutRoute(flask.views.MethodView, api_class.MethodViewMixin):
@@ -28,7 +29,8 @@ class SignOutRoute(flask.views.MethodView, api_class.MethodViewMixin):
         if refresh_token:
             revoke_target_jti = refresh_token.jti
             try:
-                redis_db.set('refresh_revoke=' + str(revoke_target_jti), 'revoked', datetime.timedelta(weeks=2))
+                redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(revoke_target_jti)
+                redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
                 print(f'Refresh token {revoke_target_jti} registered on REDIS!')
             except Exception:
                 print('Raised error while registering token from REDIS')

@@ -12,6 +12,7 @@ from app.api.account.response_case import AccountResponseCase
 
 db = db_module.db
 redis_db = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 
 class Admin_TokenRevoke_View(fadmin.BaseView):
@@ -20,7 +21,8 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
         user_result = user.User.query.all()
         token_result = jwt_module.RefreshToken.query.all()
         revoked_dict = dict()
-        for k in redis_db.scan_iter(match='refresh_revoke=*'):
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key('*')
+        for k in redis_db.scan_iter(match=redis_key):
             revoked_dict[k.decode()] = redis_db.get(k.decode()).decode()
 
         return self.render(
@@ -55,7 +57,8 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
 
             for target in query_result:
                 # TODO: set can set multiple at once, so use that method instead
-                redis_db.set('refresh_revoke=' + str(target.jti), 'revoked', datetime.timedelta(weeks=2))
+                redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(target.jti)
+                redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
 
                 if 'do_delete' in req_body:
                     db.session.delete(target)
@@ -67,7 +70,8 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
                 return AccountResponseCase.refresh_token_invalid(
                     message='RefreshToken that has such JTI not found')
 
-            redis_db.set('refresh_revoke=' + str(req_body['target_jti']), 'revoked', datetime.timedelta(weeks=2))
+            redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(req_body["target_jti"])
+            redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
 
             if 'do_delete' in req_body:
                 db.session.delete(query_result)

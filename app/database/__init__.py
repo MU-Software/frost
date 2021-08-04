@@ -1,5 +1,6 @@
 import flask
 import flask_sqlalchemy as fsql
+import enum
 import re
 import secrets
 import sqlalchemy.dialects.mysql as sqldlc_mysql
@@ -7,11 +8,25 @@ import sqlalchemy.dialects.postgresql as sqldlc_psql
 import sqlalchemy.dialects.sqlite as sqldlc_sqlite
 import typing
 
+import app.common.utils as utils
+
 # We'll manage redis here too.
 import redis
 
 # ---------- REDIS Setup ----------
 redis_db: redis.StrictRedis = None
+
+
+class RedisKeyType(utils.EnumAutoName):
+    # RedisKeyType's enum values are string, because this will be used on Redis key.
+    # This is intended and must not be used on DB column type.
+    EMAIL_VERIFICATION = enum.auto()
+    EMAIL_PASSWORD_RESET = enum.auto()
+    TOKEN_REVOKE = enum.auto()
+
+    def as_redis_key(self, value: str):
+        return f'{self.value}={str(value)}'
+
 
 # ---------- RDB Setup ----------
 # Create db object when module loads, but do not connect to app context yet.

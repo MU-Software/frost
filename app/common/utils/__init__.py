@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import datetime
 import email
+import enum
 import flask
 import hashlib
 import json
@@ -318,6 +319,11 @@ class Singleton:
 class Struct:
     def __init__(self, **entries):
         self.__dict__.update(entries)
+
+
+class EnumAutoName(enum.Enum):
+    def _generate_next_value_(name, start, count, last_values):
+        return name
 
 
 # ---------- SQLAlchemy helper Function ----------
