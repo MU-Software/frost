@@ -11,6 +11,8 @@ from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
 
 db = db_module.db
+redis_db = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 
 class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
@@ -55,6 +57,12 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
 
         # OK, now we can assumes that email is verified,
         # Do what token says.
+        # But first, clear spam-block record
+        redis_key = RedisKeyType[target_token.action].as_redis_key(target_token.user_id)
+        redis_result = redis_db.get(redis_key)
+        if redis_result:
+            redis_db.delete(redis_key)
+
         if target_token.action == user.EmailTokenAction.EMAIL_VERIFICATION:
             target_token.user.email_verified = True
             db.session.delete(target_token)

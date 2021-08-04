@@ -7,10 +7,14 @@ import typing
 
 import app.api.helper_class as api_class
 import app.database.user as user_module
+import app.database as db_module
 import app.database.jwt as jwt_module
 
 from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
+
+redis_db = db_module.redis_db
+RedisKeyType = db_module.RedisKeyType
 
 password_reset_mail_valid_duration: datetime.timedelta = datetime.timedelta(hours=48)
 
@@ -73,6 +77,12 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     return AccountResponseCase.email_invalid.create_response()
                 if target_email_token is None:
                     return AccountResponseCase.email_not_found.create_response()
+
+                # Clear spam-block record
+                redis_key = RedisKeyType[target_email_token.action].as_redis_key(target_email_token.user_id)
+                redis_result = redis_db.get(redis_key)
+                if redis_result:
+                    redis_db.delete(redis_key)
 
                 target_user = target_email_token.user
 
