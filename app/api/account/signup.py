@@ -58,6 +58,7 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return CommonResponseCase.body_bad_semantics.create_response(
                 data={'bad_semantics': ({'pw': reason},)})
 
+        # Create new user
         new_user = user.User()
         new_user.email = req_body['email']
         new_user.id = req_body['id']
@@ -65,6 +66,12 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
         new_user.password = argon2.hash(req_body['pw'])
         new_user.pw_changed_at = sql.func.now()
         new_user.last_login_date = sql.func.now()
+
+        # If the TB_USER is empty (=this user is the first registered user),
+        # make this user admin.
+        if not db.session.query(user.User).first():
+            new_user.role = 'admin'
+
         db.session.add(new_user)
 
         try:
