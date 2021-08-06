@@ -74,16 +74,11 @@ class DemoRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return DemoResponseCase.demo_error.create_response()
 
         return DemoResponseCase.demo_ok.create_response(data=req_header)
-
-
-resource_route = {
-    '/demo/<int:demo_id>': DemoRoute,
-}
 ```
-2. Add these lines on `app/api/__init__.py`
+2. Add these lines on `app/api/project_route.py`
 ```PYTHON
 import app.api.demo as route_demo  # noqa
-resource_routes.update(route_demo.resource_route)
+project_resource_routes['/demo/<int:demo_id>'] = route_demo.DemoRoute
 ```
 3. Good! You just created a new route!  
 Test this route using `curl {your_domain}/api/dev/demo/42`

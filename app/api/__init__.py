@@ -41,6 +41,8 @@ def init_app(app: flask.Flask):
 
     import app.api.ping as route_ping  # noqa
     resource_routes.update(route_ping.resource_route)
+    import app.api.project_route as project_route  # noqa
+    resource_routes.update(project_route.project_resource_routes)
 
     for path, route_model in resource_routes.items():
         view_name: str = ''
