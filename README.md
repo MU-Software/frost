@@ -135,6 +135,7 @@ Key                    | Required | Explain
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
 `FLASK_RUN_PORT`       |   | Port number while running `flask run`.
 `RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
+`ACCOUNT_ROUTE_ENABLE` |   | Enable account related routes, such as sign-up, sign-in, email-action, etc. Default value is `true` and will be disabled only when the value is set to `false`
 `DB_URL`               | O | Database URL to connect, `sqlite:///:memory:` if not set on `RESTAPI_VERSION = dev`.
 `REDIS_HOST`           | O | Hostname of Redis database.
 `REDIS_PORT`           | O | Port of Redis database. You must set this as integer string.

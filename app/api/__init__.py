@@ -8,12 +8,6 @@ import os
 restapi_version: str = os.environ.get('RESTAPI_VERSION')
 server_name: str = os.environ.get('SERVER_NAME')
 
-resource_routes: dict = {}
-import app.api.ping as route_ping  # noqa
-resource_routes.update(route_ping.resource_route)
-import app.api.account as route_account  # noqa
-resource_routes.update(route_account.resource_route)
-
 
 # Register views and handlers to app
 def init_app(app: flask.Flask):
@@ -37,6 +31,16 @@ def init_app(app: flask.Flask):
     if app.config.get('DEBUG', False):
         import app.api.debug as debug_route
         debug_route.init_app(app)
+
+    resource_routes: dict = {}
+
+    # Disable account related routes only when ACCOUNT_ROUTE_ENABLE is False
+    if app.config.get('ACCOUNT_ROUTE_ENABLE', True):
+        import app.api.account as route_account  # noqa
+        resource_routes.update(route_account.resource_route)
+
+    import app.api.ping as route_ping  # noqa
+    resource_routes.update(route_ping.resource_route)
 
     for path, route_model in resource_routes.items():
         view_name: str = ''

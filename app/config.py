@@ -22,6 +22,8 @@ class Config:
     LOCAL_DEV_CLIENT_PORT = None
 
     RESTAPI_VERSION = os.environ.get('RESTAPI_VERSION')
+    # `ACCOUNT_ROUTE_ENABLE` will be disabled only if $env:ACCOUNT_ROUTE_ENABLE is 'false'
+    ACCOUNT_ROUTE_ENABLE = os.environ.get('ACCOUNT_ROUTE_ENABLE', True) != 'false'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False

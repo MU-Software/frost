@@ -15,6 +15,7 @@
     "__comment_3" : "FLASK_RUN_PORT will only works on `flask run`. This is intended",
     "FLASK_RUN_PORT" : "8000",
     "RESTAPI_VERSION" : "dev",
+    "ACCOUNT_ROUTE_ENABLE" : "true",
     "LOCAL_DEV_CLIENT_PORT" : "3000",
     "__line_break_2" : "true",
 
