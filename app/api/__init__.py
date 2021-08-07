@@ -8,6 +8,9 @@ import os
 restapi_version: str = os.environ.get('RESTAPI_VERSION')
 server_name: str = os.environ.get('SERVER_NAME')
 
+# This import is needed to prevent partially initialized ImportError
+import app.api.helper_class as helper_class  # noqa
+
 
 # Register views and handlers to app
 def init_app(app: flask.Flask):
