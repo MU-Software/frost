@@ -128,6 +128,7 @@ Key                    | Required | Explain
 `LOCAL_DEV_CLIENT_PORT`|   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then CORS header for `http://localhost:{LOCAL_DEV_CLIENT_PORT}` will be set. You must set this as integer string.
 `FLASK_APP`            | O | Same as Flask's `FLASK_APP`. You must set this to `app`.
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
+`FLASK_RUN_HOST`       |   | Host address while running `flask run`.
 `FLASK_RUN_PORT`       |   | Port number while running `flask run`.
 `RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
 `ACCOUNT_ROUTE_ENABLE` |   | Enable account related routes, such as sign-up, sign-in, email-action, etc. Default value is `true` and will be disabled only when the value is set to `false`
