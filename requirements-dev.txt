@@ -9,6 +9,7 @@ redis
 lxml
 pyyaml
 user-agents
+firebase-admin
 boto3
 apispec
 sadisplay
