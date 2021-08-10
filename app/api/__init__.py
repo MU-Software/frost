@@ -22,6 +22,7 @@ def init_app(app: flask.Flask):
     local_client_port = app.config.get('LOCAL_DEV_CLIENT_PORT')
     if restapi_version == 'dev' and local_client_port:
         allowed_origins.append(f'http://localhost:{local_client_port}')
+        allowed_origins.append(f'http://127.0.0.1:{local_client_port}')
 
     flask_cors.CORS(app, resources={
         r'*': {
