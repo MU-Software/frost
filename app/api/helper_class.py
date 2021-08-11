@@ -242,7 +242,7 @@ class MethodViewMixin(AutoRegisterClass):
 
 class AuthType(enum.Enum):
     Bearer = enum.auto()
-    RefreshToken = enum.auto
+    RefreshToken = enum.auto()
 
 
 def json_list_filter(in_list: list, filter_empty_value: bool = True) -> list:
