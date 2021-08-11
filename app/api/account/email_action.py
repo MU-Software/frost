@@ -66,10 +66,14 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
         if target_token.action == user.EmailTokenAction.EMAIL_VERIFICATION:
             target_token.user.email_verified = True
             db.session.delete(target_token)
-            db.session.commit()
-            if 'text/html' in request_content_type:
-                return AccountResponseCase.email_success_html.create_response()
-            return AccountResponseCase.email_success.create_response()
+            try:
+                db.session.commit()
+                if 'text/html' in request_content_type:
+                    return AccountResponseCase.email_success_html.create_response()
+                return AccountResponseCase.email_success.create_response()
+            except Exception:
+                db.session.rollback()
+                return CommonResponseCase.db_error.create_response()
         elif target_token.action == user.EmailTokenAction.EMAIL_PASSWORD_RESET:
             if 'text/html' in request_content_type:
                 return AccountResponseCase.email_success_html.create_response(

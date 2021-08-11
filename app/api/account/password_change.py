@@ -109,4 +109,5 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 return AccountResponseCase.password_change_failed.create_response(
                     data={'reason': fail_reason})
         except Exception:
+            db.session.rollback()
             return CommonResponseCase.server_error.create_response()

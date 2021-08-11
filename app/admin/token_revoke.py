@@ -77,7 +77,11 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
                 db.session.delete(query_result)
 
         if 'do_delete' in req_body:
-            db.session.commit()
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                return CommonResponseCase.db_error.create_response()
 
         return CommonResponseCase.http_ok.create_response(
             code=301,

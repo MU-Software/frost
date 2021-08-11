@@ -77,6 +77,7 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
         try:
             db.session.commit()
         except Exception as err:
+            db.session.rollback()
             err_reason, err_column_name = db_module.IntegrityCaser(err)
             if err_reason == 'FAILED_UNIQUE':
                 return AccountResponseCase.user_already_used.create_response(

@@ -154,6 +154,7 @@ class User(db_module.DefaultModelMixin, db.Model):
                 db.session.commit()
                 return False, reason
             except Exception:
+                db.session.rollback()
                 return False, 'DB_ERROR'
 
         # If password is correct and account is not locked, process login.
@@ -236,6 +237,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             db.session.commit()
             raise err
         except Exception as err:
+            db.session.rollback()
             raise err
 
     @classmethod

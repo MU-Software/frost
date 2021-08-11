@@ -74,6 +74,7 @@ class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin
             target_user.deactivated_by_orm = target_user
             db.session.commit()
         except Exception:
+            db.session.rollback()
             return CommonResponseCase.server_error.create_response()
 
         return AccountResponseCase.user_deactivate_success.create_response()

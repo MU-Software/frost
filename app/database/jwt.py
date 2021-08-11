@@ -249,12 +249,12 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
 
         if self.jti and self.jti <= -1:
             self.jti = None
-            db_module.db.session.add(self)
+            db.session.add(self)
 
         try:
-            db_module.db.session.commit()
+            db.session.commit()
         except Exception:
-            db_module.db.session.rollback()
+            db.session.rollback()
             raise
 
         return super().create_token(key, algorithm)
@@ -421,7 +421,7 @@ def refresh_login_data(refresh_token_jwt: str,
             response_header.append(('Set-Cookie', refresh_token_cookie))
         except Exception:
             # It's OK to ignore error while re-issueing refresh token
-            pass
+            db.session.rollback()
         finally:
             # We need to send refresh token expiration date anyway
             response_data['refresh_token'] = {'exp': refresh_token.exp, }

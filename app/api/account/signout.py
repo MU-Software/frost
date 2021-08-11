@@ -40,6 +40,7 @@ class SignOutRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 db.session.commit()
                 print(f'Refresh token {revoke_target_jti} removed!')
             except Exception:
+                db.session.rollback()
                 print('Raised error while removing token from DB')
             return AccountResponseCase.user_signed_out.create_response(message='Goodbye!')
         return AccountResponseCase.user_signed_out.create_response(message='User already signed-out')
