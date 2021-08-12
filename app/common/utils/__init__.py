@@ -6,6 +6,8 @@ import flask
 import hashlib
 import json
 import math
+import random
+import socket
 import string
 import sqlalchemy as sql
 import sqlalchemy.ext.declarative as sqldec
@@ -387,3 +389,23 @@ def create_dynamic_orm_table(
 
     DynamicORMTable = type(class_name, (*mixins, base), table_attrs)
     return DynamicORMTable
+
+
+# ---------- Extra tools ----------
+def find_free_random_port(port: int = 24000, max_port: int = 34000) -> int:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tried_ports = list()
+    while True:
+        if len(range(port, max_port)) == len(tried_ports):
+            raise IOError('no free ports')
+
+        port = random.randint(port, max_port)
+        if port in tried_ports:
+            continue
+
+        try:
+            sock.bind(('', port))
+            sock.close()
+            return port
+        except OSError:
+            continue
