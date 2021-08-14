@@ -29,6 +29,9 @@ def create_app():
         import app.common.cli_tools as cli_tools
         cli_tools.init_app(app)
 
+        import app.plugin as plugin
+        plugin.init_app(app)
+
     return app
 
 
