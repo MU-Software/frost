@@ -1,10 +1,10 @@
 import flask
 import flask_admin as fadmin
-import flask_admin.contrib.sqla as fadmin_sqla
 import jwt
 
 import app.api.helper_class as api_class
 import app.database.jwt as jwt_module
+import app.admin.project_modelview as project_modelview
 
 from app.admin.response_case import AdminResponseCase
 
@@ -69,13 +69,8 @@ def init_app(app: flask.Flask, add_model_to_view: bool = True):
                 template_mode='bootstrap4')
 
     if add_model_to_view:
-        import app.database as db_module
-        import app.database.user as user
-        import app.database.jwt as jwt_module
-
-        admin.add_view(fadmin_sqla.ModelView(user.User, db_module.db.session))
-        admin.add_view(fadmin_sqla.ModelView(user.EmailToken, db_module.db.session))
-        admin.add_view(fadmin_sqla.ModelView(jwt_module.RefreshToken, db_module.db.session))
+        for target_modelview in project_modelview.target_flask_admin_modelview:
+            admin.add_view(target_modelview)
 
     import app.admin.token_revoke as token_revoke
     admin.add_view(token_revoke.Admin_TokenRevoke_View(name='Token Revoke', endpoint='token-revoke'))
