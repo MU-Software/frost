@@ -70,7 +70,7 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
         # If the TB_USER is empty (=this user is the first registered user),
         # make this user admin.
         if not db.session.query(user.User).first():
-            new_user.role = 'admin'
+            new_user.role = '["admin"]'
 
         db.session.add(new_user)
 
