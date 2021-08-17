@@ -75,12 +75,12 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='user.safe_to_use')
     user_already_used = api_class.Response(
         description='Someone is already using user-wanted nick/id/email address. Try another one.',
-        code=401, success=False,
+        code=409, success=False,
         public_sub_code='user.already_used',
         data={'duplicate': ['', ]})
     user_info_mismatch = api_class.Response(
         description='We can\'t do what you request because the data you sent isn\'t correct.',
-        code=401, success=False,
+        code=409, success=False,
         public_sub_code='user.info_mismatch',
         data={'fields': ['', ]})
 

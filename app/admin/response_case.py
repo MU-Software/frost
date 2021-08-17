@@ -30,7 +30,7 @@ class AdminResponseCase(api_class.ResponseCaseCollector):
         header=[delete_admin_token, ])
     admin_forbidden = api_class.Response(
         description='We assumes that you are not a admin, so this action could not be executed.',
-        code=401, success=False,
+        code=403, success=False,
         public_sub_code='admin.forbidden')
 
     # Admin Token related (HTML)
@@ -46,5 +46,5 @@ class AdminResponseCase(api_class.ResponseCaseCollector):
         header=[delete_admin_token, ])
     admin_forbidden_html = api_class.Response(
         description='We assumes that you are not a admin, so this action could not be executed.',
-        code=401, success=False,
+        code=403, success=False,
         content_type='text/html', template_path='admin/error/admin_forbidden.html')
