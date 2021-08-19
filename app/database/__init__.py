@@ -164,7 +164,7 @@ def init_app(app: flask.Flask):
     for table in db.get_tables_for_bind():
         table.create(checkfirst=True, bind=db.engine)
 
-    if app.config.get('RESTAPI_VERSION') == 'dev':
+    if app.config.get('RESTAPI_VERSION') == 'dev' and app.config.get('DROP_ALL_REFRESH_TOKEN_ON_LOAD', True):
         # Drop some DB tables when on dev mode
         # db.drop_all()
         db.session.query(jwt_module.RefreshToken).delete()

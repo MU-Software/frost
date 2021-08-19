@@ -24,6 +24,7 @@ class Config:
     RESTAPI_VERSION = os.environ.get('RESTAPI_VERSION')
     # `ACCOUNT_ROUTE_ENABLE` will be disabled only if $env:ACCOUNT_ROUTE_ENABLE is 'false'
     ACCOUNT_ROUTE_ENABLE = os.environ.get('ACCOUNT_ROUTE_ENABLE', True) != 'false'
+    DROP_ALL_REFRESH_TOKEN_ON_LOAD = os.environ.get('DROP_ALL_REFRESH_TOKEN_ON_LOAD', True) != 'false'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False

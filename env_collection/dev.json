@@ -16,6 +16,7 @@
     "FLASK_RUN_PORT" : "8000",
     "RESTAPI_VERSION" : "dev",
     "ACCOUNT_ROUTE_ENABLE" : "true",
+    "DROP_ALL_REFRESH_TOKEN_ON_LOAD": "true",
     "LOCAL_DEV_CLIENT_PORT" : "3000",
     "__line_break_2" : "true",
 
