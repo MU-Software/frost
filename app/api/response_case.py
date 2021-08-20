@@ -82,3 +82,50 @@ class CommonResponseCase(api_class.ResponseCaseCollector):
         description='Requested response Content-Type is not accepted.',
         code=415, success=False,
         public_sub_code='http.content_type_unsupport')
+
+
+class ResourceResponseCase(api_class.ResponseCaseCollector):
+    # Resource responses
+    resource_unique_failed = api_class.Response(  # 409 (UNIQUE CONSTRAINT FAILED)
+        description='Some new resource informations are in use.(Unique constraint failed)',
+        code=409, success=False,
+        public_sub_code='resource.unique_failed',
+        data={'duplicate': ['', ]})
+    resource_forbidden = api_class.Response(  # 403
+        description='Requested information modification is forbidden',
+        code=403, success=False,
+        public_sub_code='resource.forbidden')
+    resource_not_found = api_class.Response(  # 404
+        description='Requested information not found',
+        code=404, success=False,
+        public_sub_code='resource.not_found')
+    resource_conflict = api_class.Response(  # 409 (RESOURCE CONFLICT)
+        description='Request conflicts with current state of the target resource',
+        code=409, success=False,
+        public_sub_code='resource.conflict',
+        data={'conflict_reason': ['', ]})
+
+    resource_found = api_class.Response(  # Read
+        description='Resource found',
+        code=200, success=True,
+        public_sub_code='resource.result',
+        data={}, )
+    multiple_resources_found = api_class.Response(  # Read
+        description='Multiple resources found',
+        code=200, success=True,
+        public_sub_code='resource.multiple_result',
+        data={}, )
+    resource_created = api_class.Response(  # Create
+        description='Resource created',
+        code=201, success=True,
+        public_sub_code='resource.created',
+        data={}, )
+    resource_modified = api_class.Response(  # Update
+        description='Resource updated',
+        code=201, success=True,
+        public_sub_code='resource.modified',
+        data={}, )
+    resource_deleted = api_class.Response(  # Delete
+        description='Resource deleted',
+        code=204, success=True,
+        public_sub_code='resource.deleted')
