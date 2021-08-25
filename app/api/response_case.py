@@ -104,6 +104,11 @@ class ResourceResponseCase(api_class.ResponseCaseCollector):
         code=409, success=False,
         public_sub_code='resource.conflict',
         data={'conflict_reason': ['', ]})
+    resource_prediction_failed = api_class.Response(  # 412 (PREDICTION FAILED)
+        description='Resource has been modified on another request, '
+                    'and maybe you tried to modify this resource with old version.',
+        code=412, success=False,
+        public_sub_code='resource.prediction_failed')
 
     resource_found = api_class.Response(  # Read
         description='Resource found',
