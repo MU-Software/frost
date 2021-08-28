@@ -37,10 +37,10 @@ class AccessTokenIssueRoute(flask.views.MethodView, api_class.MethodViewMixin):
 
         try:
             target_user: user_module.User = user_module.User.query\
-                .filter(user_module.User.locked_at == None)\
-                .filter(user_module.User.deactivated_at == None)\
+                .filter(user_module.User.locked_at.is_(None))\
+                .filter(user_module.User.deactivated_at.is_(None))\
                 .filter(user_module.User.uuid == refresh_token.user)\
-                .first()  # noqa
+                .first()
             if not target_user:
                 return AccountResponseCase.refresh_token_invalid.create_response()
 
