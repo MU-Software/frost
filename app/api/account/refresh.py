@@ -36,7 +36,7 @@ class AccessTokenIssueRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return AccountResponseCase.user_not_signed_in.create_response()
 
         try:
-            target_user: user_module.User = user_module.User.query\
+            target_user = db.session.query(user_module.User)\
                 .filter(user_module.User.locked_at.is_(None))\
                 .filter(user_module.User.deactivated_at.is_(None))\
                 .filter(user_module.User.uuid == refresh_token.user)\

@@ -218,7 +218,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             jwt_token['data']['action'] = EmailTokenAction(jwt_token['data']['action'])
 
             # Query Email data
-            query_result: 'EmailToken' = EmailToken.query\
+            query_result = db.session.query(EmailToken)\
                 .filter(EmailToken.token == email_token)\
                 .filter(EmailToken.action == jwt_token['data']['action'])\
                 .filter(EmailToken.user_id == jwt_token['user'])\
@@ -255,7 +255,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
 
             # Remove old token if exists
             try:
-                old_mail_tokens: list[EmailToken] = EmailToken.query\
+                old_mail_tokens = db.session.query(EmailToken)\
                     .filter(EmailToken.user_id == target_user.uuid)\
                     .filter(EmailToken.action == EmailTokenAction.EMAIL_PASSWORD_RESET)\
                     .all()

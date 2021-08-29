@@ -56,7 +56,7 @@ class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin
 
         try:
             # Revoke all user tokens
-            target_tokens = jwt_module.RefreshToken.query\
+            target_tokens = db.session.query(jwt_module.RefreshToken)\
                                 .filter(jwt_module.RefreshToken.user == target_user.uuid)\
                                 .all()
             if not target_tokens:

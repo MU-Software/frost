@@ -48,7 +48,7 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
 
         if 'user_uuid' in req_body:
             # How this goddamn query works?!
-            query_result = jwt_module.RefreshToken.query\
+            query_result = db.session.query(jwt_module.RefreshToken)\
                                 .join(jwt_module.RefreshToken.usertable, aliased=True)\
                                 .filter_by(uuid=int(req_body['user_uuid'])).all()
             if not query_result:
@@ -63,9 +63,9 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
                 if 'do_delete' in req_body:
                     db.session.delete(target)
         else:
-            query_result = jwt_module.RefreshToken.query\
+            query_result = db.session.query(jwt_module.RefreshToken)\
                                 .filter(jwt_module.RefreshToken.jti == int(req_body['target_jti']))\
-                                .first()  # noqa
+                                .first()
             if not query_result:
                 return AccountResponseCase.refresh_token_invalid(
                     message='RefreshToken that has such JTI not found')

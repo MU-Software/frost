@@ -37,7 +37,7 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
             # Find target user
             target_user: user_module.User = None
             try:
-                target_user = user_module.User.query\
+                target_user = db.session.query(user_module.User)\
                     .filter(user_module.User.email == req_body['email']).first()
             except Exception:
                 return CommonResponseCase.db_error.create_response()
