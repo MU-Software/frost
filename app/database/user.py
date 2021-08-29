@@ -261,7 +261,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
                     .all()
             except Exception:
                 pass
-            if not old_mail_tokens:
+            if old_mail_tokens:
                 for old_mail_token in old_mail_tokens:
                     # Do not db.session.commit here (performance issue)
                     if old_mail_token.expired_at.replace(tzinfo=utils.UTC) < current_time:
