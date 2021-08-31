@@ -98,7 +98,8 @@ class ResourceResponseCase(api_class.ResponseCaseCollector):
     resource_not_found = api_class.Response(  # 404
         description='Requested information not found',
         code=404, success=False,
-        public_sub_code='resource.not_found')
+        public_sub_code='resource.not_found',
+        data={'resource_name': ['', ]})
     resource_conflict = api_class.Response(  # 409 (RESOURCE CONFLICT)
         description='Request conflicts with current state of the target resource',
         code=409, success=False,
