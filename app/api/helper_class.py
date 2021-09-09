@@ -425,12 +425,7 @@ class RequestHeader:
                     doc_data['security'] = list()
 
                 for auth in self.auth:
-                    if type(auth) == AuthType:
-                        doc_data['security'].append({auth.name + 'Auth': list(), })
-                    elif type(auth) == tuple:
-                        doc_data['security'].append(dict())
-                        for auth_way in auth:
-                            doc_data['security'][-1][auth_way.name + 'Auth'] = list()
+                    doc_data['security'].append({auth.name + 'Auth': list(), })
 
             if 'parameters' not in doc_data:
                 doc_data['parameters'] = []
