@@ -331,14 +331,14 @@ class RequestHeader:
         self.optional_fields: dict[str, dict[str, str]] = optional_fields
         self.auth: typing.Optional[dict[AuthType, bool]] = auth
 
-        # if self.auth:
-        #     if AuthType.Bearer in self.auth:
-        #         if self.auth[AuthType.Bearer]:
-        #             self.required_fields['Authorization'] = {'type': 'string', }
-        #             self.required_fields['X-CSRF-Token'] = {'type': 'string', }
-        #         else:
-        #             self.optional_fields['Authorization'] = {'type': 'string', }
-        #             self.optional_fields['X-CSRF-Token'] = {'type': 'string', }
+        if self.auth:
+            if AuthType.Bearer in self.auth:
+                if self.auth[AuthType.Bearer]:
+                    self.required_fields['Authorization'] = {'type': 'string', }
+                    self.required_fields['X-Csrf-Token'] = {'type': 'string', }
+                else:
+                    self.optional_fields['Authorization'] = {'type': 'string', }
+                    self.optional_fields['X-Csrf-Token'] = {'type': 'string', }
 
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)

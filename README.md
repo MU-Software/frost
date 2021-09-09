@@ -49,11 +49,8 @@ class DemoResponseCase(api_class.ResponseCaseCollector):
 class DemoRoute(flask.views.MethodView, api_class.MethodViewMixin):
     @api_class.RequestHeader(
         required_fields={},
-        # We need this to verify access token
-        optional_fields={'X-Csrf-Token': {'type': 'string', }, },
         # AuthType.Bearer: False means that access token authorization is not compulsory.
         # If you set this to True, then access token must be given.
-        # (Also, X-Csrf-Token must be on required_fields, not optional_fields)
         # Or, you can leave auth parameter as blank if you don't need any authorizations on this route.
         auth={api_class.AuthType.Bearer: False, })
     def get(self,
