@@ -323,22 +323,21 @@ def json_dict_filter(in_dict: dict, filter_empty_value: bool = True) -> dict:
 
 class RequestHeader:
     def __init__(self,
-                 required_fields: dict[str, dict[str, str]],
-                 optional_fields: dict[str, dict[str, str]] = dict(),
+                 required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
+                 optional_fields: typing.Optional[dict[str, dict[str, str]]] = None,
                  auth: typing.Optional[dict[AuthType, bool]] = None):
         self.req_header: dict = dict()
-        self.required_fields: dict[str, dict[str, str]] = required_fields
-        self.optional_fields: dict[str, dict[str, str]] = optional_fields
-        self.auth: typing.Optional[dict[AuthType, bool]] = auth
+        self.required_fields: dict[str, dict[str, str]] = required_fields or {}
+        self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
+        self.auth: dict[AuthType, bool] = auth or {}
 
-        if self.auth:
-            if AuthType.Bearer in self.auth:
-                if self.auth[AuthType.Bearer]:
-                    self.required_fields['Authorization'] = {'type': 'string', }
-                    self.required_fields['X-Csrf-Token'] = {'type': 'string', }
-                else:
-                    self.optional_fields['Authorization'] = {'type': 'string', }
-                    self.optional_fields['X-Csrf-Token'] = {'type': 'string', }
+        if AuthType.Bearer in self.auth:
+            if self.auth[AuthType.Bearer]:
+                self.required_fields['Authorization'] = {'type': 'string', }
+                self.required_fields['X-Csrf-Token'] = {'type': 'string', }
+            else:
+                self.optional_fields['Authorization'] = {'type': 'string', }
+                self.optional_fields['X-Csrf-Token'] = {'type': 'string', }
 
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)
@@ -432,6 +431,10 @@ class RequestHeader:
 
             parm_collector: list = list()
             for k, v in self.required_fields.items():
+                # Check if same named field data is already in parm_collector
+                if [z for z in parm_collector if type(z) is dict and z['name'] == k]:
+                    continue
+
                 field_data = {
                     'in': 'header',
                     'name': k,
@@ -446,6 +449,10 @@ class RequestHeader:
                 parm_collector.append(field_data)
 
             for k, v in self.optional_fields.items():
+                # Check if same named field data is already in parm_collector
+                if [z for z in parm_collector if type(z) is dict and z['name'] == k]:
+                    continue
+
                 field_data = {
                     'in': 'header',
                     'name': k,
@@ -495,10 +502,12 @@ class RequestHeader:
 
 
 class RequestQuery:
-    def __init__(self, required_fields: dict[str, dict[str, str]], optional_fields: dict[str, dict[str, str]] = dict()):
+    def __init__(self,
+                 required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
+                 optional_fields: typing.Optional[dict[str, dict[str, str]]] = None):
         self.req_query: dict = dict()
-        self.required_fields: dict[str, dict[str, str]] = required_fields
-        self.optional_fields: dict[str, dict[str, str]] = optional_fields
+        self.required_fields: dict[str, dict[str, str]] = required_fields or {}
+        self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)
@@ -577,10 +586,12 @@ class RequestQuery:
 
 
 class RequestBody:
-    def __init__(self, required_fields: dict[str, dict[str, str]], optional_fields: dict[str, dict[str, str]] = dict()):
+    def __init__(self,
+                 required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
+                 optional_fields: typing.Optional[dict[str, dict[str, str]]] = None):
         self.req_body: dict = dict()
-        self.required_fields: dict[str, dict[str, str]] = required_fields
-        self.optional_fields: dict[str, dict[str, str]] = optional_fields
+        self.required_fields: dict[str, dict[str, str]] = required_fields or {}
+        self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)
