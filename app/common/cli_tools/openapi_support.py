@@ -130,10 +130,16 @@ def create_openapi_doc():
 
         for resp_case_name, resp_case_obj in response_cases.items():
             response_cases_cache[resp_case_name] = resp_case_obj
-            spec.components.schema(
-                name=resp_case_name,
-                component=resp_case_obj.to_openapi_obj(),
-            )
+            try:
+                # Support apispec 5.0
+                # https://github.com/marshmallow-code/apispec/pull/696
+                spec.components.schema(
+                    component_id=resp_case_name,
+                    component=resp_case_obj.to_openapi_obj(), )
+            except Exception:
+                spec.components.schema(
+                    name=resp_case_name,
+                    component=resp_case_obj.to_openapi_obj(), )
 
     # Register all routes
     route_classes: dict = {cls.__name__: cls for cls in api_class.MethodViewMixin._subclasses}
@@ -144,7 +150,6 @@ def create_openapi_doc():
 
         if route_path_split[1] == restapi_version and route_path_split[2] not in ('debug', 'admin'):
             route_view_class = route_classes[rule.endpoint]
-            # for method in rule.methods:
             routes_cache[route_path] = (str(rule), route_view_class)
             spec.path(path=route_path, view=route_view_class)
 
