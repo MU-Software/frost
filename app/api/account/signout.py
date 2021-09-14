@@ -15,11 +15,8 @@ RedisKeyType = db_module.RedisKeyType
 
 
 class SignOutRoute(flask.views.MethodView, api_class.MethodViewMixin):
-    @api_class.RequestHeader(
-        required_fields={},
-        auth={api_class.AuthType.RefreshToken: False, })
-    @api_class.RequestBody(
-        required_fields={'signout': {'type': 'string', }, })
+    @api_class.RequestHeader(auth={api_class.AuthType.RefreshToken: False, })
+    @api_class.RequestBody(required_fields={'signout': {'type': 'string', }, })
     def post(self, req_body: dict, refresh_token: typing.Optional[jwt_module.RefreshToken] = None):
         '''
         description: Sign-Out and expire user token

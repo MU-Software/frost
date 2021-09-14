@@ -10,12 +10,11 @@ from app.api.account.response_case import AccountResponseCase
 
 
 class AccountDuplicateCheckRoute(flask.views.MethodView, api_class.MethodViewMixin):
-    @api_class.RequestBody(required_fields={},
-                           optional_fields={
-                               'email': {'type': 'string'},
-                               'id': {'type': 'string'},
-                               'nickname': {'type': 'string'},
-                            })
+    @api_class.RequestBody(
+        optional_fields={
+            'email': {'type': 'string'},
+            'id': {'type': 'string'},
+            'nickname': {'type': 'string'}, })
     def post(self, req_body: dict[str, typing.Any]):
         '''
         description: Check if Email/ID/Nickname is in use

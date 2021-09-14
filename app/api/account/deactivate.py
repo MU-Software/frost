@@ -17,10 +17,7 @@ RedisKeyType = db_module.RedisKeyType
 
 
 class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin):
-    @api_class.RequestHeader(
-        required_fields={},
-        auth={api_class.AuthType.RefreshToken: True, }
-    )
+    @api_class.RequestHeader(auth={api_class.AuthType.RefreshToken: True, })
     @api_class.RequestBody(
         required_fields={
             'email': {'type': 'string', },
