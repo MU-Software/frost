@@ -48,7 +48,6 @@ class DemoResponseCase(api_class.ResponseCaseCollector):
 
 class DemoRoute(flask.views.MethodView, api_class.MethodViewMixin):
     @api_class.RequestHeader(
-        required_fields={},
         # AuthType.Bearer: False means that access token authorization is not compulsory.
         # If you set this to True, then access token must be given.
         # Or, you can leave auth parameter as blank if you don't need any authorizations on this route.

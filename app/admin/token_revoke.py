@@ -33,7 +33,6 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
 
     @fadmin.expose('/', methods=('POST', ))
     @api_class.RequestBody(
-        required_fields={},
         optional_fields={
             'user_uuid': {'type': 'integer', },
             'target_jti': {'type': 'integer', },
