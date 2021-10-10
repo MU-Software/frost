@@ -431,7 +431,7 @@ def refresh_login_data(refresh_token_jwt: str,
     access_token = AccessToken.from_refresh_token(refresh_token)
     access_token_jwt = access_token.create_token(key+csrf_token, algorithm, True)
     response_data['access_token'] = {
-        'exp': refresh_token.exp,
+        'exp': access_token.exp,
         'token': access_token_jwt,
     }
 
