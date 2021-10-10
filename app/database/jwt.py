@@ -372,11 +372,6 @@ def refresh_login_data(refresh_token_jwt: str,
 
     refresh_token = RefreshToken.from_token(refresh_token_jwt, key)
 
-    # Check if client token is same.
-    # client_token must be None if user didn't give any client token while sign in
-    if refresh_token.client_token != client_token:
-        raise jwt.exceptions.InvalidTokenError('Client token mismatch')
-
     # Check device type/OS/browser using User-Agent.
     # We'll refresh token only if it's same with db records
     try:
@@ -425,6 +420,11 @@ def refresh_login_data(refresh_token_jwt: str,
         finally:
             # We need to send refresh token expiration date anyway
             response_data['refresh_token'] = {'exp': refresh_token.exp, }
+
+    # If client requests token change, then we need to commit this on db
+    elif refresh_token.client_token != client_token:
+        refresh_token.client_token = client_token
+        db.session.commit()
 
     # Now, re-issue Access token
     # Access token can always be re-issued
