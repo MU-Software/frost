@@ -66,7 +66,7 @@ class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin
                 redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
                 db.session.delete(token)
 
-            target_user.deactivated_at = datetime.datetime.utcnow().replace(tz=utils.UTC)
+            target_user.deactivated_at = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
             target_user.why_deactivated = 'ACCOUNT_LOCKED::USER_SELF_LOCKED'
             target_user.deactivated_by_orm = target_user
             db.session.commit()
