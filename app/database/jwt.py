@@ -163,7 +163,8 @@ class AccessToken(TokenBase):
         new_token.user = refresh_token.user
         # Access token's JTI must be same with Refresh token's.
         new_token.jti = refresh_token.jti
-        new_token.role = refresh_token.role
+        # role field must be refreshed from TB_USER
+        new_token.role = refresh_token.usertable.role
 
         return new_token
 
