@@ -291,6 +291,7 @@ def ignore_exception(IgnoreException=Exception, DefaultVal=None):
 
 
 safe_int = ignore_exception(Exception, 0)(int)
+safe_json_loads = ignore_exception(Exception, None)(json.loads)
 
 
 def json_default(value):
