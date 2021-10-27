@@ -44,6 +44,12 @@ class TokenBase:
     role: str = ''
     # data: dict
 
+    def is_admin(self):
+        json_result = utils.safe_json_loads(self.role)
+        if json_result and 'admin' in json_result:
+            return True
+        return False
+
     def create_token(self, key: str, algorithm: str = 'HS256') -> str:
         if not self.sub:
             raise jwt.exceptions.MissingRequiredClaimError('Subject not set in JWT class')
