@@ -6,7 +6,6 @@ import secrets
 import sqlalchemy.dialects.mysql as sqldlc_mysql
 import sqlalchemy.dialects.postgresql as sqldlc_psql
 import sqlalchemy.dialects.sqlite as sqldlc_sqlite
-import typing
 
 import app.common.utils as utils
 
