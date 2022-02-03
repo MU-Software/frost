@@ -195,16 +195,20 @@ def BackendException(code=500, data='',
     return err
 
 
-# ---------- Time Calculator ----------
-utc_desc   = lambda a, syntax='%Y/%m/%d %H:%M:%S': time.strftime(syntax, time.gmtime(a))  # noqa
-
-date_to_time: typing.Callable[[int,], int] = lambda x: x * 24 * 60 * 60  # noqa
-hour_to_time: typing.Callable[[int,], int] = lambda x: x      * 60 * 60  # noqa
-update_rate: typing.Callable[[int,], int] = date_to_time(2) - hour_to_time(1)  # noqa
-
 # ---------- Timezone ----------
 UTC = datetime.timezone.utc
 KST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+# ---------- Time Calculator ----------
+utc_desc   = lambda a, syntax='%Y/%m/%d %H:%M:%S': time.strftime(syntax, time.gmtime(a))  # noqa
+
+date_to_time: typing.Callable[[int, ], int] = lambda x: x * 24 * 60 * 60  # noqa
+hour_to_time: typing.Callable[[int, ], int] = lambda x: x      * 60 * 60  # noqa
+update_rate: typing.Callable[[int, ], int] = date_to_time(2) - hour_to_time(1)  # noqa
+
+as_utctime: typing.Callable[[datetime.datetime, ], datetime.datetime] = lambda x: x.replace(tzinfo=UTC)  # noqa
+as_timestamp: typing.Callable[[datetime.datetime, ], int] = lambda x: as_utctime(x).timestamp()  # noqa
 
 
 # ---------- Cookie Handler ----------
