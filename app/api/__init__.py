@@ -38,13 +38,13 @@ def init_app(app: flask.Flask):
 
     resource_routes: dict = {}
 
+    import app.api.common.ping as route_ping  # noqa
+    resource_routes.update(route_ping.resource_route)
     # Disable account related routes only when ACCOUNT_ROUTE_ENABLE is False
     if app.config.get('ACCOUNT_ROUTE_ENABLE', True):
         import app.api.account as route_account  # noqa
         resource_routes.update(route_account.resource_route)
 
-    import app.api.ping as route_ping  # noqa
-    resource_routes.update(route_ping.resource_route)
     import app.api.project_route as project_route  # noqa
     resource_routes.update(project_route.project_resource_routes)
 
