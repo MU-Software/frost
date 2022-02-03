@@ -1,3 +1,4 @@
+import json
 import os
 import secrets
 
@@ -25,6 +26,15 @@ class Config:
     # `ACCOUNT_ROUTE_ENABLE` will be disabled only if $env:ACCOUNT_ROUTE_ENABLE is 'false'
     ACCOUNT_ROUTE_ENABLE = os.environ.get('ACCOUNT_ROUTE_ENABLE', True) != 'false'
     DROP_ALL_REFRESH_TOKEN_ON_LOAD = os.environ.get('DROP_ALL_REFRESH_TOKEN_ON_LOAD', True) != 'false'
+
+    FILE_MANAGEMENT_ROUTE_ENABLE = os.environ.get('FILE_MANAGEMENT_ROUTE_ENABLE', False) == 'true'
+    FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK = os.environ.get('FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK', False) == 'true'
+    try:
+        FILE_UPLOAD_ALLOW_EXTENSION = json.loads(os.environ.get('FILE_UPLOAD_ALLOW_EXTENSION', '[]'))
+    except Exception:
+        print('Failed to load FILE_UPLOAD_ALLOW_EXTENSION.\n'
+              'Please check the value is a valid JSON array.')
+        FILE_UPLOAD_ALLOW_EXTENSION = []
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False

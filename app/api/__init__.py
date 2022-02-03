@@ -40,6 +40,10 @@ def init_app(app: flask.Flask):
 
     import app.api.common.ping as route_ping  # noqa
     resource_routes.update(route_ping.resource_route)
+    # Enable file-upload related routes when FILE_MANAGEMENT_ROUTE_ENABLE is True
+    if app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False):
+        import app.api.common.file_manage as route_filemgr
+        resource_routes.update(route_filemgr.resource_route)
     # Disable account related routes only when ACCOUNT_ROUTE_ENABLE is False
     if app.config.get('ACCOUNT_ROUTE_ENABLE', True):
         import app.api.account as route_account  # noqa

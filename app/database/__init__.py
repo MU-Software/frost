@@ -150,6 +150,7 @@ def init_app(app: flask.Flask):
     import app.database.user as user  # noqa
     import app.database.board as board  # noqa
     import app.database.jwt as jwt_module  # noqa
+    import app.database.uploaded_file as filedb_module  # noqa
     import app.database.project_table as project_table  # noqa
 
     # Create all tables only IF NOT EXISTS
