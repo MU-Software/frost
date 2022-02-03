@@ -9,6 +9,8 @@ redis
 lxml
 pyyaml
 user-agents
+python-magic
+
 firebase-admin
 boto3
 apispec
