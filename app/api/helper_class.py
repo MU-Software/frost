@@ -385,9 +385,8 @@ class RequestHeader:
                             # AccessToken Expired error must be raised when bearer auth is softly required,
                             # so that client can re-request after refreshing AccessToken
                             return account_resp_case.AccountResponseCase.access_token_expired.create_response()
-                        except Exception as err:
+                        except Exception:
                             if required:
-                                print(err)
                                 return account_resp_case.AccountResponseCase.access_token_invalid.create_response()
                         finally:
                             if not required and 'access_token' not in kwargs:
