@@ -1,44 +1,74 @@
+import datetime
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import messaging
 import flask
+import json
+import typing
 
 
-def firebase_send_notify(title: str, body: str, data: dict = None,
-                         topic: str = 'all', target_token: str = None):
-    cred = credentials.Certificate(flask.current_app.config.get('FIREBASE_CERTIFICATE'))
-    default_app = firebase_admin.initialize_app(cred)  # noqa
+def firebase_send_notify(title: str = None, body: str = None, data: dict = None,
+                         topic: str = None, target_tokens: typing.Union[str, list[str], None] = None,
+                         condition: str = None):
+    try:
+        cred = credentials.Certificate(flask.current_app.config.get('FIREBASE_CERTIFICATE'))
+        default_app = firebase_admin.initialize_app(cred)  # noqa
+    except ValueError:
+        # default_app is already initialized.
+        pass
 
-    # This registration token comes from the client FCM SDKs.
-    # registration_token = flask.current_app.config.get('FIREBASE_REGISTERATION_TOKEN')
+    if not any(all(title, body), data):
+        raise ValueError('At least one of (title, body)|data must be set')
 
-    data = data if data else {}
+    data = data if data else {'click_action': 'FLUTTER_NOTIFICATION_CLICK', }
+    # All keys and values in data must be a string.
+    # We'll try to type casting all values to json compatible string.
+    tmp_dict = dict()
+    for k, v in data.items():
+        try:
+            if isinstance(v, datetime.datetime):
+                v = v.replace(tzinfo=datetime.timezone.utc)
+                v_timestamp = int(v.timestamp())
 
-    # See documentation on defining a message payload.
-    message = messaging.Message(
-        # android=messaging.AndroidConfig(
-        #     ttl=datetime.timedelta(seconds=3600),
-        #     priority='normal',
-        # ),
-        android=None,
-        apns=None,
-        webpush=None,
+                tmp_dict[str(k)] = str(v)
+                tmp_dict[str(k) + '_timestamp'] = str(v_timestamp)
+            else:
+                tmp_dict[str(k)] = json.dumps(v)
+        except Exception:
+            try:
+                tmp_dict[str(k)] = str(v)
+            except Exception:
+                tmp_dict[str(k)] = ''
+    data = tmp_dict
 
-        data={
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-        },
-        notification=messaging.Notification(title=title, body=body),
-        # notification=None,
+    notification = None
+    if any((title, body)):
+        title = str(title) or ''
+        body = str(body) or ''
+        notification = messaging.Notification(title=title, body=body)
 
-        fcm_options=None,
+    if not isinstance(target_tokens, list):
+        target_tokens = [target_tokens, ]
 
-        topic=topic,
-        token=target_token,
-        # condition=None,
-    )
+    message_payload = list()
+    for target_token in target_tokens:
+        message_payload.append(
+            messaging.Message(
+                data=data,
+                notification=notification,
+                token=target_token,
+                topic=topic,
+                # specify receiver by using multiple topic subscription status.
+                # 'condition' shapes like this
+                # >>> condition = "'stock-GOOG' in topics || 'industry-tech' in topics"
+                condition=condition,
 
-    # Send a message to the device corresponding to the provided
-    # registration token.
-    response = messaging.send(message)
-    # Response is a message ID string.
-    print('Successfully sent message:', response)
+                # android=None,  # use messaging.AndroidConfig
+                # apns=None,  # use messaging.apns
+                # webpush=None,  # use messaging.WebpushConfig
+                # fcm_options=None,  # use messaging.FCMOptions
+            )
+        )
+
+    response = messaging.send_all(message_payload)
+    print('Successfully sent message:', response)  # Response is a message ID string.
