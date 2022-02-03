@@ -16,7 +16,11 @@ def json_to_envfiles(output_file: pathlib.Path):
         output_name: str = output_file.stem
 
         input_env_file_content: str = output_file.read_text()
-        input_env: dict[str, typing.Union[str, dict[str, str]]] = json.loads(input_env_file_content)
+        input_env_orig: dict[str, typing.Union[str, dict[str, str]]] = json.loads(input_env_file_content)
+        # We'll change all values to json-competable strings,
+        # as bash variables don't have types and those are just string type,
+        # and python's os.environ returns all values as string.
+        input_env = {k: v if isinstance(v, dict) else json.dumps(v) for k, v in input_env_orig.items()}
 
         template_launch_json_file: typing.Optional[pathlib.Path] = pathlib.Path('template/launch.json')
         if not template_launch_json_file.exists():
@@ -31,20 +35,14 @@ def json_to_envfiles(output_file: pathlib.Path):
         output_ps_file: pathlib.Path = pathlib.Path(output_name+'.ps1')
         output_launch_json_file: pathlib.Path = pathlib.Path('../.vscode/launch.json')
 
-        if output_docker_file.exists():
-            output_docker_file.unlink()
-
-        if output_bash_file.exists():
-            output_bash_file.unlink()
-
-        if output_ps_file.exists():
-            output_ps_file.unlink()
+        output_docker_file.unlink(missing_ok=True)
+        output_bash_file.unlink(missing_ok=True)
+        output_ps_file.unlink(missing_ok=True)
 
         if template_launch_json_file is not None:
             if not output_launch_json_file.parent.exists():
                 output_launch_json_file.parent.mkdir()
-            if output_launch_json_file.exists():
-                output_launch_json_file.unlink()
+            output_launch_json_file.unlink(missing_ok=True)
 
         with output_docker_file.open('w') as docker_fp,\
              output_bash_file.open('w') as bash_fp,\
@@ -105,18 +103,16 @@ def json_to_envfiles(output_file: pathlib.Path):
 if __name__ == '__main__':
     import os
     import sys
-    if len(sys.argv) > 1:
-        target_file = pathlib.Path(sys.argv[1]).absolute()
-        if not target_file.exists():
-            print(target_file.as_posix())
-            # Ignore just now. We'll retry this after changing paths
-            target_file = None
-    else:
+    if len(sys.argv) <= 1:
         print('Need to specify target environment variables collection file(.json)')
         os._exit(1)
 
-    os.chdir(pathlib.Path(__file__).parents[0])
+    target_file = pathlib.Path(sys.argv[1]).absolute()
+    if not target_file.exists():
+        # Ignore just now. We'll retry this after changing paths
+        target_file = None
 
+    os.chdir(pathlib.Path(__file__).parents[0])
     if target_file is None:
         target_file = pathlib.Path(sys.argv[1]).absolute()
         if not target_file.exists():

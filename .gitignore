@@ -115,6 +115,7 @@ env_collection/*
 # But except environment file creator
 !env_collection/env_creator.py
 !env_collection/dev.json
+!env_collection/minimal.json
 !env_collection/template
 
 # Spyder project settings

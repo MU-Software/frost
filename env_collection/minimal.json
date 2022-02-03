@@ -1,0 +1,21 @@
+{
+    "PROJECT_NAME" : "FROST",
+    "BACKEND_NAME" : "FROST",
+    "SERVER_NAME" : "example.com",
+    "PORT" : 8808,
+    "SERVER_IS_ON_PROXY" : false,
+    "HTTPS_ENABLE": false,
+    "FLASK_APP" : "app",
+    "FLASK_ENV" : "development",
+    "RESTAPI_VERSION" : "dev",
+    "REFERER_CHECK": false,
+    "SECRET_KEY" : "SOME_UNKNOWN_SECRET_KEY",
+
+    "DB_URL" : "sqlite:///minimal.sqlite",
+    "REDIS_HOST" : "127.0.0.1",
+    "REDIS_PORT" : 6379,
+    "REDIS_DB" : 0,
+    "REDIS_PASSWORD" : "redis_password0!",
+
+    "MAIL_ENABLE": false
+}
