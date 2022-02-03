@@ -118,17 +118,19 @@ Key                    | Required | Explain
 `BACKEND_NAME`         |   | Set `Server` field on response header. `Backend Core` is default
 `SERVER_NAME`          | O | Same as Flask's `SERVER_NAME`. Set domain name here.
 `HTTPS_ENABLE`         |   | If `HTTPS_ENABLE` env var is `false`, then `secure` option on cookie will be disabled. Default value is `true` and will be disabled only when the value is set to `false`
-`PORT`                 |   | `PORT` environment variable works with Gunicorn, see https://docs.gunicorn.org/en/stable/settings.html#bind
+`HOST`                 |   | Host address while running `flask run`.
+`PORT`                 |   | Port number for the API server. `PORT` environment variable also works with Gunicorn, see https://docs.gunicorn.org/en/stable/settings.html#bind
 `SECRET_KEY`           | O | Secret key used in JWT, some builtin functions in flask, etc. Random string will be applied if not set. This is same as Flask's `SECRET_KEY`
 `DEVELOPMENT_KEY`      |   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then only request that contains same string as `X-Development-Key` in header will be allowed.
 `LOCAL_DEV_CLIENT_PORT`|   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then CORS header for `http://localhost:{LOCAL_DEV_CLIENT_PORT}` will be set. You must set this as integer string.
 `FLASK_APP`            | O | Same as Flask's `FLASK_APP`. You must set this to `app`.
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
-`FLASK_RUN_HOST`       |   | Host address while running `flask run`.
-`FLASK_RUN_PORT`       |   | Port number while running `flask run`.
 `RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
 `ACCOUNT_ROUTE_ENABLE` |   | Enable account related routes, such as sign-up, sign-in, email-action, etc. Default value is `true` and will be disabled only when the value is set to `false`
-`DROP_ALL_REFRESH_TOKEN_ON_LOAD` |   | Drop all refresh tokens on load when `RESTAPI_VERSION` is `dev`, such as start-up or auto reload by werkzeug debugger. Default value is `true` and will be disabled only when the value is set to `false`
+`FILE_MANAGEMENT_ROUTE_ENABLE`        |   | Enable file management routes, such as file upload/delete, etc.
+`FILE_UPLOAD_ALLOW_EXTENSION`          |   | Set allowed extension list while uploading file. Default value contains allowed image format extensions on web. 
+`FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK` |   | Check uploaded image is web-friendly. 
+`DROP_ALL_REFRESH_TOKEN_ON_LOAD`       |   | Drop all refresh tokens on load when `RESTAPI_VERSION` is `dev`, such as start-up or auto reload by werkzeug debugger. Default value is `true` and will be disabled only when the value is set to `false`
 `DB_URL`               | O | Database URL to connect, `sqlite:///:memory:` if not set on `RESTAPI_VERSION = dev`.
 `REDIS_HOST`           | O | Hostname of Redis database.
 `REDIS_PORT`           | O | Port of Redis database. You must set this as integer string.
