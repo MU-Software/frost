@@ -157,8 +157,6 @@ def create_openapi_doc():
     if not doc_file.parent.exists():
         doc_file.parent.mkdir()
 
-    if doc_file.exists():
-        doc_file.unlink()
-
+    doc_file.unlink(missing_ok=True)
     with doc_file.open('w') as fp:
         fp.write(spec.to_yaml())
