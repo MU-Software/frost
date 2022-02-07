@@ -386,7 +386,7 @@ def refresh_login_data(refresh_token_jwt: str,
         req_ua: ua_parser.UserAgent = ua.parse(user_agent)
 
         check_result: bool = all((
-            any((
+            all((
                 db_ua.is_mobile == req_ua.is_mobile,
                 db_ua.is_tablet == req_ua.is_tablet,
                 db_ua.is_pc == req_ua.is_pc,
