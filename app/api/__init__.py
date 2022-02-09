@@ -67,3 +67,6 @@ def init_app(app: flask.Flask):
             view_name = route_model.__name__
             view_func = route_model.as_view(view_name)
             app.add_url_rule('/api/' + restapi_version + path, view_func=view_func, defaults=defaults)
+
+    # init_app must return app
+    return app

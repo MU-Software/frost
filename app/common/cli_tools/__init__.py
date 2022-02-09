@@ -9,3 +9,6 @@ def init_app(app: flask.Flask):
     app.cli.add_command(openapi_support.create_openapi_doc)
     app.cli.add_command(db_operation.drop_db)
     app.cli.add_command(db_erd_draw.draw_db_erd)
+
+    # init_app must return app
+    return app

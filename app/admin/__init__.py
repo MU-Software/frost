@@ -74,3 +74,6 @@ def init_app(app: flask.Flask, add_model_to_view: bool = True):
 
     import app.admin.token_revoke as token_revoke
     admin.add_view(token_revoke.Admin_TokenRevoke_View(name='Token Revoke', endpoint='token-revoke'))
+
+    # init_app must return app
+    return app

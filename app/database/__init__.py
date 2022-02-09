@@ -167,4 +167,5 @@ def init_app(app: flask.Flask):
         # Also, flush all keys in redis DB
         redis_db.flushdb()  # no asynchronous
 
-    return db
+    # init_app must return app
+    return app

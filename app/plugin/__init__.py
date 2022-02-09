@@ -6,4 +6,6 @@ import flask
 
 
 def init_app(app: flask.Flask):
-    pass
+    # Do additional plugin set-ups here
+    # init_app must return app
+    return app
