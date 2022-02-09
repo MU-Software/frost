@@ -309,18 +309,19 @@ pmmod_desc = lambda a: ''.join(y for x,y in zip([4&a,2&a,1&a], list('RWX')) if x
 
 
 # ---------- Utility Classes ----------
-class Singleton:
-    __instance = None
+class Singleton(type):  # Singleton metaclass
+    '''
+    from: https://stackoverflow.com/a/6798042/5702135
+    usage:
+        class Logger(metaclass=Singleton):
+            pass
+    '''
+    _instances = {}
 
-    @classmethod
-    def __getInstance(cls):
-        return cls.__instance
-
-    @classmethod
-    def instance(cls, *args, **kargs):
-        cls.__instance = cls(*args, **kargs)
-        cls.instance = cls.__getInstance
-        return cls.__instance
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 class Struct:
