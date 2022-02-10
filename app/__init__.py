@@ -25,13 +25,13 @@ def create_app():
         runable_app = api.init_app(runable_app)
 
         import app.admin as admin
-        runable_app = admin.init_app(app)
+        runable_app = admin.init_app(runable_app)
 
         import app.common.cli_tools as cli_tools
-        runable_app = cli_tools.init_app(app)
+        runable_app = cli_tools.init_app(runable_app)
 
         import app.plugin as plugin
-        runable_app = plugin.init_app(app)
+        runable_app = plugin.init_app(runable_app)
 
     return runable_app
 
