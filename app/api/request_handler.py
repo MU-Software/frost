@@ -54,6 +54,10 @@ def register_request_handler(app: flask.Flask):
     def handle_405(exception: werkzeug.exceptions.HTTPException):
         return CommonResponseCase.http_mtd_forbidden.create_response()
 
+    @app.errorhandler(429)
+    def handle_429(exception: werkzeug.exceptions.HTTPException):
+        return CommonResponseCase.rate_limit.create_response()
+
     @app.errorhandler(Exception)
     def handle_exception(exception: werkzeug.exceptions.HTTPException):
         # response = exception.get_response()  # TODO: Log this

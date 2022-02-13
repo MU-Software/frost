@@ -88,6 +88,11 @@ class CommonResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='http.upgrade',
         header=(('Connection', 'upgrade'), ), )
 
+    rate_limit = api_class.Response(
+        description='Too many requests got on specific time.',
+        code=429, success=False,
+        public_sub_code='request.rate_limit')
+
 
 class ResourceResponseCase(api_class.ResponseCaseCollector):
     # Resource responses
