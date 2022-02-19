@@ -39,6 +39,7 @@ class User(db_module.DefaultModelMixin, db.Model):
     deactivated_by_id = db.Column(db_module.PrimaryKeyType, db.ForeignKey('TB_USER.uuid'), nullable=True)
     deactivated_by = db.relationship('User', primaryjoin='User.deactivated_by_id == User.uuid')
 
+    private = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.String, nullable=True)
     profile_image = db.Column(db.String, nullable=True)  # This will point to user profile image url
 
