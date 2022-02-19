@@ -4,6 +4,7 @@ import inspect
 import jwt
 import jwt.exceptions
 import redis
+import secrets
 import user_agents as ua
 import user_agents.parsers as ua_parser
 import typing
@@ -23,7 +24,7 @@ access_token_valid_duration: datetime.timedelta = datetime.timedelta(hours=1)
 # Admin token will expire after 12 hours
 admin_token_valid_duration: datetime.timedelta = datetime.timedelta(hours=12)
 
-allowed_claim_in_jwt: list[str] = ['api_ver', 'iss', 'exp', 'user', 'sub', 'jti', 'role']
+allowed_claim_in_jwt: list[str] = ['api_ver', 'iss', 'exp', 'user', 'sub', 'jti', 'role', 'otp']
 
 
 class TokenBase:
@@ -42,6 +43,7 @@ class TokenBase:
     # Private Claim
     user: int = -1  # Audience, User, Token holder
     role: str = ''
+    otp: str = ''
     # data: dict
 
     def is_admin(self):
@@ -193,6 +195,7 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
                      nullable=False)
     # We need to change all refresh tokens' role when user's role is changed
     role = db.Column(db.String, nullable=True)
+    otp = db.Column(db.String, nullable=False)
     ip_addr = db.Column(db.String, nullable=False)
 
     # Backref
@@ -214,6 +217,7 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
         new_token.role = userdata.role
         new_token.exp = datetime.datetime.utcnow().replace(microsecond=0)  # Drop microseconds
         new_token.exp += refresh_token_valid_duration
+        new_token.otp = str(int(secrets.token_hex(8), 16)).zfill(24)
         return new_token
 
     @classmethod
@@ -231,6 +235,9 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
         target_token = RefreshToken.query.filter(RefreshToken.jti == token_data.get('jti', -1))\
                                          .filter(RefreshToken.exp > current_time)\
                                          .first()
+        if not token_data.get('otp', ''):
+            raise jwt.exceptions.InvalidTokenError('OTP field is empty')
+
         if not target_token:
             raise jwt.exceptions.InvalidTokenError('RefreshToken not found on DB')
 
@@ -257,6 +264,9 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
         if self.jti and self.jti <= -1:
             self.jti = None
             db.session.add(self)
+
+        if not self.otp:
+            self.otp = str(int(secrets.token_hex(8), 16)).zfill(24)
 
         try:
             db.session.commit()
@@ -308,6 +318,7 @@ class AdminToken(TokenBase):
         # Admin token's JTI must be same with Refresh token's.
         new_token.jti = refresh_token.jti
         new_token.role = refresh_token.role
+        new_token.otp = refresh_token.otp
 
         return new_token
 
