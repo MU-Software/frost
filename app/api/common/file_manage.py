@@ -87,6 +87,12 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - server_error
         '''
         try:
+            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+            if not file_upload_enabled:
+                return CommonResponseCase.http_forbidden.create_response(
+                    message='File upload is not enabled',
+                    data={'reason': 'File upload is not enabled'}, )
+
             if not filename:
                 return CommonResponseCase.http_forbidden.create_response()
 
@@ -142,6 +148,12 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - body_bad_semantics
         '''
         try:
+            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+            if not file_upload_enabled:
+                return CommonResponseCase.http_forbidden.create_response(
+                    message='File upload is not enabled',
+                    data={'reason': 'File upload is not enabled'}, )
+
             if filename:
                 return CommonResponseCase.http_forbidden.create_response()
 
@@ -235,6 +247,12 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - http_not_found
         '''
         try:
+            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+            if not file_upload_enabled:
+                return CommonResponseCase.http_forbidden.create_response(
+                    message='File upload is not enabled',
+                    data={'reason': 'File upload is not enabled'}, )
+
             if not filename:
                 return CommonResponseCase.http_not_found.create_response()
 
