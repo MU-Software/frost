@@ -18,8 +18,8 @@ RedisKeyType = db_module.RedisKeyType
 class Admin_TokenRevoke_View(fadmin.BaseView):
     @fadmin.expose('/', methods=('GET', ))
     def index(self):
-        user_result = user.User.query.all()
-        token_result = jwt_module.RefreshToken.query.all()
+        user_result = db.session.query(user.User).all()
+        token_result = db.session.query(jwt_module.RefreshToken).all()
         revoked_dict = dict()
         redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key('*')
         for k in redis_db.scan_iter(match=redis_key):

@@ -126,7 +126,7 @@ class User(db_module.DefaultModelMixin, db.Model):
         if user_ident.startswith('@'):
             user_ident = user_ident[1:]
 
-        self = User.query.filter(login_type == user_ident).first()
+        self = db.session.query(User).filter(login_type == user_ident).first()
         if not self:
             return False, 'ACCOUNT_NOT_FOUND'
 
@@ -233,7 +233,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
 
         except jwt.exceptions.ExpiredSignatureError as err:
             # We need to delete this token from DB as this is not a valid token anymore.
-            db.session.delete(EmailToken.query.filter(EmailToken.token == email_token).first())
+            db.session.delete(db.session.query(EmailToken).filter(EmailToken.token == email_token).first())
             db.session.commit()
             raise err
         except Exception as err:

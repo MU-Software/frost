@@ -124,7 +124,7 @@ class AccessToken(TokenBase):
     _refresh_token: 'RefreshToken' = None
 
     def create_token(self, key: str, algorithm: str = 'HS256', exp_reset: bool = True) -> str:
-        if not RefreshToken.query.filter(RefreshToken.jti == self.jti).first():
+        if not db.session.query(RefreshToken).filter(RefreshToken.jti == self.jti).first():
             raise Exception('Access Token could not be issued')
 
         new_token = super().create_token(key, algorithm=algorithm)
@@ -230,14 +230,14 @@ class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
             raise jwt.exceptions.InvalidTokenError('Token api version mismatch')
         if token_data.get('sub', '') != cls.sub:
             raise jwt.exceptions.InvalidTokenError('Token sub mismatch')
-
-        # Get token using JTI, but only
-        target_token = RefreshToken.query.filter(RefreshToken.jti == token_data.get('jti', -1))\
-                                         .filter(RefreshToken.exp > current_time)\
-                                         .first()
         if not token_data.get('otp', ''):
             raise jwt.exceptions.InvalidTokenError('OTP field is empty')
 
+        # Get token data from DB using JTI
+        target_token = db.session.query(RefreshToken)\
+            .filter(RefreshToken.jti == token_data.get('jti', -1))\
+            .filter(RefreshToken.exp > current_time)\
+            .first()
         if not target_token:
             raise jwt.exceptions.InvalidTokenError('RefreshToken not found on DB')
 
