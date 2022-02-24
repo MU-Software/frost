@@ -11,7 +11,7 @@
     "HTTPS_ENABLE": true,
     "__line_break_1" : true,
 
-    "FLASK_APP" : "app",
+    "FLASK_APP" : "app:create_app",
     "FLASK_ENV" : "development",
     "__comment_3" : "FLASK_RUN_PORT will only works on `flask run`. This is intended",
     "RESTAPI_VERSION" : "dev",
