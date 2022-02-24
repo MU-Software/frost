@@ -119,10 +119,8 @@ def raise_(e) -> None:
 
 
 def get_traceback_msg(err):
-    return ''.join(traceback.format_exception(
-                   etype=type(err),
-                   value=err,
-                   tb=err.__traceback__))
+    # FUTURE: We can pass the exception object only on Python 3.10
+    return ''.join(traceback.format_exception(value=err, tb=err.__traceback__))
 
 
 # ---------- Elegant Pairing ----------
