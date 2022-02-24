@@ -10,6 +10,7 @@ lxml
 pyyaml
 user-agents
 python-magic
+pillow
 
 firebase-admin
 boto3
