@@ -16,11 +16,7 @@ def json_to_envfiles(output_file: pathlib.Path):
         output_name: str = output_file.stem
 
         input_env_file_content: str = output_file.read_text()
-        input_env_orig: dict[str, typing.Union[str, dict[str, str]]] = json.loads(input_env_file_content)
-        # We'll change all values to json-competable strings,
-        # as bash variables don't have types and those are just string type,
-        # and python's os.environ returns all values as string.
-        input_env = {k: v if isinstance(v, dict) else json.dumps(v) for k, v in input_env_orig.items()}
+        input_env_data: dict[str, typing.Union[str, dict[str, str]]] = json.loads(input_env_file_content)
 
         template_launch_json_file: typing.Optional[pathlib.Path] = pathlib.Path('template/launch.json')
         if not template_launch_json_file.exists():
@@ -52,7 +48,7 @@ def json_to_envfiles(output_file: pathlib.Path):
             bash_fp.write('#!/usr/bin/env bash\n')
             ps_fp.write('#!/usr/bin/env pwsh\n')
 
-            for env_name, env_value in input_env.items():
+            for env_name, env_value in input_env_data.items():
                 if env_name.startswith('__comment'):
                     comment_line = f'# {env_value}\n'
                     docker_fp.write(comment_line)
@@ -69,14 +65,22 @@ def json_to_envfiles(output_file: pathlib.Path):
                 bash_line = f'export {env_name}='
                 ps_line = f'$env:{env_name}='
 
-                if type(env_value) == dict:
+                # We'll change all values to json-competable strings,
+                # as bash variables don't have types and those are just string type,
+                # and python's os.environ returns all values as string.
+                if isinstance(env_value, dict):
                     bash_line += f'"{env_value["bash"]}"\n'
                     ps_line += f'"{env_value["powershell"]}"\n'
-                    docker_line += f'"{env_value["vscode_launch"].format(**input_env)}"\n'
+                    docker_line += f'"{env_value["vscode_launch"].format(**input_env_data)}"\n'
                 else:
-                    bash_line += f'"{env_value}"\n'
-                    ps_line += f'"{env_value}"\n'
-                    docker_line += f'"{env_value}"\n'
+                    value_str = env_value
+                    if not isinstance(value_str, str):
+                        value_str = json.dumps(value_str)
+                    value_str = json.dumps(value_str) + '\n'
+
+                    bash_line += value_str
+                    ps_line += value_str
+                    docker_line += value_str
 
                 docker_fp.write(docker_line)
                 bash_fp.write(bash_line)
@@ -85,13 +89,13 @@ def json_to_envfiles(output_file: pathlib.Path):
         if template_launch_json_file is not None:
             with output_launch_json_file.open('w') as launch_json_fp:
                 launch_json_env = dict()
-                for k, v in input_env.items():
+                for k, v in input_env_data.items():
                     if k.startswith('__comment') or k.startswith('__line_break'):
                         continue
-                    elif type(v) == str:
-                        launch_json_env[k] = v
+                    elif isinstance(v, dict):
+                        launch_json_env[k] = v['vscode_launch'].format(**input_env_data)
                     else:
-                        launch_json_env[k] = v['vscode_launch'].format(**input_env)
+                        launch_json_env[k] = v
 
                 template_launch_json_file_content['configurations'][0]['env'] = launch_json_env
                 launch_json_fp.write(json.dumps(template_launch_json_file_content, indent=4))
