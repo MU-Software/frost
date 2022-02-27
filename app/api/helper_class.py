@@ -5,14 +5,15 @@ import enum
 import flask
 import functools
 import inspect
+import json
 import jwt.exceptions
 import typing
 import unicodedata
 import werkzeug.datastructures as wz_dt
 import yaml
 
-
-openapi_type_def: dict[type, str] = {
+BASE_TYPE = typing.Type[typing.Union[str, bool, int, float, list, dict]]
+openapi_type_def: dict[BASE_TYPE, str] = {
     str: 'string',
     bool: 'boolean',
     int: 'integer',
@@ -22,6 +23,14 @@ openapi_type_def: dict[type, str] = {
 
     # Below will be automatically converted by jsonify
     datetime.datetime: 'string'
+}
+openapi_type_def_inverse: dict[str, BASE_TYPE] = {
+    'string': str,
+    'boolean': bool,
+    'integer': int,
+    'number': float,
+    'array': list,
+    'object': dict,
 }
 http_all_method = [
     'get', 'head', 'post', 'put',
@@ -321,6 +330,43 @@ def json_dict_filter(in_dict: dict, filter_empty_value: bool = True) -> dict:
     return result_dict
 
 
+def dict_type_check(type_def: dict[str, dict[str, str]],
+                    data: dict[str, typing.Any]) -> typing.Optional[tuple[str, str, str]]:
+    type_def_rtypes = {k: openapi_type_def_inverse[v['type']] for k, v in type_def.items()}
+    data_for_iter = copy.deepcopy(data)
+
+    for data_k, data_v in data_for_iter.items():
+        expected_type = type_def_rtypes.get(data_k, None)
+
+        if not expected_type:
+            return (data_k, 'UNKNOWN', 'UNKNOWN')
+
+        if expected_type is str:
+            if not isinstance(data_v, str):
+                data[data_k] = str(data_v)
+
+        elif not isinstance(data_v, expected_type):
+            if isinstance(data_v, str):
+                # If field's type is str, then at least we can try conversion.
+                try:
+                    data_v_parsed = json.loads(data_v)
+                    if expected_type in (int, float) and isinstance(data_v_parsed, (int, float)):
+                        data[data_k] = expected_type(data_v_parsed)
+                        continue
+                    elif isinstance(data_v_parsed, expected_type):
+                        data[data_k] = expected_type(data_v_parsed)
+                        continue
+                except Exception:
+                    pass
+
+            # Field name / Expected type / Type we got
+            expected_type_openapi_str = openapi_type_def[expected_type]
+            type_we_got = openapi_type_def.get(type(data_v), 'UNKNOWN')
+            return (data_k, expected_type_openapi_str, type_we_got)
+
+    return None
+
+
 class RequestHeader:
     def __init__(self,
                  required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
@@ -330,6 +376,9 @@ class RequestHeader:
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
         self.auth: dict[AuthType, bool] = auth or {}
+
+        self.fields: dict[str, dict[str, str]] = copy.deepcopy(self.required_fields)
+        self.fields.update(self.optional_fields)
 
         if AuthType.Bearer in self.auth:
             if self.auth[AuthType.Bearer]:
@@ -508,6 +557,9 @@ class RequestQuery:
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
+        self.fields: dict[str, dict[str, str]] = copy.deepcopy(self.required_fields)
+        self.fields.update(self.optional_fields)
+
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -592,26 +644,42 @@ class RequestBody:
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
+        self.fields: dict[str, dict[str, str]] = copy.deepcopy(self.required_fields)
+        self.fields.update(self.optional_fields)
+
     def __call__(self, func: typing.Callable):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 # Filter for empty keys and values
-                self.req_body = json_dict_filter(flask.request.get_json(force=True), True)
+                self.req_body = None
+                try:
+                    self.req_body = json_dict_filter(flask.request.get_json(force=True), True)
+                except Exception:
+                    # Try to get body data from FormData
+                    self.req_body = json_dict_filter(flask.request.form.to_dict(flat=True), True)
+                if self.req_body is None:
+                    raise Exception('Getting body data from request failed')
 
                 # Check if all required fields are in
                 if (not all([z in self.req_body.keys() for z in self.required_fields])):
                     return CommonResponseCase.body_required_omitted.create_response(
-                        data={
-                            'lacks': [z for z in self.required_fields if z not in self.req_body]
-                        }
-                    )
+                        data={'lacks': [z for z in self.required_fields if z not in self.req_body], }, )
 
                 # Remove every field not in required and optional fields
                 self.req_body = {k: self.req_body[k] for k in self.req_body
                                  if k in list(self.required_fields.keys()) + list(self.optional_fields.keys())}
                 if self.required_fields and not self.req_body:
                     return CommonResponseCase.body_empty.create_response()
+
+                # Type check the values
+                req_type_check_result = dict_type_check(self.fields, self.req_body)
+                if req_type_check_result:
+                    field_name, expected_type, type_we_got = req_type_check_result
+                    error_msg = f'Expected type `{expected_type}`, but got `{type_we_got}`'
+                    return CommonResponseCase.body_bad_semantics.create_response(
+                        message=error_msg,
+                        data={'bad_semantics': [{'field': field_name, 'reason': error_msg, }, ], }, )
 
             except Exception:
                 return CommonResponseCase.body_invalid.create_response()
