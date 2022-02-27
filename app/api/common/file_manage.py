@@ -86,47 +86,46 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - resource_forbidden
             - server_error
         '''
-        try:
-            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
-            if not file_upload_enabled:
-                return CommonResponseCase.http_forbidden.create_response(
-                    message='File upload is not enabled',
-                    data={'reason': 'File upload is not enabled'}, )
+        file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+        if not file_upload_enabled:
+            return CommonResponseCase.http_forbidden.create_response(
+                message='File upload is not enabled',
+                data={'reason': 'File upload is not enabled'}, )
 
-            if not filename:
-                return CommonResponseCase.http_forbidden.create_response()
+        if not filename:
+            return CommonResponseCase.http_forbidden.create_response()
 
-            file_db_result = db.session.query(filedb_module.UploadedFile)\
-                .filter(filedb_module.UploadedFile.deleted_at.is_(None))\
-                .filter(filedb_module.UploadedFile.locked_at.is_(None))\
-                .filter(filedb_module.UploadedFile.filename == werkzeug.utils.secure_filename(filename))\
-                .first()
-            if not file_db_result:
-                return ResourceResponseCase.resource_not_found.create_response()
-            if file_db_result.private\
-               and not (access_token.is_admin() or file_db_result.uploaded_by_id == access_token.user):
-                return ResourceResponseCase.resource_forbidden.create_response()
+        file_db_result = db.session.query(filedb_module.UploadedFile)\
+            .filter(filedb_module.UploadedFile.deleted_at.is_(None))\
+            .filter(filedb_module.UploadedFile.locked_at.is_(None))\
+            .filter(filedb_module.UploadedFile.filename == werkzeug.utils.secure_filename(filename))\
+            .first()
+        if not file_db_result:
+            return ResourceResponseCase.resource_not_found.create_response()
+        if (file_db_result.private
+            and (not access_token
+                 or not (access_token.is_admin() or file_db_result.uploaded_by_id == access_token.user))):
+            return ResourceResponseCase.resource_forbidden.create_response()
 
-            filepath = USER_CONTENT_UPLOAD_DIR / str(file_db_result.uploaded_by_id) / file_db_result.filename
-            if not filepath.exists():
-                file_db_result.deleted_at = utils.as_utctime(datetime.datetime.now())
-                db.session.commit()
-                return ResourceResponseCase.resource_not_found.create_response()
+        filepath = USER_CONTENT_UPLOAD_DIR / str(file_db_result.uploaded_by_id) / file_db_result.filename
+        if not filepath.exists():
+            file_db_result.deleted_at = utils.as_utctime(datetime.datetime.now())
+            db.session.commit()
+            return ResourceResponseCase.resource_not_found.create_response()
 
-            request_content_type = flask.request.accept_mimetypes
-            if 'application/json' in request_content_type:
-                return ResourceResponseCase.resource_found.create_response(
-                    data={'file': {
-                        'resource': 'file',
-                        'size': filepath.stat().st_size,
-                        'data': base64.urlsafe_b64encode(filepath.read_bytes()).decode(), }, }, )
-            else:
-                return flask.send_file(
-                            filepath,
-                            mimetype=file_db_result.mimetype)
-
-        except Exception:
-            return CommonResponseCase.server_error.create_response()
+        request_content_type = flask.request.accept_mimetypes
+        request_content_type_list = [ct[0] for ct in list(request_content_type)[:-1]]
+        if not request_content_type_list or 'application/json' in request_content_type_list:
+            response_body = file_db_result.to_dict()
+            response_body.update({
+                'size': filepath.stat().st_size,
+                'data': base64.urlsafe_b64encode(filepath.read_bytes()).decode(),
+            })
+            return ResourceResponseCase.resource_found.create_response(data={'file': response_body, }, )
+        else:
+            return flask.send_file(
+                        filepath,
+                        mimetype=file_db_result.mimetype)
 
     @api_class.RequestHeader(auth={api_class.AuthType.Bearer: True, })
     @api_class.RequestBody(
@@ -147,94 +146,90 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - resource_forbidden
             - body_bad_semantics
         '''
-        try:
-            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
-            if not file_upload_enabled:
-                return CommonResponseCase.http_forbidden.create_response(
-                    message='File upload is not enabled',
-                    data={'reason': 'File upload is not enabled'}, )
+        file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+        if not file_upload_enabled:
+            return CommonResponseCase.http_forbidden.create_response(
+                message='File upload is not enabled',
+                data={'reason': 'File upload is not enabled'}, )
 
-            if filename:
-                return CommonResponseCase.http_forbidden.create_response()
+        if filename:
+            return CommonResponseCase.http_forbidden.create_response()
 
-            # If the user does not select a file, the browser submits an
-            # empty file without a filename.
-            file = flask.request.files.get('file', None)
-            if not file or file.filename == '':
-                return CommonResponseCase.body_empty.create_response()
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        file = flask.request.files.get('file', None)
+        if not file or file.filename == '':
+            return CommonResponseCase.body_empty.create_response(
+                message='File is not included on the request', )
 
-            filename = werkzeug.utils.secure_filename(file.filename)
-            fileext = filename.split('.')[-1].lower()
-            if not FileManagementRoute.is_allowed_file(filename):
-                return ResourceResponseCase.resource_forbidden.create_response()
+        filename = werkzeug.utils.secure_filename(file.filename)
+        fileext = filename.split('.')[-1].lower()
+        if not FileManagementRoute.is_allowed_file(filename):
+            return ResourceResponseCase.resource_forbidden.create_response()
 
-            is_new_filename_duplicate: bool = True
-            while is_new_filename_duplicate:
-                # Check for files with names of the same random string.
-                # The reason why we query DB is that it is difficult to inspect in the file system
-                # because of the extension.
-                filename = secrets.token_urlsafe(24)
-                is_new_filename_duplicate = db.session.query(filedb_module.UploadedFile)\
-                    .filter(filedb_module.UploadedFile.filename.startswith(filename))\
-                    .exists()
-            filename += f'.{fileext}'
+        is_new_filename_duplicate: bool = True
+        while is_new_filename_duplicate:
+            # Check for files with names of the same random string.
+            # The reason why we query DB is that it is difficult to inspect in the file system
+            # because of the extension.
+            filename = secrets.token_urlsafe(24)
+            is_new_filename_duplicate = db.session.query(filedb_module.UploadedFile)\
+                .filter(filedb_module.UploadedFile.filename.startswith(filename))\
+                .first()
+        filename += f'.{fileext}'
 
-            filepath = USER_CONTENT_UPLOAD_DIR / str(access_token.user) / filename
-            if not filepath.parent.exists():
-                filepath.parent.mkdir()
+        filepath = USER_CONTENT_UPLOAD_DIR / str(access_token.user) / filename
+        if not filepath.parent.exists():
+            filepath.parent.mkdir(parents=True)
 
-            file.save(filepath)
+        file.save(filepath)
 
-            check_web_friendly_img = flask.current_app.config.get('FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK', False)
-            detected_file_magic = magic.from_file(filepath, mime=True)
-            # Examine mimetype and check web-friendly if needed
-            file_err_reason: str = ''
-            if file.mimetype != detected_file_magic:
-                file_err_reason = ('The MIME type we guessed from the file you sent '
-                                   'does not match the MIME type you reported.')
-            elif detected_file_magic.startswith('image/') and check_web_friendly_img:
-                web_img_check_result = FileManagementRoute.is_web_friendly_image(filepath)
-                if web_img_check_result is not None and not web_img_check_result:
-                    # Image is not web-friendly or broken.
-                    file_err_reason = 'Image you uploaded is broken, or Image is not web-friendly.'
-            if file_err_reason:
-                filepath.unlink(missing_ok=True)
-                return CommonResponseCase.body_bad_semantics.create_response(
-                    data={'bad_semantics': [{'field': 'file', 'reason': file_err_reason, }, ], }, )
+        check_web_friendly_img = flask.current_app.config.get('FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK', False)
+        detected_file_magic = magic.from_file(filepath, mime=True)
+        # Examine mimetype and check web-friendly if needed
+        file_err_reason: str = ''
+        if file.mimetype != detected_file_magic:
+            file_err_reason = ('The MIME type we guessed from the file you sent '
+                               'does not match the MIME type you reported.')
+        elif detected_file_magic.startswith('image/') and check_web_friendly_img:
+            web_img_check_result = FileManagementRoute.is_web_friendly_image(filepath)
+            if web_img_check_result is not None and not web_img_check_result:
+                # Image is not web-friendly or broken.
+                file_err_reason = 'Image you uploaded is broken, or Image is not web-friendly.'
+        if file_err_reason:
+            filepath.unlink(missing_ok=True)
+            return CommonResponseCase.body_bad_semantics.create_response(
+                data={'bad_semantics': [{'field': 'file', 'reason': file_err_reason, }, ], }, )
 
-            alt_data: typing.Optional[str] = None
-            if 'alt_data' in req_body:
-                try:
-                    alt_data = json.loads(req_body['alt_data'])
-                except Exception:
-                    alt_data = {'alt_text': req_body['alt_data']}
+        alt_data: typing.Optional[str] = None
+        if 'alt_data' in req_body:
+            try:
+                alt_data = json.loads(req_body['alt_data'])
+            except Exception:
+                alt_data = {'alt_text': req_body['alt_data']}
 
-                alt_data = json.dumps(
-                                alt_data,
-                                skipkeys=True,
-                                separators=(',', ':'),
-                                indent=None)
+            alt_data = json.dumps(
+                            alt_data,
+                            skipkeys=True,
+                            separators=(',', ':'),
+                            indent=None)
 
-            new_file_db = filedb_module.UploadedFile()
-            new_file_db.uploaded_by_id = access_token.user
-            new_file_db.mimetype = detected_file_magic
-            new_file_db.size = filepath.stat().st_size
-            new_file_db.filename = filename
-            new_file_db.original_filename = file.filename
+        new_file_db = filedb_module.UploadedFile()
+        new_file_db.uploaded_by_id = access_token.user
+        new_file_db.mimetype = detected_file_magic
+        new_file_db.size = filepath.stat().st_size
+        new_file_db.filename = filename
+        new_file_db.original_filename = file.filename
 
-            new_file_db.alternative_data = alt_data
-            new_file_db.private = req_body.get('private', False)
+        new_file_db.alternative_data = alt_data
+        new_file_db.private = req_body.get('private', False)
 
-            db.session.add(new_file_db)
-            db.session.commit()
+        db.session.add(new_file_db)
+        db.session.commit()
 
-            # Return created file data
-            return ResourceResponseCase.resource_created.create_response(
-                data={'file': new_file_db.to_dict(), }, )
-
-        except Exception:
-            db.session.rollback()
-            return CommonResponseCase.server_error.create_response()
+        # Return created file data
+        return ResourceResponseCase.resource_created.create_response(
+            data={'file': new_file_db.to_dict(), }, )
 
     @api_class.RequestHeader(auth={api_class.AuthType.Bearer: True, })
     def delete(self, req_header: dict, access_token: jwt_module.AccessToken, filename: typing.Optional[str] = None):
