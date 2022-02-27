@@ -245,37 +245,32 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - resource_forbidden
             - http_not_found
         '''
-        try:
-            file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
-            if not file_upload_enabled:
-                return CommonResponseCase.http_forbidden.create_response(
-                    message='File upload is not enabled',
-                    data={'reason': 'File upload is not enabled'}, )
+        file_upload_enabled: bool = flask.current_app.config.get('FILE_MANAGEMENT_ROUTE_ENABLE', False)
+        if not file_upload_enabled:
+            return CommonResponseCase.http_forbidden.create_response(
+                message='File upload is not enabled',
+                data={'reason': 'File upload is not enabled'}, )
 
-            if not filename:
-                return CommonResponseCase.http_not_found.create_response()
+        if not filename:
+            return CommonResponseCase.http_not_found.create_response()
 
-            file_db_result = db.session.query(filedb_module.UploadedFile)\
-                .filter(filedb_module.UploadedFile.deleted_at.is_(None))\
-                .filter(filedb_module.UploadedFile.locked_at.is_(None))\
-                .filter(filedb_module.UploadedFile.filename == werkzeug.utils.secure_filename(filename))\
-                .first()
-            if not file_db_result:
-                return ResourceResponseCase.resource_not_found.create_response()
-            if not access_token.is_admin() and file_db_result.uploaded_by_id != access_token.user:
-                return ResourceResponseCase.resource_forbidden.create_response()
+        file_db_result = db.session.query(filedb_module.UploadedFile)\
+            .filter(filedb_module.UploadedFile.deleted_at.is_(None))\
+            .filter(filedb_module.UploadedFile.locked_at.is_(None))\
+            .filter(filedb_module.UploadedFile.filename == werkzeug.utils.secure_filename(filename))\
+            .first()
+        if not file_db_result:
+            return ResourceResponseCase.resource_not_found.create_response()
+        if not access_token.is_admin() and file_db_result.uploaded_by_id != access_token.user:
+            return ResourceResponseCase.resource_forbidden.create_response()
 
-            file_db_result.deleted_at = utils.as_utctime(datetime.datetime.now())
-            file_db_result.deleted_by = access_token.user
-            db.session.commit()
+        file_db_result.deleted_at = utils.as_utctime(datetime.datetime.now())
+        file_db_result.deleted_by_id = access_token.user
+        db.session.commit()
 
-            filepath = USER_CONTENT_UPLOAD_DIR / str(file_db_result.uploaded_by_id) / file_db_result.filename
-            filepath.unlink(missing_ok=True)
-            return ResourceResponseCase.resource_deleted.create_response()
-
-        except Exception:
-            db.session.rollback()
-            return CommonResponseCase.server_error.create_response()
+        filepath = USER_CONTENT_UPLOAD_DIR / str(file_db_result.uploaded_by_id) / file_db_result.filename
+        filepath.unlink(missing_ok=True)
+        return ResourceResponseCase.resource_deleted.create_response()
 
 
 resource_route = {
