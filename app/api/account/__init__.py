@@ -24,5 +24,5 @@ resource_route = {
         'base_path': '/account/change-password/',
         'defaults': {'email_token': None},
     },
-    '/account/profile-image': profile_img_mgr,
+    '/account/profile-image': profile_img_mgr.ProfileImageRoute,
 }
