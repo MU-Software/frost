@@ -92,7 +92,7 @@ class ProfileImageRoute(flask.views.MethodView, api_class.MethodViewMixin):
 
         target_file: str = target_user.profile_image.replace('/uploads/', '').replace('/', '').strip()
         # Internal REST API call
-        del_result: api_class.ResponseType = route_filemgr.FileManagementRoute().delete(target_file)
+        del_result: api_class.ResponseType = route_filemgr.FileManagementRoute().delete(filename=target_file)
         del_res_body, del_res_code, del_res_header = del_result
         if del_res_code != 204:
             # Deletion didn't done completely.
