@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" content />
+  <title>FROST Upload testbed</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <style>
+    :root {
+      --color: #2979ff;
+      --line-height: normal;
+    }
+
+    html {
+      user-select: none;
+      font-size: 75%;
+    }
+
+    body {
+      padding: 0;
+      margin: 0;
+      line-height: normal;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .token_ctrl_container_container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #access_token_str,
+    #csrf_token_str {
+      word-wrap: break-word;
+      width: 30vw;
+      user-select: text;
+    }
+
+    section aside {
+      /* max-width: calc(var(--width-card-wide) - 48px); */
+      min-width: 27vw;
+      height: fit-content;
+      text-align: center;
+      background-color: #f7f7f7;
+      border: 1px solid #7af;
+    }
+
+    .container_container {
+      overflow-x: scroll;
+    }
+
+    .container {
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: normal;
+      align-self: safe center;
+      align-items: center;
+      /* align-content: flex-start; */
+      /* I don't know why, I don't want to know why,
+         I shouldn't have to wonder why, but for whatever reason
+         this stupid card isn't laying out correctly
+         unless we do this terribleness */
+      height: calc(100vh - 3.4em - 48px);
+      /* width: calc((var(--width-card) + 72px) * 3); */
+    }
+
+    .item::before {
+      counter-increment: items;
+      /* content: counter(items); */
+    }
+
+    /* Re-order items into 3 rows */
+    .item:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .item:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .item:nth-child(3n) {
+      order: 3;
+    }
+
+    h3 {
+      margin-top: 0;
+      min-width: 100;
+      text-align: center;
+    }
+
+    form {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      min-width: unset;
+      background-color: #fff;
+    }
+
+    label {
+      font-size: 10pt;
+      color: #484848;
+    }
+
+    .upload_input_file_label_aside {
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 0;
+      padding-right: 0;
+      width: 100%;
+      min-width: 0;
+      background-color: unset;
+    }
+
+    input[type=file] {
+      /* padding-left: 0; */
+      /* padding-right: 0; */
+      width: calc(100% - 1.6rem);
+      min-width: 0;
+    }
+
+    .upload_input_file_label_dragged {
+      background-color: rgba(0, 0, 0, .35);
+    }
+
+    #download_file_container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+    }
+
+    #download_file_type {
+      height: 2rem;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    #download_file_type input {
+      margin: 0.4rem;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    #download_file_type label {
+      top: 0;
+    }
+
+    input[type=submit] {
+      margin: 0;
+      background-color: #2979ff;
+      color: #fff;
+    }
+
+    button {
+      padding: revert;
+    }
+
+    h5 {
+      min-width: 100;
+      margin-bottom: 0.2rem;
+      text-align: left;
+    }
+
+    pre {
+      border: 1px solid var(--color-bg-secondary);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow) var(--color-shadow);
+
+      background-color: #fff;
+      min-height: 48pt;
+      margin: 0;
+      padding: 1.5rem;
+
+      max-width: var(--width-card-wide);
+      /* min-width: var(--width-card); */
+
+      white-space: pre-wrap;
+      word-break: break-all;
+      text-align: left;
+    }
+  </style>
+  <script type="text/javascript" src="/api/dev/debug/src/json-viewer.js"></script>
+  <link rel="stylesheet" type="text/css" href="/api/dev/debug/src/json-viewer.css">
+  <script>
+    const uuidv4 = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+    var csrfToken = uuidv4();
+    var accessToken = '';
+
+    const refreshAccessTokenRequest = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+          response = JSON.parse(xhr.response);
+          accessToken = response.data.user.access_token.token;
+        } else {
+          alert('Refreshing Access Token failed! CODE=' + xhr.status);
+          console.log(xhr.response);
+        }
+        showTokenInfo();
+      }
+      xhr.open('POST', '/api/dev/account/refresh');
+      xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send();
+    }
+    const resetAccessToken = () => {
+      csrfToken = uuidv4();
+      accessToken = '';
+      showTokenInfo();
+    }
+    const showTokenInfo = () => {
+      document.getElementById('csrf_token_str').innerText = 'CSRF_TOKEN : ' + csrfToken;
+      document.getElementById('access_token_str').innerText = 'ACCESS_TOKEN : ' + accessToken;
+    }
+
+    var uploadJsonViewer = new JSONViewer();
+    var downloadJsonViewer = new JSONViewer();
+
+    window.onload = () => {
+      showTokenInfo();
+      refreshAccessTokenRequest();
+
+      const uploadFileInput = document.getElementById('upload_input_file');
+      const uploadForm = document.getElementById('upload_form');
+      const uploadFormSubmit = document.getElementById('upload_submit');
+      const uploadResultPre = document.getElementById('upload_request_result_pre');
+      const downloadForm = document.getElementById('download_form');
+      const downloadFormSubmit = document.getElementById('download_submit');
+      const downloadResultImg = document.getElementById('download_request_result_img');
+      const downloadResultPre = document.getElementById('download_request_result_pre');
+
+      const preventDefaultEvent = () => {
+        event.stopPropagation(); // Do not allow the dragover event to bubble.
+        event.preventDefault(); // Prevent default dragover event behavior.
+      }
+      const onFileInEvent = (event) => {
+        preventDefaultEvent();
+        uploadForm.classList.remove('upload_input_file_label_dragged');
+
+        let items = null;
+        if (event.dataTransfer) { // Maybe it's DragEvent?
+          items = event.dataTransfer.files; // Grab the list of files dragged to the drop box.
+        } else if (event.type && event.type === 'change') {
+          items = event.target.files;
+        } else {
+          alert('이 브라우저는 해당 동작을 지원하지 않습니다.');
+          return;
+        }
+
+        if (0 > items.length) {
+          alert('파일을 선택해주세요.');
+          return;
+        } else if (items.length > 1) {
+          alert('파일을 하나만 선택해주세요.');
+          return;
+        }
+
+        if (items[0].type.indexOf("image") === 0) {
+          uploadFileInput.files = items;
+          return;
+        }
+
+        alert('인식 가능한 사진 파일이 아닙니다.');
+      }
+
+      uploadForm.ondrop = onFileInEvent;
+      uploadForm.ondragover = (event) => preventDefaultEvent();
+      uploadForm.ondragenter = (event) => uploadForm.classList.add('upload_input_file_label_dragged');
+      uploadForm.ondragleave = (event) => {
+        // I wrote this function because ondragleave fired when hovering a child element.
+        // I couldn't use e.relatedTarget because Safari doesn't support it.
+        let x = event.clientX, y = event.clientY;
+        let currentHoveredElement = document.elementFromPoint(x, y);
+        if (!uploadForm.contains(currentHoveredElement) || (x === 0 && y === 0))
+          uploadForm.classList.remove('upload_input_file_label_dragged');
+      };
+
+      const uploadFileRequest = () => {
+        preventDefaultEvent();
+
+        var formData = new FormData();
+        formData.append('file', uploadFileInput.files[0]);
+        formData.append('private', uploadForm['private'].checked);
+        formData.append('alt_data', uploadForm['alt_data'].value);
+
+        var xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+          var isSuccess = '';
+          if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+            isSuccess = 'SUCCESS!';
+          } else {
+            isSuccess = 'FAILED!';
+          }
+          try {
+            uploadJsonViewer.showJSON(JSON.parse(xhr.response));
+          } catch (e) { }
+          uploadResultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+          uploadResultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
+        };
+        xhr.open('POST', '/api/dev/uploads/');
+        xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+        xhr.setRequestHeader('Authorization', accessToken);
+        xhr.send(formData);
+      };
+      const downloadFileRequest = () => {
+        preventDefaultEvent();
+
+        var contentType = downloadForm['request_type'].value;
+        var fileId = downloadForm['file_id'].value;
+        if (!fileId) {
+          alert('파일의 ID를 입력해주세요!');
+          return;
+        }
+
+        if (contentType === 'application/json') {
+          var xhr = new XMLHttpRequest();
+          xhr.onload = () => {
+            var isSuccess = '';
+            if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true)
+              isSuccess = 'SUCCESS!';
+            else
+              isSuccess = 'FAILED!';
+
+            try { downloadJsonViewer.showJSON(JSON.parse(xhr.response)); } catch (e) { }
+            downloadResultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+            downloadResultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
+          };
+          xhr.open('GET', '/api/dev/uploads/' + fileId);
+          xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+          xhr.setRequestHeader('Authorization', accessToken);
+          xhr.setRequestHeader("Accept", contentType);
+          xhr.send();
+        } else {
+          console.log(downloadResultImg);
+          downloadResultImg.src = '/api/dev/uploads/' + fileId;
+          downloadJsonViewer.showJSON({ message: '바이너리 모드에서는 지원되지 않습니다.' });
+          downloadResultPre.textContent = JSON.stringify({ message: '바이너리 모드에서는 지원되지 않습니다.' })
+        }
+      };
+      uploadFormSubmit.onclick = uploadFileRequest;
+      downloadFormSubmit.onclick = downloadFileRequest;
+    }
+  </script>
+</head>
+
+<body>
+  <h1>
+    이미지 업로드/다운로드 데모
+  </h1>
+  <div class="token_ctrl_container_container">
+    <div>
+      <div id="access_token_str">ACCESS_TOKEN : </div>
+      <div id="csrf_token_str">CSRF_TOKEN : </div>
+      <button onclick="refreshAccessTokenRequest(); return false;">토큰 갱신</button>
+      <button onclick="resetAccessToken(); return false;">토큰 삭제</button>
+    </div>
+  </div>
+  <div class="container_container">
+    <section class="container">
+      <aside class="item">
+        <h3>이미지 업로드</h3>
+        <form id="upload_form" action="/api/dev/upload" method="POST">
+          <label class="upload_input_file_label" for="upload_input_file">
+            <aside class="upload_input_file_label_aside">
+              여기를 눌러서 사진을 선택하시거나<br />파일을 여기에 끌어 놓아주세요!
+            </aside>
+            <input class="upload_input_file" id="upload_input_file" type="file" accept="image/*" />
+          </label>
+
+          <label for="upload_input_is_private">Private</label>
+          <input id="upload_input_is_private" name="private" type="checkbox" />
+          <br />
+
+          <label for="upload_input_alt_data">Alternative Data</label>
+          <input id="upload_input_alt_data" name="alt_data" type="text" />
+          <br />
+
+          <input id="upload_submit" type="submit" onclick="return false;" />
+        </form>
+
+        <h5>Request Result(JSON)</h5>
+        <div id="upload_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="upload_request_result_pre"></pre>
+
+        <script>
+          document.querySelector("#upload_request_result_json").appendChild(uploadJsonViewer.getContainer());
+        </script>
+      </aside>
+
+      <aside class="item">
+        <h3>이미지 다운로드</h3>
+        <form id="download_form" action="/api/dev/account/signup" method="POST">
+          <label for="download_file_type">파일 로드 형식</label>
+          <div id="download_file_container">
+            <div id="download_file_type">
+              <input type="radio" name="request_type" id="download_type_json" value="application/json" checked />
+              <label id="download_type_json_label" for="download_type_json">application/json</label>
+            </div>
+            <div id="download_file_type">
+              <input type="radio" name="request_type" id="download_type_binary" value="image/*" />
+              <label id="download_type_binary_label" for="download_type_binary">image/*</label>
+            </div>
+          </div>
+          <br />
+
+          <label for="download_file_id">타겟 파일 ID</label>
+          <input id="download_file_id" name="file_id" type="text" autocapitalize="none" autocomplete="on"
+            autocorrect="off" spellcheck="false" dir="auto" />
+          <br />
+
+          <input id="download_submit" type="submit" onclick="return false;" />
+        </form>
+
+        <h5>Request Result(JSON)</h5>
+        <div id="download_request_result_json"></div>
+        <h5>Request Result(IMAGE)</h5>
+        <img id="download_request_result_img" alt="" />
+        <h5>Request Result(PRE)</h5>
+        <pre id="download_request_result_pre"></pre>
+
+        <script>
+          document.querySelector("#download_request_result_json").appendChild(downloadJsonViewer.getContainer());
+        </script>
+      </aside>
+    </section>
+  </div>
+</body>
+
+</html>
