@@ -67,8 +67,11 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
     @staticmethod
     def is_allowed_file(filename: str) -> bool:
         allowed_extensions: list[str] = flask.current_app.config.get('FILE_UPLOAD_ALLOW_EXTENSION', [])
-        if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-            return True
+        try:
+            if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                return True
+        except Exception:
+            pass
         return False
 
     @api_class.RequestHeader(auth={api_class.AuthType.Bearer: False, })
@@ -162,7 +165,8 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return CommonResponseCase.body_empty.create_response(
                 message='File is not included on the request', )
 
-        filename = werkzeug.utils.secure_filename(file.filename)
+        filename = utils.normalize(file.filename).encode('ascii', 'backslashreplace').decode()
+        filename = werkzeug.utils.secure_filename(filename)
         fileext = filename.split('.')[-1].lower()
         if not FileManagementRoute.is_allowed_file(filename):
             return ResourceResponseCase.resource_forbidden.create_response()
