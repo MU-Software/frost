@@ -124,6 +124,16 @@
       background-color: rgba(0, 0, 0, .35);
     }
 
+    #upload_input_info_text {
+      font-size: 8pt;
+      font-weight: normal;
+    }
+    #upload_input_info_text code {
+      font-family: inherit;
+      font-size: 8pt;
+      font-weight: bold;
+    }
+
     #download_file_container {
       display: flex;
       justify-content: space-around;
@@ -224,6 +234,7 @@
       showTokenInfo();
       refreshAccessTokenRequest();
 
+      const uploadFormIsForProfile = document.getElementById('upload_is_for_profile');
       const uploadFileInput = document.getElementById('upload_input_file');
       const uploadForm = document.getElementById('upload_form');
       const uploadFormSubmit = document.getElementById('upload_submit');
@@ -279,13 +290,21 @@
           uploadForm.classList.remove('upload_input_file_label_dragged');
       };
 
+      const uploadModeChange = () => {
+        uploadForm['private'].disabled = uploadFormIsForProfile.checked;
+        uploadForm['alt_data'].disabled = uploadFormIsForProfile.checked;
+      }
+      uploadFormIsForProfile.onclick = uploadModeChange;
       const uploadFileRequest = () => {
         preventDefaultEvent();
 
         var formData = new FormData();
         formData.append('file', uploadFileInput.files[0]);
-        formData.append('private', uploadForm['private'].checked);
-        formData.append('alt_data', uploadForm['alt_data'].value);
+
+        if (!uploadFormIsForProfile.checked) {
+          formData.append('private', uploadForm['private'].checked);
+          formData.append('alt_data', uploadForm['alt_data'].value);
+        }
 
         var xhr = new XMLHttpRequest();
         xhr.onload = () => {
@@ -301,7 +320,12 @@
           uploadResultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
           uploadResultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
         };
-        xhr.open('POST', '/api/dev/uploads/');
+
+        if (uploadFormIsForProfile.checked)
+          xhr.open('POST', '/api/dev/account/profile-image');
+        else
+          xhr.open('POST', '/api/dev/uploads/');
+
         xhr.setRequestHeader('X-Csrf-Token', csrfToken);
         xhr.setRequestHeader('Authorization', accessToken);
         xhr.send(formData);
@@ -363,6 +387,10 @@
     <section class="container">
       <aside class="item">
         <h3>이미지 업로드</h3>
+
+        <label for="upload_is_for_profile" style="display: inline">프로필 업로드 여부</label>
+        <input id="upload_is_for_profile" name="private" type="checkbox" />
+
         <form id="upload_form" action="/api/dev/upload" method="POST">
           <label class="upload_input_file_label" for="upload_input_file">
             <aside class="upload_input_file_label_aside">
@@ -378,6 +406,8 @@
           <label for="upload_input_alt_data">Alternative Data</label>
           <input id="upload_input_alt_data" name="alt_data" type="text" />
           <br />
+
+          <div id="upload_input_info_text"><code>Private</code>과 <code>Alternative</code>는 <code>프로필 업로드 여부</code>가 체크 해제된 상태에서만 활성화됩니다.</div>
 
           <input id="upload_submit" type="submit" onclick="return false;" />
         </form>
