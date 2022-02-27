@@ -168,3 +168,12 @@ docs/*
 
 # Exclude temporary directories
 [Tt]mp
+
+# Execlude FROST's user-uploaded file directory
+user_content/
+
+# Execlude nohup output file
+nohup.out
+
+# Execlude backend SQLite DB file
+app/*.sqlite
