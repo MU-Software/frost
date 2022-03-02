@@ -6,6 +6,7 @@ import flask
 import hashlib
 import json
 import math
+import os
 import random
 import socket
 import string
@@ -146,7 +147,7 @@ def fileobj_md5(fp) -> str:
     return hash_md5.hexdigest()
 
 
-def file_md5(fname: str) -> str:
+def file_md5(fname: os.PathLike) -> str:
     return fileobj_md5(open(fname, 'rb'))
 
 
