@@ -355,7 +355,7 @@ class hybridmethod:
 
     def __get__(self, instance, cls):
         if instance is None or self.finstance is None:
-              # either bound to the class, or no instance method available
+            # either bound to the class, or no instance method available
             return self.fclass.__get__(cls, None)
         return self.finstance.__get__(instance, cls)
 
