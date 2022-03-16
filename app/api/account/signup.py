@@ -58,6 +58,11 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
             return CommonResponseCase.body_bad_semantics.create_response(
                 data={'bad_semantics': ({'pw': reason},)})
 
+        if req_body['pw'] in (req_body['id'], req_body['email'], req_body['nick']):
+            reason = 'PW_REUSED_ON_ID_EMAIL_NICK'
+            return CommonResponseCase.body_bad_semantics.create_response(
+                data={'bad_semantics': ({'pw': reason},)})
+
         # Create new user
         new_user = user.User()
         new_user.email = req_body['email']
