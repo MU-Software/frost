@@ -17,7 +17,7 @@ def firebase_send_notify(title: str = None, body: str = None, data: dict = None,
         # default_app is already initialized.
         pass
 
-    if not any(all(title, body), data):
+    if not any((all((title, body, ), ), data, ), ):
         raise ValueError('At least one of (title, body)|data must be set')
 
     data = data if data else {'click_action': 'FLUTTER_NOTIFICATION_CLICK', }
@@ -47,7 +47,7 @@ def firebase_send_notify(title: str = None, body: str = None, data: dict = None,
         body = str(body) or ''
         notification = messaging.Notification(title=title, body=body)
 
-    if not isinstance(target_tokens, list):
+    if not isinstance(target_tokens, (list, tuple)):
         target_tokens = [target_tokens, ]
 
     message_payload = list()
