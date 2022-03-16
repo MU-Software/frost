@@ -2,8 +2,8 @@ import datetime
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import messaging
-import flask
 import json
+import os
 import typing
 
 
@@ -11,7 +11,7 @@ def firebase_send_notify(title: str = None, body: str = None, data: dict = None,
                          topic: str = None, target_tokens: typing.Union[str, list[str], None] = None,
                          condition: str = None):
     try:
-        cred = credentials.Certificate(flask.current_app.config.get('FIREBASE_CERTIFICATE'))
+        cred = credentials.Certificate(os.environ.get('FIREBASE_CERTIFICATE'))
         default_app = firebase_admin.initialize_app(cred)  # noqa
     except ValueError:
         # default_app is already initialized.
