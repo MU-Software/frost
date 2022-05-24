@@ -74,6 +74,8 @@ def init_app(app: flask.Flask, add_model_to_view: bool = True):
 
     import app.admin.token_revoke as token_revoke
     admin.add_view(token_revoke.Admin_TokenRevoke_View(name='Token Revoke', endpoint='token-revoke'))
+    import app.admin.mail_test as mail_test
+    admin.add_view(mail_test.Admin_MailTest_View(name='Mail test', endpoint='mail-test'))
 
     # init_app must return app
     return app

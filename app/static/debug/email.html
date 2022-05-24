@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" content />
+  <title>FROST MailGun testbed</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <style>
+    :root {
+      --color: #2979ff;
+      --line-height: normal;
+    }
+
+    html {
+      user-select: none;
+      font-size: 75%;
+    }
+
+    body {
+      padding: 0;
+      margin: 0;
+      line-height: normal;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .token_ctrl_container_container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #access_token_str,
+    #csrf_token_str {
+      word-wrap: break-word;
+      width: 30vw;
+      user-select: text;
+    }
+
+    section aside {
+      /* max-width: calc(var(--width-card-wide) - 48px); */
+      min-width: 27vw;
+      height: fit-content;
+      text-align: center;
+      background-color: #f7f7f7;
+      border: 1px solid #7af;
+    }
+
+    .container_container {
+      overflow-x: scroll;
+    }
+
+    .container {
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: normal;
+      align-self: safe center;
+      align-items: center;
+      /* align-content: flex-start; */
+      /* I don't know why, I don't want to know why,
+         I shouldn't have to wonder why, but for whatever reason
+         this stupid card isn't laying out correctly
+         unless we do this terribleness */
+      height: calc(100vh - 3.4em - 48px);
+      /* width: calc((var(--width-card) + 72px) * 3); */
+    }
+
+    .item::before {
+      counter-increment: items;
+      /* content: counter(items); */
+    }
+
+    /* Re-order items into 3 rows */
+    .item:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .item:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .item:nth-child(3n) {
+      order: 3;
+    }
+
+    h3 {
+      margin-top: 0;
+      min-width: 100;
+      text-align: center;
+    }
+
+    form {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      min-width: unset;
+      background-color: #fff;
+    }
+
+    label {
+      font-size: 10pt;
+      color: #484848;
+    }
+
+    .upload_input_file_label_aside {
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 0;
+      padding-right: 0;
+      width: 100%;
+      min-width: 0;
+      background-color: unset;
+    }
+
+    input[type=file] {
+      /* padding-left: 0; */
+      /* padding-right: 0; */
+      width: calc(100% - 1.6rem);
+      min-width: 0;
+    }
+
+    .upload_input_file_label_dragged {
+      background-color: rgba(0, 0, 0, .35);
+    }
+
+    #upload_input_info_text {
+      font-size: 8pt;
+      font-weight: normal;
+    }
+
+    #upload_input_info_text code {
+      font-family: inherit;
+      font-size: 8pt;
+      font-weight: bold;
+    }
+
+    #download_file_container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+    }
+
+    #download_file_type {
+      height: 2rem;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    #download_file_type input {
+      margin: 0.4rem;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    #download_file_type label {
+      top: 0;
+    }
+
+    input[type=submit] {
+      margin: 0;
+      background-color: #2979ff;
+      color: #fff;
+    }
+
+    button {
+      padding: revert;
+    }
+
+    h5 {
+      min-width: 100;
+      margin-bottom: 0.2rem;
+      text-align: left;
+    }
+
+    pre {
+      border: 1px solid var(--color-bg-secondary);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow) var(--color-shadow);
+
+      background-color: #fff;
+      min-height: 48pt;
+      margin: 0;
+      padding: 1.5rem;
+
+      max-width: var(--width-card-wide);
+      /* min-width: var(--width-card); */
+
+      white-space: pre-wrap;
+      word-break: break-all;
+      text-align: left;
+    }
+  </style>
+  <script type="text/javascript" src="/api/dev/debug/src/json-viewer.js"></script>
+  <link rel="stylesheet" type="text/css" href="/api/dev/debug/src/json-viewer.css">
+  <script>
+    const uuidv4 = () => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+    var csrfToken = uuidv4();
+    var accessToken = '';
+
+    const refreshAccessTokenRequest = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+          response = JSON.parse(xhr.response);
+          accessToken = response.data.user.access_token.token;
+        } else {
+          alert('Refreshing Access Token failed! CODE=' + xhr.status);
+          console.log(xhr.response);
+        }
+        showTokenInfo();
+      }
+      xhr.open('POST', '/api/dev/account/refresh');
+      xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send();
+    }
+    const resetAccessToken = () => {
+      csrfToken = uuidv4();
+      accessToken = '';
+      showTokenInfo();
+    }
+    const showTokenInfo = () => {
+      document.getElementById('csrf_token_str').innerText = 'CSRF_TOKEN : ' + csrfToken;
+      document.getElementById('access_token_str').innerText = 'ACCESS_TOKEN : ' + accessToken;
+    }
+
+    window.onload = () => {
+      showTokenInfo();
+      refreshAccessTokenRequest();
+
+      const mailSendTestFromAddressInput = document.getElementById('mailgun_sendtest_from_address');
+      const mailSendTestToAddressInput = document.getElementById('mailgun_sendtest_to_address');
+      const mailSendTestToTitleInput = document.getElementById('mailgun_sendtest_title');
+      const mailSendTestBodyTextField = document.getElementById('mailgun_sendtest_body');
+      const mailSendTestFormSubmit = document.getElementById('mailgun_sendtest_submit');
+      const mailSendTestResultPre = document.getElementById('mailgun_sendtest_request_result_pre');
+      const mailSendTestResultJsonDom = document.getElementById('mailgun_sendtest_request_result_json');
+      const mailSendTestResultJsonViewer = new JSONViewer();
+      mailSendTestResultJsonDom.appendChild(mailSendTestResultJsonViewer.getContainer());
+
+      mailSendTestFormSubmit.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+          var isSuccess = '';
+          if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+            isSuccess = 'SUCCESS!';
+          } else {
+            isSuccess = 'FAILED!';
+          }
+          try {
+            mailSendTestResultJsonViewer.showJSON(JSON.parse(xhr.response));
+          } catch (e) { }
+          mailSendTestResultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+          mailSendTestResultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
+        };
+
+        xhr.open('POST', '/api/dev/admin/mail-test');
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+        xhr.setRequestHeader('Authorization', accessToken);
+        // Admin token will be included on header automatically.
+        xhr.send(JSON.stringify({
+          from_address: mailSendTestFromAddressInput.value,
+          to_address: mailSendTestToAddressInput.value,
+          title: mailSendTestToTitleInput.value,
+          body: mailSendTestBodyTextField.value, }));
+
+        return false;
+      };
+    }
+  </script>
+</head>
+
+<body>
+  <h1>
+    Frost 메일 전송 테스트
+  </h1>
+  <div class="token_ctrl_container_container">
+    <div>
+      <div id="access_token_str">ACCESS_TOKEN : </div>
+      <div id="csrf_token_str">CSRF_TOKEN : </div>
+      <button onclick="refreshAccessTokenRequest(); return false;">토큰 갱신</button>
+      <button onclick="resetAccessToken(); return false;">토큰 삭제</button>
+    </div>
+  </div>
+  <div class="container_container">
+    <section class="container">
+      <aside class="item">
+        <h3>메일 전송</h3>
+
+        <form id="mailgun_sendtest_form" action="/api/dev/admin/mail-test" method="POST">
+          <label for="mailgun_sendtest_from_address">보내는 메일 주소</label>
+          <input id="mailgun_sendtest_from_address" name="mailgun_sendtest_from_address" type="text" />
+          <br />
+
+          <label for="mailgun_sendtest_to_address">받는 메일 주소</label>
+          <input id="mailgun_sendtest_to_address" name="mailgun_sendtest_to_address" type="text" />
+          <br />
+          <label for="mailgun_sendtest_title">메일 제목</label>
+          <input id="mailgun_sendtest_title" name="mailgun_sendtest_title" type="text" />
+          <br />
+
+          <label for="mailgun_sendtest_body">메일 내용</label>
+          <textarea id="mailgun_sendtest_body" name="mailgun_sendtest_body"></textarea>
+          <br />
+
+          <button id="mailgun_sendtest_submit">
+            보내기
+          </button>
+        </form>
+
+        <h5>Request Result(JSON)</h5>
+        <div id="mailgun_sendtest_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="mailgun_sendtest_request_result_pre"></pre>
+
+      </aside>
+    </section>
+  </div>
+</body>
+
+</html>
