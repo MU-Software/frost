@@ -104,7 +104,8 @@ class ResourceResponseCase(api_class.ResponseCaseCollector):
     resource_forbidden = api_class.Response(  # 403
         description='Requested information modification is forbidden',
         code=403, success=False,
-        public_sub_code='resource.forbidden')
+        public_sub_code='resource.forbidden',
+        data={'resource_name': ['', ]})
     resource_not_found = api_class.Response(  # 404
         description='Requested information not found',
         code=404, success=False,
@@ -119,12 +120,14 @@ class ResourceResponseCase(api_class.ResponseCaseCollector):
         description='Resource has been modified on another request, '
                     'and maybe you tried to modify this resource with old version.',
         code=412, success=False,
-        public_sub_code='resource.prediction_failed')
+        public_sub_code='resource.prediction_failed',
+        data={'prediction_failed_reason': ['', ]})
 
     resource_found = api_class.Response(  # Read
         description='Resource found',
         code=200, success=True,
         public_sub_code='resource.result',
+        header=(('ETag', ''), ),
         data={}, )
     multiple_resources_found = api_class.Response(  # Read
         description='Multiple resources found',
