@@ -94,18 +94,24 @@ class User(db_module.DefaultModelMixin, db.Model):
             db.session.rollback()
             return False, 'DB_ERROR'
 
-    def change_id(self, pw: str, new_id: str) -> tuple[bool, str]:
-        new_id = utils.normalize(new_id)
+    def change_id(self,
+                  pw: str,
+                  new_id: str,
+                  force_change: bool = False,
+                  db_commit: bool = True) -> tuple[bool, str]:
+        new_id = utils.normalize(new_id.strip())
 
-        if self.check_password(pw):
+        if not force_change and not self.check_password(pw.strip()):
             return False, 'WRONG_PASSWORD'
 
-        if not utils.char_urlsafe(new_id):
+        if not utils.is_urlsafe(new_id):
             return False, 'FORBIDDEN_CHAR'
 
         self.id = new_id
         try:
-            db.session.commit()
+            if db_commit:
+                db.session.commit()
+
             return True, ''
         except Exception:
             db.session.rollback()
