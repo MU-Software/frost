@@ -3,7 +3,7 @@ import app.common.mailgun.aws_ses as mailgun_aws
 import app.common.mailgun.gmail as mailgun_gmail
 
 
-def send_mail(fromaddr: str, toaddr: str, subject: str, message: str) -> bool:
+def send_mail(fromaddr: str, toaddr: str, subject: str, message: str, raise_on_fail: bool = False) -> bool:
     mail_sent: bool = True
     if flask.current_app.config.get('MAIL_ENABLE'):
         try:
@@ -19,6 +19,9 @@ def send_mail(fromaddr: str, toaddr: str, subject: str, message: str) -> bool:
             else:
                 raise NotImplementedError(f'Mail provider "{mail_provider}" is not supported')
             mail_sent = True
-        except Exception:
+        except Exception as err:
             mail_sent = False
+
+            if raise_on_fail:
+                raise err
     return mail_sent
