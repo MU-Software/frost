@@ -113,6 +113,9 @@ class User(db_module.DefaultModelMixin, db.Model):
 
     @classmethod
     def try_login(cls, user_ident: str, pw: str) -> tuple[typing.Union[bool, 'User'], str]:
+        SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION = flask.current_app.config.get(
+            'SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION')
+
         user_ident = utils.normalize(user_ident.strip())
         pw = utils.normalize(pw.strip())
         # We won't support UUID login,
@@ -139,6 +142,8 @@ class User(db_module.DefaultModelMixin, db.Model):
             reason = f'ACCOUNT_DEACTIVATED::{self.why_deactivated}'
         elif not self.check_password(pw):
             reason = 'WRONG_PASSWORD'
+        elif SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION and not self.email_verified:
+            reason = 'EMAIL_NOT_VERIFIED'
 
         if reason:
             if reason == 'WRONG_PASSWORD':
@@ -174,6 +179,7 @@ class User(db_module.DefaultModelMixin, db.Model):
             'id': self.id,
             'nickname': self.nickname,
             'email': self.email,
+            'email_verified': self.email_verified,
             'description': self.description,
             'profile_image': self.profile_image,
 
