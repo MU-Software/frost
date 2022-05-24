@@ -56,6 +56,7 @@
     "__comment_5" : "Mail provider can be AMAZON or GOOGLE",
     "MAIL_PROVIDER": "GOOGLE",
     "__line_break_6": true,
+    "SIGNIN_POSSIBLE_AFTER_MAIL_VALIDATION": true,
 
     "__comment_6" : "For GMail access",
     "GOOGLE_CLIENT_ID" : "google_client_id",
