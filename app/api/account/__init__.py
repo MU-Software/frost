@@ -7,9 +7,11 @@ import app.api.account.duplicate_check as duplicate_check
 import app.api.account.email_action as email_action
 import app.api.account.password_reset as password_reset
 import app.api.account.password_change as password_change
+import app.api.account.account_manage as account_manage
 import app.api.account.profile_img_manage as profile_img_mgr
 
 resource_route = {
+    '/account': account_manage.AccountInformationChangeRoute,
     '/account/signup': signup.SignUpRoute,
     '/account/signin': signin.SignInRoute,
     '/account/signout': signout.SignOutRoute,
