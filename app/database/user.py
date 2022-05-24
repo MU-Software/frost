@@ -17,13 +17,13 @@ RedisKeyType = db_module.RedisKeyType
 class User(db_module.DefaultModelMixin, db.Model):
     __tablename__ = 'TB_USER'
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence('SQ_User_UUID'), primary_key=True)
-    id = db.Column(db.String, unique=True, nullable=False)
-    nickname = db.Column(db.String, unique=True, nullable=False)
+    id = db.Column(db.String(collation='NOCASE'), unique=True, nullable=False)
+    nickname = db.Column(db.String(collation='NOCASE'), unique=True, nullable=False)
     password = db.Column(db.String, unique=False, nullable=False)
     pw_changed_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
 
     # No, We won't support multiple account
-    email = db.Column(db.String(254), nullable=False, unique=True)
+    email = db.Column(db.String(254, collation='NOCASE'), nullable=False, unique=True)
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     email_secret = db.Column(db.String, nullable=True)
 
