@@ -18,6 +18,9 @@ import typing
 import unicodedata
 import werkzeug
 
+# ---------- Type hint related variables, NEVER USE OUTSIDE OF THE MODULES! ----------
+T = typing.TypeVar('T')
+
 # ---------- Check and Normalize strings ----------
 char_printable: str = string.ascii_letters + string.digits
 char_printable     += string.punctuation  # noqa
@@ -277,7 +280,7 @@ def isiterable(in_obj):
         return False
 
 
-def ignore_exception(IgnoreException=Exception, DefaultVal=None):
+def ignore_exception(IgnoreException: typing.Type[Exception] = Exception, DefaultVal: T = None):
     # from https://stackoverflow.com/a/2262424
     """ Decorator for ignoring exception from a function
     e.g.   @ignore_exception(DivideByZero)
