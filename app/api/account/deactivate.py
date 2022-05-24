@@ -40,7 +40,7 @@ class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin
         target_user: user_module.User = refresh_token.usertable
         if target_user.email != req_body['email']:
             return AccountResponseCase.user_info_mismatch.create_response(
-                        data={'fields': ['email']})
+                data={'fields': ['email']})
         if not target_user.check_password(req_body['password']):
             return AccountResponseCase.user_wrong_password.create_response()
 
@@ -51,27 +51,23 @@ class AccountDeactivationRoute(flask.views.MethodView, api_class.MethodViewMixin
             why_deactivated: str = target_user.why_deactivated.replace('ACCOUNT_DEACTIVATED::', '')
             return AccountResponseCase.user_deactivated.create_response(data={'reason': why_deactivated})
 
-        try:
-            # Revoke all user tokens
-            target_tokens = db.session.query(jwt_module.RefreshToken)\
-                                .filter(jwt_module.RefreshToken.user == target_user.uuid)\
-                                .all()
-            if not target_tokens:
-                # No refresh token of target user don't make any sense,
-                # how could user get here although user don't have any valid refresh token?
-                return CommonResponseCase.server_error.create_response()
-            for token in target_tokens:
-                # TODO: set can set multiple at once, so use that method instead
-                redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(token.jti)
-                redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
-                db.session.delete(token)
-
-            target_user.deactivated_at = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
-            target_user.why_deactivated = 'ACCOUNT_LOCKED::USER_SELF_LOCKED'
-            target_user.deactivated_by_orm = target_user
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+        # Revoke all user tokens
+        target_tokens = db.session.query(jwt_module.RefreshToken)\
+            .filter(jwt_module.RefreshToken.user == target_user.uuid)\
+            .all()
+        if not target_tokens:
+            # No refresh token of target user don't make any sense,
+            # how could user get here although user don't have any valid refresh token?
             return CommonResponseCase.server_error.create_response()
+        for token in target_tokens:
+            # TODO: set can set multiple at once, so use that method instead
+            redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(token.jti)
+            redis_db.set(redis_key, 'revoked', datetime.timedelta(weeks=2))
+            db.session.delete(token)
+
+        target_user.deactivated_at = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
+        target_user.why_deactivated = 'ACCOUNT_LOCKED::USER_SELF_LOCKED'
+        target_user.deactivated_by_orm = target_user
+        db.session.commit()
 
         return AccountResponseCase.user_deactivate_success.create_response()

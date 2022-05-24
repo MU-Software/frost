@@ -6,7 +6,6 @@ import app.api.helper_class as api_class
 import app.database as db_module
 import app.database.user as user_module
 
-from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
 
 db = db_module.db
@@ -32,15 +31,13 @@ class AccountDuplicateCheckRoute(flask.views.MethodView, api_class.MethodViewMix
             'nickname': user_module.User.nickname,
         }
         check_result = list()
-        try:
-            for field_name, field_value in req_body.items():
-                if db.session.query(user_module.User).filter(field_column_map[field_name] == field_value).first():
-                    check_result.append(field_name)
 
-            if check_result:
-                return AccountResponseCase.user_already_used.create_response(data={
-                    'duplicate': check_result
-                })
-            return AccountResponseCase.user_safe_to_use.create_response()
-        except Exception:
-            return CommonResponseCase.server_error.create_response()
+        for field_name, field_value in req_body.items():
+            if db.session.query(user_module.User).filter(field_column_map[field_name] == field_value).first():
+                check_result.append(field_name)
+
+        if check_result:
+            return AccountResponseCase.user_already_used.create_response(data={
+                'duplicate': check_result
+            })
+        return AccountResponseCase.user_safe_to_use.create_response()
