@@ -73,9 +73,10 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
         new_user.last_login_date = sql.func.now()
 
         # If the TB_USER is empty (=this user is the first registered user),
-        # make this user admin.
+        # make this user admin and mark email as verified.
         if not db.session.query(user.User).first():
             new_user.role = '["admin"]'
+            new_user.email_verified = True
 
         db.session.add(new_user)
 
@@ -91,7 +92,10 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 raise err
 
         mail_sent = True
-        if flask.current_app.config.get('MAIL_ENABLE'):
+        MAIL_ENABLE = flask.current_app.config.get('MAIL_ENABLE')
+        SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION = flask.current_app.config.get(
+            'SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION')
+        if MAIL_ENABLE:
             try:
                 # Create email token to verification & confirmation mail
                 email_token = user.EmailToken.create(
@@ -114,6 +118,8 @@ class SignUpRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     subject=f'{flask.current_app.config.get("PROJECT_NAME")}에 오신 것을 환영합니다!',
                     message=email_result)
 
+                if SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION and mail_sent:
+                    return AccountResponseCase.user_signed_up_but_need_email_verification.create_response()
             except Exception:
                 mail_sent = False
 

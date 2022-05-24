@@ -68,10 +68,15 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         public_sub_code='user.sign_up_but_mail_error',
         data={'user': UserResponseModel.get_model_openapi_description(),
               'db': '', })
+    user_signed_up_but_need_email_verification = api_class.Response(
+        # User signing up success but need email verification
+        description='Successfully created a new account, and You need to verify email address. Welcome!',
+        code=201, success=True,
+        public_sub_code='user.sign_up_but_need_email_verification')
 
     user_safe_to_use = api_class.Response(
         description='No one isn\'t using user-wanted nick/id/email address, so you can use it.',
-        code=200, success=False,
+        code=200, success=True,
         public_sub_code='user.safe_to_use')
     user_already_used = api_class.Response(
         description='Someone is already using user-wanted nick/id/email address. Try another one.',
@@ -106,6 +111,10 @@ class AccountResponseCase(api_class.ResponseCaseCollector):
         code=401, success=False,
         public_sub_code='user.deactivated',
         data={'reason': ''})
+    user_email_not_verified = api_class.Response(
+        description='Account you requested didn\'t verified email.',
+        code=401, success=False,
+        public_sub_code='user.email_not_verified')
 
     # Sign Out related
     user_signed_out = api_class.Response(

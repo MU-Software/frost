@@ -49,6 +49,8 @@ class Config:
     MAIL_ENABLE = os.environ.get('MAIL_ENABLE', True) != 'false'
     MAIL_PROVIDER = os.environ.get('MAIL_PROVIDER', 'AMAZON')
     MAIL_DOMAIN = os.environ.get('MAIL_DOMAIN', None)
+    SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION = os.environ.get(
+        'SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION', True) != 'false'
 
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', None)
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', None)

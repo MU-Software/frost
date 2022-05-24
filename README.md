@@ -127,10 +127,10 @@ Key                    | Required | Explain
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
 `RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
 `ACCOUNT_ROUTE_ENABLE` |   | Enable account related routes, such as sign-up, sign-in, email-action, etc. Default value is `true` and will be disabled only when the value is set to `false`
-`FILE_MANAGEMENT_ROUTE_ENABLE`        |   | Enable file management routes, such as file upload/delete, etc.
-`FILE_UPLOAD_ALLOW_EXTENSION`          |   | Set allowed extension list while uploading file. Default value contains allowed image format extensions on web. 
-`FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK` |   | Check uploaded image is web-friendly. 
-`DROP_ALL_REFRESH_TOKEN_ON_LOAD`       |   | Drop all refresh tokens on load when `RESTAPI_VERSION` is `dev`, such as start-up or auto reload by werkzeug debugger. Default value is `true` and will be disabled only when the value is set to `false`
+`FILE_MANAGEMENT_ROUTE_ENABLE`            |   | Enable file management routes, such as file upload/delete, etc.
+`FILE_UPLOAD_ALLOW_EXTENSION`             |   | Set allowed extension list while uploading file. Default value contains allowed image format extensions on web. 
+`FILE_UPLOAD_IMAGE_WEB_FRIENDLY_CHECK`    |   | Check uploaded image is web-friendly. 
+`DROP_ALL_REFRESH_TOKEN_ON_LOAD`          |   | Drop all refresh tokens on load when `RESTAPI_VERSION` is `dev`, such as start-up or auto reload by werkzeug debugger. Default value is `true` and will be disabled only when the value is set to `false`
 `DB_URL`               | O | Database URL to connect, `sqlite:///:memory:` if not set on `RESTAPI_VERSION = dev`.
 `REDIS_HOST`           | O | Hostname of Redis database.
 `REDIS_PORT`           | O | Port of Redis database. You must set this as integer string.
@@ -139,6 +139,7 @@ Key                    | Required | Explain
 `MAIL_ENABLE`          |   | This enables email ability, like register confirmation mail. Enabled by default. This will be disabled only when the value is set to `false`
 `MAIL_PROVIDER`        | O | Set mail provider. Value can be `AMAZON` or `GOOGLE`. Default value is `AMAZON`. This value is not required when MAIL_ENABLE is `false`.
 `MAIL_DOMAIN`          |   | Set mail domain here.
+`SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION` |   | This blocks user from signing in when user didn't do email verification, but this will be not applied on first user as first account's `email_verified` will be set to `true` when signing up. Enabled by default. This will be disabled when this field or `MAIL_ENABLE` field is set to `false`.
 `GOOGLE_CLIENT_ID`     |   | Set this when you use Google as mail provider.
 `GOOGLE_CLIENT_SECRET` |   | Set this when you use Google as mail provider.
 `GOOGLE_REFRESH_TOKEN` |   | Set this when you use Google as mail provider.

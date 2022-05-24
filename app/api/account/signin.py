@@ -52,6 +52,8 @@ class SignInRoute(flask.views.MethodView, api_class.MethodViewMixin):
             elif reason.startswith('ACCOUNT_DEACTIVATED'):
                 return AccountResponseCase.user_deactivated.create_response(
                             data={'reason': reason.replace('ACCOUNT_DEACTIVATED::', '')})
+            elif reason == 'EMAIL_NOT_VERIFIED':
+                return AccountResponseCase.user_email_not_verified.create_response()
             elif reason == 'DB_ERROR':
                 return CommonResponseCase.db_error.create_response()
             return CommonResponseCase.server_error.create_response()
