@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko-kr">
 
 <head>
   <meta charset="UTF-8" content />
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
   <title>FROST MailGun testbed</title>
   <link rel="stylesheet" href="https://unpkg.com/mvp.css">
   <style>
@@ -12,6 +13,7 @@
     }
 
     html {
+      -webkit-user-select: none;
       user-select: none;
       font-size: 75%;
     }
@@ -36,6 +38,7 @@
     #csrf_token_str {
       word-wrap: break-word;
       width: 30vw;
+      -webkit-user-select: text;
       user-select: text;
     }
 
@@ -270,7 +273,8 @@
           from_address: mailSendTestFromAddressInput.value,
           to_address: mailSendTestToAddressInput.value,
           title: mailSendTestToTitleInput.value,
-          body: mailSendTestBodyTextField.value, }));
+          body: mailSendTestBodyTextField.value,
+        }));
 
         return false;
       };
@@ -311,7 +315,7 @@
           <textarea id="mailgun_sendtest_body" name="mailgun_sendtest_body"></textarea>
           <br />
 
-          <button id="mailgun_sendtest_submit">
+          <button type="button" id="mailgun_sendtest_submit">
             보내기
           </button>
         </form>

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko-kr">
 
 <head>
   <meta charset="UTF-8" content />
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
   <title>FROST Upload testbed</title>
   <link rel="stylesheet" href="https://unpkg.com/mvp.css">
   <style>
@@ -12,6 +13,7 @@
     }
 
     html {
+      -webkit-user-select: none;
       user-select: none;
       font-size: 75%;
     }
@@ -36,6 +38,7 @@
     #csrf_token_str {
       word-wrap: break-word;
       width: 30vw;
+      -webkit-user-select: text;
       user-select: text;
     }
 
@@ -141,20 +144,20 @@
 
     }
 
-    #download_file_type {
+    #download_file_type_container {
       height: 2rem;
       display: flex;
       justify-content: space-around;
       align-items: center;
     }
 
-    #download_file_type input {
+    .download_file_type input {
       margin: 0.4rem;
       margin-top: 0;
       margin-bottom: 0;
     }
 
-    #download_file_type label {
+    .download_file_type label {
       top: 0;
     }
 
@@ -425,13 +428,13 @@
       <aside class="item">
         <h3>이미지 다운로드</h3>
         <form id="download_form" action="/api/dev/account/signup" method="POST">
-          <label for="download_file_type">파일 로드 형식</label>
-          <div id="download_file_container">
-            <div id="download_file_type">
+          <label for="download_file_type_container">파일 로드 형식</label>
+          <div id="download_file_type_container">
+            <div class="download_file_type">
               <input type="radio" name="request_type" id="download_type_json" value="application/json" checked />
               <label id="download_type_json_label" for="download_type_json">application/json</label>
             </div>
-            <div id="download_file_type">
+            <div class="download_file_type">
               <input type="radio" name="request_type" id="download_type_binary" value="image/*" />
               <label id="download_type_binary_label" for="download_type_binary">image/*</label>
             </div>

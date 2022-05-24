@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko-kr">
   <head>
     <meta charset="UTF-8" content />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
     <title>FROST SignUp/Login testbed</title>
     <link rel="stylesheet" href="https://unpkg.com/mvp.css">
     <style>
@@ -10,6 +11,7 @@
         --line-height: normal;
       }
       html {
+        -webkit-user-select: none;
         user-select: none;
         font-size: 75%;
       }
@@ -367,7 +369,7 @@
         <aside class="item">
           <h3>비밀번호 초기화</h3>
           <form id="pwreset_form" action="/api/dev/account/reset-password" method="post" >
-            <label for="pwreset_username">이메일</label>
+            <label for="pwreset_email">이메일</label>
             <input
               id="pwreset_email"
               name="email"
