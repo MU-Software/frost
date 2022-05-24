@@ -24,10 +24,12 @@ access_token_valid_duration: datetime.timedelta = datetime.timedelta(hours=1)
 # Admin token will expire after 12 hours
 admin_token_valid_duration: datetime.timedelta = datetime.timedelta(hours=12)
 
-allowed_claim_in_jwt: list[str] = ['api_ver', 'iss', 'exp', 'user', 'sub', 'jti', 'role', 'otp']
+T = typing.TypeVar('T', bound='TokenBase')
 
 
 class TokenBase:
+    ALLOWED_CLAIM = ['api_ver', 'iss', 'exp', 'user', 'sub', 'jti', 'role', 'otp']
+
     # This will raise error when env var "RESTAPI_VERSION" not set.
     api_ver: str = flask.current_app.config.get('RESTAPI_VERSION')
 
@@ -77,13 +79,13 @@ class TokenBase:
         attrs = inspect.getmembers(self, lambda o: not callable(o))
 
         for attr_name, attr_value in attrs:
-            if attr_name in allowed_claim_in_jwt:
+            if attr_name in self.ALLOWED_CLAIM:
                 result_payload[attr_name] = attr_value
 
         return jwt.encode(payload=result_payload, key=key, algorithm=algorithm)
 
     @classmethod
-    def from_token(cls, jwt_input: str, key: str, algorithm: str = 'HS256') -> 'TokenBase':
+    def from_token(cls: typing.Type[T], jwt_input: str, key: str, algorithm: str = 'HS256') -> T:
         token_data = jwt.decode(jwt_input, key=key, algorithms=algorithm)
 
         current_api_ver: str = flask.current_app.config.get('RESTAPI_VERSION')
@@ -110,7 +112,7 @@ class TokenBase:
             raise jwt.exceptions.InvalidTokenError(f'User UUID in token is {token_data.get("user")}')
 
         # Filter and rebuild token data so that only allowed claim is in token
-        token_data = {k: token_data[k] for k in token_data if k in allowed_claim_in_jwt}
+        token_data = {k: token_data[k] for k in token_data if k in cls.ALLOWED_CLAIM}
 
         new_token = cls()
         new_token.__dict__.update(token_data)
