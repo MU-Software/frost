@@ -168,7 +168,8 @@ class Response:
                         header: tuple[tuple[str]] = (),
                         data: dict = {},
                         message: typing.Optional[str] = None,
-                        template_path: str = '') -> ResponseType:
+                        template_path: str = '',
+                        content_type: str = '') -> ResponseType:
 
         resp_code: int = code if code is not None else self.code
 
@@ -182,8 +183,9 @@ class Response:
         resp_data.update(data)
 
         resp_template_path = template_path or self.template_path
+        resp_content_type = content_type or self.content_type
 
-        if self.content_type == 'application/json':
+        if resp_content_type == 'application/json':
             # TODO: Parse YAML file and get response message using public_sub_code
             response_body = {
                 'success': self.success,
@@ -194,12 +196,12 @@ class Response:
             }
 
             return (flask.jsonify(response_body), resp_code, result_header)
-        elif self.content_type == 'text/html':
+        elif resp_content_type == 'text/html':
             if not resp_template_path:
                 raise Exception('template_path must be set when content_type is \'text/html\'')
             return (flask.render_template(resp_template_path, **resp_data), resp_code, result_header)
         else:
-            raise NotImplementedError(f'Response type {self.content_type} is not supported.')
+            raise NotImplementedError(f'Response type {resp_content_type} is not supported.')
 
 
 class ResponseCaseCollector(AutoRegisterClass):
