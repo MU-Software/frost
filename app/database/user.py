@@ -82,6 +82,9 @@ class User(db_module.DefaultModelMixin, db.Model):
             if not self.check_password(orig_pw):
                 return False, 'WRONG_PASSWORD'
 
+        if new_pw.lower() in (self.id.lower(), self.email.lower(), self.nickname.lower()):
+            return False, 'PW_REUSED_ON_ID_EMAIL_NICK'
+
         try:
             self.password = argon2.hash(new_pw)
         except Exception:
