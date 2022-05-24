@@ -62,5 +62,5 @@ def register_request_handler(app: flask.Flask):
     def handle_exception(exception: werkzeug.exceptions.HTTPException):
         # response = exception.get_response()  # TODO: Log this
         if flask.current_app.config.get('RESTAPI_VERSION', None) == 'dev':
-            print(utils.get_traceback_msg(exception))
+            print(utils.get_traceback_msg(exception), flush=True)
         return CommonResponseCase.server_error.create_response()
