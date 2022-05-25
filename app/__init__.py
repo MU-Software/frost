@@ -19,7 +19,7 @@ LOG_NAME_TO_LEVEL = {
 }
 
 
-def create_app():
+def create_app(**kwargs):
     if os.environ.get('LOG_FILE_ENABLE', False) == 'true':
         log_file_name = os.environ.get('LOG_FILE_NAME', os.environ.get('SERVER_NAME', 'frost_log') + '.log')
         log_level = LOG_NAME_TO_LEVEL.get(os.environ.get('LOG_FILE_LEVEL', '').upper(), None)
@@ -61,7 +61,9 @@ def create_app():
         import app.plugin as plugin
         runable_app = plugin.init_app(runable_app)
 
-    return runable_app
+    if kwargs.get('return_plugin_app', False):
+        return runable_app
+    return app
 
 
 if __name__ == '__main__':
