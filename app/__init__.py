@@ -1,11 +1,32 @@
 import flask
+import logging
 import os
 import werkzeug.middleware.proxy_fix as proxy_fix
 
 import app.config as config
 
 
+LOG_NAME_TO_LEVEL = {
+    'CRITICAL': logging.CRITICAL,
+    'FATAL': logging.FATAL,
+    'ERROR': logging.ERROR,
+    'WARN': logging.WARNING,
+    'WARNING': logging.WARNING,
+    'INFO': logging.INFO,
+    'DEBUG': logging.DEBUG,
+    'NOTSET': logging.NOTSET,
+}
+
+
 def create_app():
+    if os.environ.get('LOG_FILE_ENABLE', False) == 'true':
+        log_file_name = os.environ.get('LOG_FILE_NAME', os.environ.get('SERVER_NAME', 'frost_log') + '.log')
+        log_level = LOG_NAME_TO_LEVEL.get(os.environ.get('LOG_FILE_LEVEL', '').upper(), None)
+        if not log_level:
+            log_level = logging.DEBUG if os.environ.get('RESTAPI_VERSION', '') == 'dev' else logging.WARNING
+
+        logging.basicConfig(filename=log_file_name, level=log_level, )
+
     app = flask.Flask(__name__,
                       instance_relative_config=True,
                       template_folder='static/template')
