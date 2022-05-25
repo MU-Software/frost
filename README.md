@@ -113,7 +113,6 @@ ex) `python3.9 ./env_collection/env_creator.py ./env_collection/dev.json`
 
 Key                    | Required | Explain
 | :----:               |  :----:  | :----
-`SERVER_IS_ON_PROXY`   |   | When this variable is set, then frost enables ***Werkzeug's X-Forwarded-For Proxy Fix*** so that Flask can get correct address of request when application is behind a reverse proxy.<br>MUST ENABLE THIS ONLY IF THIS APPLICATION IS BEHIND A REVERSE PROXY! (security issues)
 `PROJECT_NAME`         | O | This will be shown on automatically created documents or some server-rendered pages.
 `BACKEND_NAME`         |   | Set `Server` field on response header. `Backend Core` is default
 `SERVER_NAME`          | O | Same as Flask's `SERVER_NAME`. Set domain name here.
@@ -121,8 +120,17 @@ Key                    | Required | Explain
 `HOST`                 |   | Host address while running `flask run`.
 `PORT`                 |   | Port number for the API server. `PORT` environment variable also works with Gunicorn, see https://docs.gunicorn.org/en/stable/settings.html#bind
 `SECRET_KEY`           | O | Secret key used in JWT, some builtin functions in flask, etc. Random string will be applied if not set. This is same as Flask's `SECRET_KEY`
+`LOG_FILE_ENABLE`      |   | Creates log file. Defaul value is `false`
+`LOG_FILE_NAME`        |   | Sets log file name. `SERVER_NAME`.log will be used when not set.
+`LOG_FILE_LEVEL`       |   | Sets log level. Can be `CRITICAL`, `FATAL`, `ERROR`, `WARN` or `WARNING`, `INFO`, `DEBUG`, and `NOTSET`.
 `DEVELOPMENT_KEY`      |   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then only request that contains same string as `X-Development-Key` in header will be allowed.
 `LOCAL_DEV_CLIENT_PORT`|   | If `RESTAPI_VERSION` env var is `dev` and this value is set, then CORS header for `http://localhost:{LOCAL_DEV_CLIENT_PORT}` will be set. You must set this as integer string.
+`SERVER_IS_ON_PROXY`   |   | When this variable is set, then frost enables ***Werkzeug's X-Forwarded-For Proxy Fix*** so that Flask can get correct address of request when application is behind a reverse proxy.<br>MUST ENABLE THIS ONLY IF THIS APPLICATION IS BEHIND A REVERSE PROXY! (security issues) See https://werkzeug.palletsprojects.com/en/latest/middleware/proxy_fix/ or https://github.com/pallets/werkzeug/blob/main/src/werkzeug/middleware/proxy_fix.py
+`X_FOR_LEVEL`          |   | X_FOR_LEVEL is a value for werkzeug.middleware.proxy_fix.ProxyFix's argument.
+`X_PROTO_LEVEL`        |   | X_PROTO_LEVEL is a value for werkzeug.middleware.proxy_fix.ProxyFix's argument.
+`X_HOST_LEVEL`         |   | X_HOST_LEVEL is a value for werkzeug.middleware.proxy_fix.ProxyFix's argument.
+`X_PORT_LEVEL`         |   | X_PORT_LEVEL is a value for werkzeug.middleware.proxy_fix.ProxyFix's argument.
+`X_PREFIX_LEVEL`       |   | X_PREFIX_LEVEL is a value for werkzeug.middleware.proxy_fix.ProxyFix's argument.
 `FLASK_APP`            | O | Same as Flask's `FLASK_APP`. You must set this to `app`.
 `FLASK_ENV`            | O | Same as Flask's `FLASK_ENV`.
 `RESTAPI_VERSION`      | O | This value will be included in route URL. `dev` if not set.<br>ex) `api/dev/account/login` if `dev` set, `api/v2/posts/123456` if `v2` set.
