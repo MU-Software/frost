@@ -7,6 +7,11 @@ class Config:
     DEBUG = False
     TESTING = False
     SERVER_IS_ON_PROXY = bool(os.environ.get('SERVER_IS_ON_PROXY', False))
+    X_FOR_LEVEL = int(os.environ.get('X_FOR_LEVEL', 0))
+    X_PROTO_LEVEL = int(os.environ.get('X_PROTO_LEVEL', 0))
+    X_HOST_LEVEL = int(os.environ.get('X_HOST_LEVEL', 0))
+    X_PORT_LEVEL = int(os.environ.get('X_PORT_LEVEL', 0))
+    X_PREFIX_LEVEL = int(os.environ.get('X_PREFIX_LEVEL', 0))
 
     JSON_AS_ASCII = False
     PROJECT_NAME = os.environ.get('PROJECT_NAME')

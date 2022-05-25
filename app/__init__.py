@@ -37,7 +37,13 @@ def create_app():
     app.config.from_object(config.config_by_name[environment])
 
     if app.config.get('SERVER_IS_ON_PROXY'):
-        app.wsgi_app = proxy_fix.ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+        app.wsgi_app = proxy_fix.ProxyFix(
+            app.wsgi_app,
+            x_for=app.config.get('X_FOR_LEVEL'),
+            x_proto=app.config.get('X_PROTO_LEVEL'),
+            x_host=app.config.get('X_HOST_LEVEL'),
+            x_port=app.config.get('X_PORT_LEVEL'),
+            x_prefix=app.config.get('X_PREFIX_LEVEL'))
 
     with app.app_context():
         import app.database as db
