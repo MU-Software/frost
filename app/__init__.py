@@ -5,6 +5,7 @@ import werkzeug.middleware.proxy_fix as proxy_fix
 
 import app.config as config
 
+IS_GUNICORN = 'gunicorn' in os.environ.get('SERVER_SOFTWARE', '')
 
 LOG_NAME_TO_LEVEL = {
     'CRITICAL': logging.CRITICAL,
@@ -60,3 +61,5 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(host=os.environ.get('HOST', '127.0.0.1'), port=int(os.environ.get('PORT', 8000)))
+elif IS_GUNICORN:
+    gunicorn_app = create_app()
