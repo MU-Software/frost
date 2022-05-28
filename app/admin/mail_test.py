@@ -28,7 +28,7 @@ class Admin_MailTest_View(fadmin.BaseView):
 
         did_sent = mailgun.send_mail(
             fromaddr=req_body['from_address'],
-            toaddr=req_body['address'],
+            toaddr=req_body['to_address'],
             subject=req_body['title'],
             message=req_body['body'],
             raise_on_fail=True)
