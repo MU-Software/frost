@@ -1,65 +1,82 @@
 <!DOCTYPE html>
-<html lang="ko-kr">
-  <head>
-    <meta charset="UTF-8" content />
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
-    <title>FROST SignUp/Login testbed</title>
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
-    <style>
-      :root {
-        --color: #2979ff;
-        --line-height: normal;
-      }
-      html {
-        -webkit-user-select: none;
-        user-select: none;
-        font-size: 75%;
-      }
-      body {
-        padding: 0;
-        margin: 0;
-        line-height: normal;
-      }
-      h1 {
-        text-align: center;
-      }
-      section aside {
-        /* max-width: calc(var(--width-card-wide) - 48px); */
-        min-width: 27vw;
-        height: fit-content;
-        text-align: center;
-        background-color: #f7f7f7;
-        border: 1px solid #7af;
-      }
-      .container_container {
-        overflow-x: scroll;
-      }
-      .container {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: normal;
-        align-self: safe center;
-        align-items: center;
-        /* align-content: flex-start; */
-        /* I don't know why, I don't want to know why,
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
+  <title>FROST SignUp/Login testbed</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <style>
+    :root {
+      --color: #2979ff;
+      --line-height: normal;
+    }
+
+    html {
+      -webkit-user-select: none;
+      user-select: none;
+      font-size: 75%;
+    }
+
+    body {
+      padding: 0;
+      margin: 0;
+      line-height: normal;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    section aside {
+      /* max-width: calc(var(--width-card-wide) - 48px); */
+      min-width: 27vw;
+      height: -moz-fit-content;
+      height: fit-content;
+      text-align: center;
+      background-color: #f7f7f7;
+      border: 1px solid #7af;
+    }
+
+    .container_container {
+      overflow-x: scroll;
+    }
+
+    .container {
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: normal;
+      align-self: safe center;
+      align-items: center;
+      /* align-content: flex-start; */
+      /* I don't know why, I don't want to know why,
            I shouldn't have to wonder why, but for whatever reason
            this stupid card isn't laying out correctly
            unless we do this terribleness */
-        height: calc(100vh - 3.4em - 48px);
-        /* width: calc((var(--width-card) + 72px) * 3); */
-      }
-      .item::before {
-        counter-increment: items;
-        /* content: counter(items); */
-      }
+      height: calc(100vh - 3.4em - 48px);
+      /* width: calc((var(--width-card) + 72px) * 3); */
+    }
 
-      /* Re-order items into 3 rows */
-      .item:nth-child(3n+1) { order: 1; }
-      .item:nth-child(3n+2) { order: 2; }
-      .item:nth-child(3n)   { order: 3; }
+    .item::before {
+      counter-increment: items;
+      /* content: counter(items); */
+    }
 
-      /* Force new columns */
-      /* .container::before,
+    /* Re-order items into 3 rows */
+    .item:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .item:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .item:nth-child(3n) {
+      order: 3;
+    }
+
+    /* Force new columns */
+    /* .container::before,
       .container::after {
         content: "";
         flex-basis: 100%;
@@ -67,335 +84,309 @@
         order: 2;
       } */
 
-      h3 {
-        margin-top: 0;
-        min-width: 100;
-        text-align: center;
-      }
-      form {
-        margin-top: 12px;
-        margin-bottom: 12px;
-        min-width: 0;
-        background-color: #fff;
-      }
-      label {
-        font-size: 10pt;
-        color: #484848;
-      }
-      input[type=text], input[type=password], input[type=email], textarea {
-        width: calc(100% - 24px);
-      }
-      input[type=submit] {
-        margin: 0;
-        background-color: #2979ff;
-        color: #fff;
-      }
-      button {
-        padding: revert;
-      }
+    h3 {
+      margin-top: 0;
+      min-width: 100;
+      text-align: center;
+    }
 
-      h5 {
-        min-width: 100;
-        margin-bottom: 0.2rem;
-        text-align: left;
+    form {
+      margin-top: 12px;
+      margin-bottom: 12px;
+      min-width: 0;
+      background-color: #fff;
+    }
+
+    label {
+      font-size: 10pt;
+      color: #484848;
+    }
+
+    input[type=text],
+    input[type=password],
+    input[type=email],
+    textarea {
+      width: calc(100% - 24px);
+    }
+
+    input[type=submit] {
+      margin: 0;
+      background-color: #2979ff;
+      color: #fff;
+    }
+
+    button {
+      padding: revert;
+    }
+
+    h5 {
+      min-width: 100;
+      margin-bottom: 0.2rem;
+      text-align: left;
+    }
+
+    pre {
+      border: 1px solid var(--color-bg-secondary);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow) var(--color-shadow);
+
+      background-color: #fff;
+      min-height: 48pt;
+      margin: 0;
+      padding: 1.5rem;
+
+      max-width: var(--width-card-wide);
+      /* min-width: var(--width-card); */
+
+      white-space: pre-wrap;
+      word-break: break-all;
+      text-align: left;
+    }
+  </style>
+  <script type="text/javascript" src="/api/dev/debug/src/json-viewer.js"></script>
+  <link rel="stylesheet" type="text/css" href="/api/dev/debug/src/json-viewer.css">
+  <script>
+    function uuidv4() {
+      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
+    }
+
+    var csrfToken = uuidv4();
+    var accessToken = '';
+
+    function formToJson(formID) {
+      var formElement = document.getElementById(formID),
+        inputElements = formElement.getElementsByTagName("input"),
+        textareaElements = formElement.getElementsByTagName("textarea"),
+        jsonObject = {};
+      for (var i = 0; i < inputElements.length; i++) {
+        var inputElement = inputElements[i];
+        if (inputElement.type != "submit") {
+          jsonObject[inputElement.name] = inputElement.value;
+        }
       }
-      pre {
-        border: 1px solid var(--color-bg-secondary);
-        border-radius: var(--border-radius);
-        box-shadow: var(--box-shadow) var(--color-shadow);
-
-        background-color: #fff;
-        min-height: 48pt;
-        margin: 0;
-        padding: 1.5rem;
-
-        max-width: var(--width-card-wide);
-        /* min-width: var(--width-card); */
-
-        white-space: pre-wrap;
-        word-break: break-all;
-        text-align: left;
+      for (var i = 0; i < textareaElements.length; i++) {
+        var textareaElement = textareaElements[i];
+        jsonObject[textareaElement.name] = textareaElement.value;
       }
-    </style>
-    <script type="text/javascript" src="/api/dev/debug/src/json-viewer.js"></script>
-    <link rel="stylesheet" type="text/css" href="/api/dev/debug/src/json-viewer.css">
-    <script>
-      function uuidv4() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
-      }
+      return JSON.stringify(jsonObject);
+    }
 
-      var csrfToken = uuidv4();
-      var accessToken = '';
-
-      function formToJson(formID){
-        var formElement = document.getElementById(formID),
-            inputElements = formElement.getElementsByTagName("input"),
-            textareaElements = formElement.getElementsByTagName("textarea"),
-            jsonObject = {};
-        for(var i = 0; i < inputElements.length; i++){
-          var inputElement = inputElements[i];
-          if (inputElement.type != "submit") {
-            jsonObject[inputElement.name] = inputElement.value;
+    function simpleFormPostRequest(baseID, targetJsonViewer, isAuth = true) {
+      var resultPre = document.getElementById(baseID + '_request_result_pre');
+      var formElement = document.getElementById(baseID + '_form');
+      var formData = formToJson(baseID + '_form');
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        var isSuccess = ''
+        if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+          isSuccess = 'SUCCESS!';
+          if (isAuth) {
+            response = JSON.parse(xhr.response);
+            accessToken = response.data.user.access_token.token;
           }
+        } else {
+          isSuccess = 'FAILED!';
         }
-        for(var i = 0; i < textareaElements.length; i++){
-          var textareaElement = textareaElements[i];
-          jsonObject[textareaElement.name] = textareaElement.value;
-        }
-        return JSON.stringify(jsonObject);
+        try {
+          targetJsonViewer.showJSON(JSON.parse(xhr.response));
+        } catch (e) { }
+        resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+        // resultPre.textContent += '\r\nRESULT_DATA = ' + JSON.stringify(JSON.parse(xhr.response), null, 2);
+        resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
       }
 
-      function simpleFormPostRequest(baseID, targetJsonViewer, isAuth=true) {
-        var resultPre = document.getElementById(baseID + '_request_result_pre');
-        var formElement = document.getElementById(baseID + '_form');
-        var formData = formToJson(baseID + '_form');
-        var xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-          var isSuccess = ''
-          if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
-            isSuccess = 'SUCCESS!';
-            if (isAuth) {
-              response = JSON.parse(xhr.response);
-              accessToken = response.data.user.access_token.token;
-            }
-          } else {
-            isSuccess = 'FAILED!';
-          }
-          try {
-            targetJsonViewer.showJSON(JSON.parse(xhr.response));
-          } catch (e) {}
-          resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
-          // resultPre.textContent += '\r\nRESULT_DATA = ' + JSON.stringify(JSON.parse(xhr.response), null, 2);
-          resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
-        }
+      xhr.open('POST', formElement.action);
+      xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+      if (accessToken) {
+        xhr.setRequestHeader('Authorization', accessToken);
+      }
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(formData);
+    }
 
-        xhr.open('POST', formElement.action);
-        xhr.setRequestHeader('X-Csrf-Token', csrfToken);
-        if (accessToken) {
-            xhr.setRequestHeader('Authorization', accessToken);
+    function simplePostRequest(url, baseID, targetJsonViewer, postBody) {
+      var resultPre = document.getElementById(baseID + '_request_result_pre');
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        var isSuccess = ''
+        if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+          isSuccess = 'SUCCESS!';
+        } else {
+          isSuccess = 'FAILED!';
         }
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(formData);
+        try {
+          targetJsonViewer.showJSON(JSON.parse(xhr.response));
+        } catch (e) { }
+        resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+        resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
       }
 
-      function simplePostRequest(url, baseID, targetJsonViewer, postBody) {
-        var resultPre = document.getElementById(baseID + '_request_result_pre');
-        var xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-          var isSuccess = ''
-          if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
-            isSuccess = 'SUCCESS!';
-          } else {
-            isSuccess = 'FAILED!';
-          }
-          try {
-            targetJsonViewer.showJSON(JSON.parse(xhr.response));
-          } catch (e) {}
-          resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
-          resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
-        }
+      xhr.open('POST', url);
+      xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+      if (accessToken) {
+        xhr.setRequestHeader('Authorization', accessToken);
+      }
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(postBody);
+    }
 
-        xhr.open('POST', url);
-        xhr.setRequestHeader('X-Csrf-Token', csrfToken);
-        if (accessToken) {
-            xhr.setRequestHeader('Authorization', accessToken);
+    function simpleGetRequest(url, baseID, targetJsonViewer) {
+      var resultPre = document.getElementById(baseID + '_request_result_pre');
+      var xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        var isSuccess = ''
+        if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
+          isSuccess = 'SUCCESS!';
+        } else {
+          isSuccess = 'FAILED!';
         }
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(postBody);
+        try {
+          targetJsonViewer.showJSON(JSON.parse(xhr.response));
+        } catch (e) { }
+        resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
+        resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
       }
 
-      function simpleGetRequest(url, baseID, targetJsonViewer) {
-        var resultPre = document.getElementById(baseID + '_request_result_pre');
-        var xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-          var isSuccess = ''
-          if (Math.floor(xhr.status / 100) === 2 && JSON.parse(xhr.response).success === true) {
-            isSuccess = 'SUCCESS!';
-          } else {
-            isSuccess = 'FAILED!';
-          }
-          try {
-            targetJsonViewer.showJSON(JSON.parse(xhr.response));
-          } catch (e) {}
-          resultPre.textContent = isSuccess + ' CODE = ' + xhr.status.toString();
-          resultPre.textContent += '\r\nRESULT_DATA = ' + xhr.response;
-        }
-
-        xhr.open('GET', url);
-        xhr.setRequestHeader('X-Csrf-Token', csrfToken);
-        if (accessToken) {
-            xhr.setRequestHeader('Authorization', accessToken);
-        }
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send();
+      xhr.open('GET', url);
+      xhr.setRequestHeader('X-Csrf-Token', csrfToken);
+      if (accessToken) {
+        xhr.setRequestHeader('Authorization', accessToken);
       }
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send();
+    }
 
-      var signupJsonViewer = new JSONViewer();
-      var loginJsonViewer = new JSONViewer();
-      var signoutJsonViewer = new JSONViewer();
-      var accessRefreshJsonViewer = new JSONViewer();
-      var passwordResetJsonViewer = new JSONViewer();
-    </script>
-  </head>
-  <body>
-    <h1>회원가입 / 로그인 데모</h1>
-    <div class="container_container">
-      <section class="container">
-        <aside class="item">
-          <h3>회원가입</h3>
-          <form id="signup_form" action="/api/dev/account/signup" method="POST">
-            <label for="signup_email">이메일</label>
-            <input
-              id="signup_email"
-              name="email"
-              type="email"
-              autocapitalize="none"
-              autocomplete="on"
-              autocorrect="off"
-              spellcheck="false"
-              dir="auto" />
+    var signupJsonViewer = new JSONViewer();
+    var loginJsonViewer = new JSONViewer();
+    var signoutJsonViewer = new JSONViewer();
+    var accessRefreshJsonViewer = new JSONViewer();
+    var passwordResetJsonViewer = new JSONViewer();
+  </script>
+</head>
 
-            <label for="signup_id">아이디</label>
-            <input
-              id="signup_id"
-              name="id"
-              type="text"
-              autocapitalize="none"
-              autocomplete="on"
-              autocorrect="off"
-              spellcheck="false"
-              dir="auto" />
+<body>
+  <h1>회원가입 / 로그인 데모</h1>
+  <div class="container_container">
+    <section class="container">
+      <aside class="item">
+        <h3>회원가입</h3>
+        <form id="signup_form" action="/api/dev/account/signup" method="POST">
+          <label for="signup_email">이메일</label>
+          <input id="signup_email" name="email" type="email" autocapitalize="none" autocomplete="on" autocorrect="off"
+            spellcheck="false" dir="auto" />
 
-            <label for="signup_password">비밀번호</label>
-            <input id="signup_password" name="pw" type="password" />
+          <label for="signup_id">아이디</label>
+          <input id="signup_id" name="id" type="text" autocapitalize="none" autocomplete="on" autocorrect="off"
+            spellcheck="false" dir="auto" />
 
-            <label for="signup_nickname">별명</label>
-            <input
-              id="signup_nickname"
-              name="nick"
-              type="text"
-              autocapitalize="none"
-              autocomplete="on"
-              autocorrect="off"
-              spellcheck="false"
-              dir="auto" />
+          <label for="signup_password">비밀번호</label>
+          <input id="signup_password" name="pw" type="password" />
 
-            <label for="description">자기소개</label>
-            <textarea id="description" name="description"></textarea>
+          <label for="signup_nickname">별명</label>
+          <input id="signup_nickname" name="nick" type="text" autocapitalize="none" autocomplete="on" autocorrect="off"
+            spellcheck="false" dir="auto" />
 
-            <input
-              id="signup_submit"
-              type="submit"
-              onclick="simpleFormPostRequest('signup', signupJsonViewer); return false;" />
-          </form>
+          <label for="description">자기소개</label>
+          <textarea id="description" name="description"></textarea>
 
-          <h5>Request Result(JSON)</h5>
-          <div id="signup_request_result_json"></div>
-          <h5>Request Result(PRE)</h5>
-          <pre id="signup_request_result_pre"></pre>
+          <input id="signup_submit" type="submit"
+            onclick="simpleFormPostRequest('signup', signupJsonViewer); return false;" />
+        </form>
 
-          <script>
-            document.querySelector("#signup_request_result_json").appendChild(signupJsonViewer.getContainer());
-          </script>
-        </aside>
+        <h5>Request Result(JSON)</h5>
+        <div id="signup_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="signup_request_result_pre"></pre>
 
-        <aside class="item">
-          <h3>로그인</h3>
-          <form id="login_form" action="/api/dev/account/signin" method="post" >
-            <label for="login_username">이메일 또는 사용자 아이디</label>
-            <input
-              id="login_username"
-              name="id"
-              type="text"
-              autocapitalize="none"
-              autocomplete="on"
-              autocorrect="off"
-              spellcheck="false"
-              dir="auto" />
+        <script>
+          document.querySelector("#signup_request_result_json").appendChild(signupJsonViewer.getContainer());
+        </script>
+      </aside>
 
-            <label for="login_password">비밀번호</label>
-            <input id="login_password" type="password" name="pw" />
+      <aside class="item">
+        <h3>로그인</h3>
+        <form id="login_form" action="/api/dev/account/signin" method="post">
+          <label for="login_username">이메일 또는 사용자 아이디</label>
+          <input id="login_username" name="id" type="text" autocapitalize="none" autocomplete="on" autocorrect="off"
+            spellcheck="false" dir="auto" />
 
-            <input
-              id="login_submit"
-              type="submit"
-              onclick="simpleFormPostRequest('login', loginJsonViewer); return false;" />
-          </form>
+          <label for="login_password">비밀번호</label>
+          <input id="login_password" type="password" name="pw" />
 
-          <h5>Request Result(JSON)</h5>
-          <div id="login_request_result_json"></div>
-          <h5>Request Result(PRE)</h5>
-          <pre id="login_request_result_pre"></pre>
+          <input id="login_submit" type="submit"
+            onclick="simpleFormPostRequest('login', loginJsonViewer); return false;" />
+        </form>
 
-          <script>
-            document.querySelector("#login_request_result_json").appendChild(loginJsonViewer.getContainer());
-          </script>
-        </aside>
+        <h5>Request Result(JSON)</h5>
+        <div id="login_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="login_request_result_pre"></pre>
 
-        <aside class="item">
-          <h3>Access 토큰 갱신</h3>
-          <button id="access_token_refresh_btn" onclick="simplePostRequest('/api/dev/account/refresh', 'access_token_refresh', accessRefreshJsonViewer, ''); return false;">토큰 갱신!</button>
+        <script>
+          document.querySelector("#login_request_result_json").appendChild(loginJsonViewer.getContainer());
+        </script>
+      </aside>
 
-          <h5>Request Result(JSON)</h5>
-          <div id="access_token_refresh_request_result_json"></div>
-          <h5>Request Result(PRE)</h5>
-          <pre id="access_token_refresh_request_result_pre"></pre>
+      <aside class="item">
+        <h3>Access 토큰 갱신</h3>
+        <button id="access_token_refresh_btn"
+          onclick="simplePostRequest('/api/dev/account/refresh', 'access_token_refresh', accessRefreshJsonViewer, ''); return false;">토큰
+          갱신!</button>
 
-          <script>
-            document
-              .querySelector("#access_token_refresh_request_result_json")
-              .appendChild(accessRefreshJsonViewer.getContainer());
-          </script>
-        </aside>
+        <h5>Request Result(JSON)</h5>
+        <div id="access_token_refresh_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="access_token_refresh_request_result_pre"></pre>
 
-        <div class="item"></div>
+        <script>
+          document
+            .querySelector("#access_token_refresh_request_result_json")
+            .appendChild(accessRefreshJsonViewer.getContainer());
+        </script>
+      </aside>
 
-        <aside class="item">
-          <h3>로그아웃</h3>
-          <button id="signout_btn" onclick="simplePostRequest('/api/dev/account/signout', 'signout', signoutJsonViewer, JSON.stringify({'signout': true})); return false;" >로그아웃</button>
+      <div class="item"></div>
 
-          <h5>Request Result(JSON)</h5>
-          <div id="signout_request_result_json"></div>
-          <h5>Request Result(PRE)</h5>
-          <pre id="signout_request_result_pre"></pre>
+      <aside class="item">
+        <h3>로그아웃</h3>
+        <button id="signout_btn"
+          onclick="simplePostRequest('/api/dev/account/signout', 'signout', signoutJsonViewer, JSON.stringify({'signout': true})); return false;">로그아웃</button>
 
-          <script>
-            document.querySelector("#signout_request_result_json").appendChild(signoutJsonViewer.getContainer());
-          </script>
-        </aside>
+        <h5>Request Result(JSON)</h5>
+        <div id="signout_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="signout_request_result_pre"></pre>
 
-        <aside class="item">
-          <h3>비밀번호 초기화</h3>
-          <form id="pwreset_form" action="/api/dev/account/reset-password" method="post" >
-            <label for="pwreset_email">이메일</label>
-            <input
-              id="pwreset_email"
-              name="email"
-              type="email"
-              autocapitalize="none"
-              autocorrect="off"
-              spellcheck="false"
-              dir="auto" />
+        <script>
+          document.querySelector("#signout_request_result_json").appendChild(signoutJsonViewer.getContainer());
+        </script>
+      </aside>
 
-            <input
-              id="pwreset_submit"
-              type="submit"
-              onclick="simpleFormPostRequest('pwreset', passwordResetJsonViewer, false); return false;" />
-          </form>
+      <aside class="item">
+        <h3>비밀번호 초기화</h3>
+        <form id="pwreset_form" action="/api/dev/account/reset-password" method="post">
+          <label for="pwreset_email">이메일</label>
+          <input id="pwreset_email" name="email" type="email" autocapitalize="none" autocorrect="off" spellcheck="false"
+            dir="auto" />
 
-          <h5>Request Result(JSON)</h5>
-          <div id="pwreset_request_result_json"></div>
-          <h5>Request Result(PRE)</h5>
-          <pre id="pwreset_request_result_pre"></pre>
+          <input id="pwreset_submit" type="submit"
+            onclick="simpleFormPostRequest('pwreset', passwordResetJsonViewer, false); return false;" />
+        </form>
 
-          <script>
-            document.querySelector("#pwreset_request_result_json").appendChild(passwordResetJsonViewer.getContainer());
-          </script>
-        </aside>
+        <h5>Request Result(JSON)</h5>
+        <div id="pwreset_request_result_json"></div>
+        <h5>Request Result(PRE)</h5>
+        <pre id="pwreset_request_result_pre"></pre>
 
-      </section>
-    </div>
-  </body>
+        <script>
+          document.querySelector("#pwreset_request_result_json").appendChild(passwordResetJsonViewer.getContainer());
+        </script>
+      </aside>
+
+    </section>
+  </div>
+</body>
+
 </html>

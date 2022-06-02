@@ -10,7 +10,8 @@
       overflow: hidden;
       border: 1px solid #333;
       background-color: #f1f1f1;
-      animation: fadeEffect 1s; /* Fading effect takes 1 second */
+      animation: fadeEffect 1s;
+      /* Fading effect takes 1 second */
     }
 
     /* Style the buttons that are used to open the tab content */
@@ -44,8 +45,13 @@
 
     /* Go from zero to full opacity */
     @keyframes fadeEffect {
-      from {opacity: 0;}
-      to {opacity: 1;}
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
   </style>
   <script>
@@ -70,10 +76,10 @@
       evt.currentTarget.className += " active";
     }
 
-    function formToJson(formElement){
+    function formToJson(formElement) {
       var inputElements = formElement.getElementsByTagName("input"),
-          jsonObject = {};
-      for(var i = 0; i < inputElements.length; i++){
+        jsonObject = {};
+      for (var i = 0; i < inputElements.length; i++) {
         var inputElement = inputElements[i];
         console.log(inputElement);
         if (inputElement.type == "checkbox") {
@@ -99,7 +105,7 @@
 
   <!-- Tab links -->
   <div class="tab">
-    <button class="tablinks" onclick="openTab(event, 'tabRevokeUser')"  id="defaultOpen">
+    <button class="tablinks" onclick="openTab(event, 'tabRevokeUser')" id="defaultOpen">
       Revoke using user UUID
     </button>
     <button class="tablinks" onclick="openTab(event, 'tabRevokeJTI')">
@@ -109,24 +115,23 @@
 
   <!-- Tab contents -->
   <div>
-    <div class="tabcontent" id="tabRevokeUser"> <!-- Revoke using user UUID -->
+    <div class="tabcontent" id="tabRevokeUser">
+      <!-- Revoke using user UUID -->
       <form method="post" id='formRevokeUser'>
         <label for="user_uuid">Revoke시킬 유저 UUID</label>
         <input type="number" name="user_uuid" id="user_uuid" />
-        <input type="checkbox" name="do_delete" id="do_delete">토큰 삭제</input>
-        <input
-        type="submit"
-        onclick="simpleFormPostRequest(document.getElementById('formRevokeUser')); return false;" />
+        <input type="checkbox" name="do_delete" id="do_delete_usertoken">토큰 삭제</input>
+        <input type="submit"
+          onclick="simpleFormPostRequest(document.getElementById('formRevokeUser')); return false;" />
       </form>
     </div>
-    <div class="tabcontent" id="tabRevokeJTI"> <!-- Revoke using JTI -->
+    <div class="tabcontent" id="tabRevokeJTI">
+      <!-- Revoke using JTI -->
       <form method="post" id='formRevokeJTI'>
         <label for="target_jti">Revoke시킬 JWT JTI</label>
         <input type="number" name="target_jti" id="target_jti" />
-        <input type="checkbox" name="do_delete" id="do_delete">토큰 삭제</input>
-        <input
-          type="submit"
-          onclick="simpleFormPostRequest(document.getElementById('formRevokeJTI')); return false;" />
+        <input type="checkbox" name="do_delete" id="do_delete_jwttoken">토큰 삭제</input>
+        <input type="submit" onclick="simpleFormPostRequest(document.getElementById('formRevokeJTI')); return false;" />
       </form>
     </div>
   </div>
@@ -144,13 +149,21 @@
       width: 100%;
       margin-top: 16px;
     }
-    table, td, th {
+
+    table,
+    td,
+    th {
       border: 1px solid #333;
       padding: 8px;
     }
+
     th {
       text-align: center;
       background-color: #888;
+    }
+
+    .fixed-table {
+      table-layout: fixed;
     }
   </style>
   <script>
@@ -197,7 +210,7 @@
 
   <!-- Revoked list -->
   <div>
-    <table style="table-layout: fixed;">
+    <table class="fixed-table">
       <thead>
         <th>Index</th>
         <th>JTI</th>

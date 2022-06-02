@@ -1,10 +1,10 @@
 {% if language == 'kor' %}
 <!-- ko -->
 <div>
-  이 메일은 {{ user_nick }}님의 계정을 인증하기 위해 <a href = "{{ domain_url }}">{{ project_name }}</a>에서 전송되었어요.
+  이 메일은 {{ user_nick }}님의 계정을 인증하기 위해 <a href="{{ domain_url }}">{{ project_name }}</a>에서 전송되었어요.
   <br />
-  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
-  이 계정은 제 계정이 맞아요!
+  <a href='{{ api_base_url }}/account/email/{{ email_key }}'>
+    이 계정은 제 계정이 맞아요!
   </a>
   <br />
   가입한 적이 없다면 이 메일을 무시 혹은 삭제해주세요. 일주일 안에 응답이 없으면 이 인증은 무효가 돼요.
@@ -15,10 +15,10 @@
 {% elif language == 'jpa' %}
 <!-- ja -->
 <div>
-  このメールは、が登録してアカウント「{{ user_nick }}」をチェックするために<a href = "{{ domain_url }}">{{ project_name }}</a>で送信ました。
+  このメールは、が登録してアカウント「{{ user_nick }}」をチェックするために<a href="{{ domain_url }}">{{ project_name }}</a>で送信ました。
   <br />
-  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
-  このアカウントは、私のアカウントです！
+  <a href='{{ api_base_url }}/account/email/{{ email_key }}'>
+    このアカウントは、私のアカウントです！
   </a>
   <br />
   登録したことがない場合は、メールを削除してください。6時間以内にチェックをしていない場合、このチェックは無効になりますよ。。
@@ -29,13 +29,15 @@
 {% elif language == 'eng' %}
 <!-- en -->
 <div>
-  This email was sent from <a href = "{{ domain_url }}">{{ project_name }}</a> to authenticate your account {{ user_nick }} and activate it.
+  This email was sent from <a href="{{ domain_url }}">{{ project_name }}</a> to authenticate your account {{ user_nick
+  }} and activate it.
   <br />
-  <a href = '{{ api_base_url }}/account/email/{{ email_key }}'>
-  That's my account!
+  <a href='{{ api_base_url }}/account/email/{{ email_key }}'>
+    That's my account!
   </a>
   <br />
-  If you have not registered, please delete this email. If there is no response within 6 hours, this certificate will be invalid.
+  If you have not registered, please delete this email. If there is no response within 6 hours, this certificate will be
+  invalid.
   <br />
   This e-mail address is send-only.
 </div>
