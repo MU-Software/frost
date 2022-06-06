@@ -152,7 +152,7 @@ ex) `python3.9 ./env_collection/env_creator.py ./env_collection/dev.json`
 `MAIL_ENABLE`          |   | 이 환경 변수는 `가입 및 이메일 주소 확인 메일`과 `비밀번호 초기화 메일` 등과 같은 이메일 기능을 활성화합니다. 기본적으로 활성화되어 있으며, `false`로 값이 설정될때만 비활성화됩니다.
 `MAIL_PROVIDER`        | O | 메일 서비스 제공자를 설정합니다. `AMAZON`이나 `GOOGLE`이 값으로 들어올 수 있습니다. 만약 `MAIL_ENABLE`값이 `false`일 경우 필요하지 않으며, 기본 값은 `AMAZON`입니다.
 `MAIL_DOMAIN`          |   | 메일의 도메인을 적어주세요.
-`SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION` |   | This blocks user from signing in when user didn't do email verification, but this will be not applied on first user as first account's `email_verified` will be set to `true` when signing up. Enabled by default. This will be disabled when this field or `MAIL_ENABLE` field is set to `false`.
+`SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION` |   | 이 환경 변수는 메일 인증을 받지 않은 유저가 로그인하지 못하도록 합니다. (즉, `email_verified`가 `true`인 유저만이 로그인할 수 있습니다.) 단, 맨 처음 생성한 계정은 기본적으로 `email_verified`가 `true`로 설정되기 때문에 해당하지 않습니다. 기본적으로 활성화되어 있으며, 이 환경변수가 `false`로 값이 설정되거나 `EMAIL_ENABLE` 환경 변수가 `false`일 시 비활성화됩니다.
 `GOOGLE_CLIENT_ID`     |   | 메일 서비스의 제공자로 Google을 사용하실 때 설정해주세요.
 `GOOGLE_CLIENT_SECRET` |   | 메일 서비스의 제공자로 Google을 사용하실 때 설정해주세요.
 `GOOGLE_REFRESH_TOKEN` |   | 메일 서비스의 제공자로 Google을 사용하실 때 설정해주세요.
