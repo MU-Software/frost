@@ -5,6 +5,9 @@
   ***S***erver  
   ***T***emplate
 
+> [여기](README-ko_kr.md)에 한국어 버전의 README가 있어요!  
+> [Click here](README-ko_kr.md) to read a README written in Korean!  
+
 FROST is a flask template that supports various built-in functions, such as...  
 
 - JWT authentication  
