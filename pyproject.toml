@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "frost"
+version = "0.1.0"
+description = "Flask template for RESTful API"
+authors = ["MU-Software <musoftware@daum.net>"]
+license = "mit"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+wheel = "^0.37.1"
+argon2-cffi = "^21.3.0"
+passlib = "^1.7.4"
+Authlib = "^1.1.0"
+psycopg2 = "^2.9.3"
+PyJWT = "^2.5.0"
+redis = "^4.3.4"
+lxml = "^4.9.1"
+PyYAML = "^6.0"
+user-agents = "^2.2.0"
+python-magic = "^0.4.27"
+Pillow = "^9.2.0"
+firebase-admin = "^5.4.0"
+boto3 = "^1.24.84"
+apispec = "^5.2.2"
+sadisplay = "^0.4.9"
+Flask = "^2.2.2"
+Flask-Cors = "^3.0.10"
+Flask-SQLAlchemy = "^2.5.1"
+Flask-Admin = "^1.6.0"
+Flask-Limiter = {extras = ["redis"], version = "^2.6.3"}
+gunicorn = "^20.1.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.group.dev.dependencies]
+wheel = "^0.37.1"
+argon2-cffi = "^21.3.0"
+passlib = "^1.7.4"
+Authlib = "^1.1.0"
+psycopg2 = "^2.9.3"
+PyJWT = "^2.5.0"
+redis = "^4.3.4"
+lxml = "^4.9.1"
+PyYAML = "^6.0"
+user-agents = "^2.2.0"
+python-magic = "^0.4.27"
+Pillow = "^9.2.0"
+firebase-admin = "^5.4.0"
+boto3 = "^1.24.84"
+apispec = "^5.2.2"
+sadisplay = "^0.4.9"
+Flask = "^2.2.2"
+Flask-Cors = "^3.0.10"
+Flask-SQLAlchemy = "^2.5.1"
+Flask-Admin = "^1.6.0"
+Flask-Limiter = {extras = ["redis"], version = "^2.6.3"}
+gunicorn = "^20.1.0"
+pylint = "^2.15.3"
+pylint-flask = "^0.6"
+pylint-flask-sqlalchemy = "^0.2.0"
+flake8 = "^5.0.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
