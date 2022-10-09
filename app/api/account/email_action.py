@@ -17,7 +17,7 @@ RedisKeyType = db_module.RedisKeyType
 
 class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
     def get(self, email_token: str):
-        '''
+        """
         description: Do Email action, such as email address verification or finding password, etc.
         responses:
             - email_success
@@ -30,11 +30,11 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - email_expired_html
             - email_invalid_html
             - email_not_found_html
-        '''
+        """
         request_content_type: str = flask.request.accept_mimetypes
 
         if not email_token:
-            if 'text/html' in request_content_type:
+            if "text/html" in request_content_type:
                 return AccountResponseCase.email_token_not_given_html.create_response()
             return AccountResponseCase.email_token_not_given.create_response()
 
@@ -42,16 +42,16 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             target_token = user.EmailToken.query_using_token(email_token)
         except jwt.exceptions.ExpiredSignatureError:
             # TODO: We need to delete this from DB, or at least, garbage collect this.
-            if 'text/html' in request_content_type:
+            if "text/html" in request_content_type:
                 return AccountResponseCase.email_expired_html.create_response()
             return AccountResponseCase.email_expired.create_response()
         except Exception:
-            if 'text/html' in request_content_type:
+            if "text/html" in request_content_type:
                 return AccountResponseCase.email_invalid_html.create_response()
             return AccountResponseCase.email_invalid.create_response()
 
         if not target_token:
-            if 'text/html' in request_content_type:
+            if "text/html" in request_content_type:
                 return AccountResponseCase.email_not_found_html.create_response()
             return AccountResponseCase.email_not_found.create_response()
 
@@ -68,18 +68,19 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             db.session.delete(target_token)
             try:
                 db.session.commit()
-                if 'text/html' in request_content_type:
+                if "text/html" in request_content_type:
                     return AccountResponseCase.email_success_html.create_response()
                 return AccountResponseCase.email_success.create_response()
             except Exception:
                 db.session.rollback()
                 return CommonResponseCase.db_error.create_response()
         elif target_token.action == user.EmailTokenAction.EMAIL_PASSWORD_RESET:
-            if 'text/html' in request_content_type:
+            if "text/html" in request_content_type:
                 return AccountResponseCase.email_success_html.create_response(
-                    template_path='email_action/password_reset.html')
+                    template_path="email_action/password_reset.html"
+                )
             return CommonResponseCase.http_unsupported_content_type.create_response()
 
-        if 'text/html' in request_content_type:
+        if "text/html" in request_content_type:
             return AccountResponseCase.email_invalid_html.create_response()
         return AccountResponseCase.email_invalid.create_response()

@@ -13,25 +13,42 @@ RedisKeyType = db_module.RedisKeyType
 
 
 class Admin_MailTest_View(fadmin.BaseView):
-    @fadmin.expose('/', methods=('POST', ))
+    @fadmin.expose("/", methods=("POST",))
     @api_class.RequestBody(
         required_fields={
-            'from_address': {'type': 'string', },
-            'to_address': {'type': 'string', },
-            'title': {'type': 'string', },
-            'body': {'type': 'string', }, })
+            "from_address": {
+                "type": "string",
+            },
+            "to_address": {
+                "type": "string",
+            },
+            "title": {
+                "type": "string",
+            },
+            "body": {
+                "type": "string",
+            },
+        }
+    )
     def post(self, req_body: dict):
-        MAIL_ENABLE = flask.current_app.config.get('MAIL_ENABLE')
+        MAIL_ENABLE = flask.current_app.config.get("MAIL_ENABLE")
         if not MAIL_ENABLE:
             return ResourceResponseCase.resource_forbidden.create_response(
-                message='Mail service disabled', data={'resource_name': ['mail', ]})
+                message="Mail service disabled",
+                data={
+                    "resource_name": [
+                        "mail",
+                    ]
+                },
+            )
 
         did_sent = mailgun.send_mail(
-            fromaddr=req_body['from_address'],
-            toaddr=req_body['to_address'],
-            subject=req_body['title'],
-            message=req_body['body'],
-            raise_on_fail=True)
+            fromaddr=req_body["from_address"],
+            toaddr=req_body["to_address"],
+            subject=req_body["title"],
+            message=req_body["body"],
+            raise_on_fail=True,
+        )
 
         if did_sent:
             return ResourceResponseCase.resource_created.create_response()

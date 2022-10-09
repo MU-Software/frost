@@ -12,9 +12,9 @@ def before_first_request():
 
 
 def before_request():
-    if flask.current_app.config.get('RESTAPI_VERSION') == 'dev':
-        config_dev_key = flask.current_app.config.get('DEVELOPMENT_KEY', None)
-        req_dev_key = flask.request.headers.get('X-Development-Key', None)
+    if flask.current_app.config.get("RESTAPI_VERSION") == "dev":
+        config_dev_key = flask.current_app.config.get("DEVELOPMENT_KEY", None)
+        req_dev_key = flask.request.headers.get("X-Development-Key", None)
 
         if req_dev_key != config_dev_key:
             return AccountResponseCase.user_signed_out.create_response()
@@ -61,6 +61,6 @@ def register_request_handler(app: flask.Flask):
     @app.errorhandler(Exception)
     def handle_exception(exception: werkzeug.exceptions.HTTPException):
         # response = exception.get_response()  # TODO: Log this
-        if flask.current_app.config.get('RESTAPI_VERSION', None) == 'dev':
+        if flask.current_app.config.get("RESTAPI_VERSION", None) == "dev":
             print(utils.get_traceback_msg(exception), flush=True)
         return CommonResponseCase.server_error.create_response()

@@ -14,16 +14,14 @@ def pmmod_desc(pmmod: int) -> list:
 
 def pmmod_calc(pmmod: typing.Iterable[typing.Iterable[int]]) -> int:
     if not pmmod:
-        raise ValueError('Argument \'pmmod\' is empty')
+        raise ValueError("Argument 'pmmod' is empty")
 
-    pmmod_element_check = lambda z: utils.isiterable(z)\
-                                and (not isinstance(z, (str, bytes)))\
-                                and len(z) == 3  # noqa
+    pmmod_element_check = lambda z: utils.isiterable(z) and (not isinstance(z, (str, bytes))) and len(z) == 3  # noqa
     if not all(map(pmmod_element_check, pmmod)):
-        raise ValueError('Length of one of argument \'pmmod\' elements is not 3')
+        raise ValueError("Length of one of argument 'pmmod' elements is not 3")
 
-    result: str = ''
+    result: str = ""
     for pmmod_element in pmmod:
-        result += str(int(''.join(map(lambda z: str(int(bool(z))), pmmod_element)), 2))
+        result += str(int("".join(map(lambda z: str(int(bool(z))), pmmod_element)), 2))
 
     return int(result)

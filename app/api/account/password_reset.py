@@ -24,20 +24,27 @@ class PasswordResetMailSendFailCase(enum.Enum):
 
 class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
     @api_class.RequestBody(
-        required_fields={'email': {'type': 'string', }, },
-        optional_fields={})
-    def post(self, req_body: dict[str, typing.Any], ):
-        '''
+        required_fields={
+            "email": {
+                "type": "string",
+            },
+        },
+        optional_fields={},
+    )
+    def post(
+        self,
+        req_body: dict[str, typing.Any],
+    ):
+        """
         description: Send email that can force-reset account password.
         responses:
             - password_reset_mail_sent
             - password_reset_mail_send_failed
-        '''
+        """
         # Find target user
         target_user: user_module.User = None
         try:
-            target_user = db.session.query(user_module.User)\
-                .filter(user_module.User.email == req_body['email']).first()
+            target_user = db.session.query(user_module.User).filter(user_module.User.email == req_body["email"]).first()
         except Exception:
             return CommonResponseCase.db_error.create_response()
         if not target_user:
@@ -48,32 +55,43 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
         # Create email token. This also checks redis to block spamming.
         try:
             new_email_token = user_module.EmailToken.create(
-                target_user,
-                user_module.EmailTokenAction.EMAIL_PASSWORD_RESET,
-                password_reset_mail_valid_duration)
+                target_user, user_module.EmailTokenAction.EMAIL_PASSWORD_RESET, password_reset_mail_valid_duration
+            )
         except user_module.EmailAlreadySentOnSpecificHoursException:
             return AccountResponseCase.password_reset_mail_send_failed.create_response(
-                data={'reason': PasswordResetMailSendFailCase.MAIL_SENT_IN_48HOURS.name, })
+                data={
+                    "reason": PasswordResetMailSendFailCase.MAIL_SENT_IN_48HOURS.name,
+                }
+            )
 
         # Send mail
-        http_or_https = 'https://' if flask.current_app.config.get('HTTPS_ENABLE', True) else 'http://'
+        http_or_https = "https://" if flask.current_app.config.get("HTTPS_ENABLE", True) else "http://"
         email_result = flask.render_template(
-            'email/password_reset.html',
-            domain_url=http_or_https + flask.current_app.config.get('SERVER_NAME'),
-            api_base_url=(http_or_https + flask.current_app.config.get('SERVER_NAME')
-                          + '/api/' + flask.current_app.config.get('RESTAPI_VERSION')),
-            project_name=flask.current_app.config.get('PROJECT_NAME'),
+            "email/password_reset.html",
+            domain_url=http_or_https + flask.current_app.config.get("SERVER_NAME"),
+            api_base_url=(
+                http_or_https
+                + flask.current_app.config.get("SERVER_NAME")
+                + "/api/"
+                + flask.current_app.config.get("RESTAPI_VERSION")
+            ),
+            project_name=flask.current_app.config.get("PROJECT_NAME"),
             user_nick=target_user.nickname,
             email_key=new_email_token.token,
-            language='kor')
+            language="kor",
+        )
 
         mail_sent = mailgun.send_mail(
-            fromaddr='do-not-reply@' + flask.current_app.config.get('MAIL_DOMAIN'),
+            fromaddr="do-not-reply@" + flask.current_app.config.get("MAIL_DOMAIN"),
             toaddr=target_user.email,
-            subject='비밀번호 초기화 안내 메일입니다.',
-            message=email_result)
+            subject="비밀번호 초기화 안내 메일입니다.",
+            message=email_result,
+        )
         if not mail_sent:
             return AccountResponseCase.password_reset_mail_send_failed.create_response(
-                data={'reason': PasswordResetMailSendFailCase.MAIL_SEND_FAILURE.name, })
+                data={
+                    "reason": PasswordResetMailSendFailCase.MAIL_SEND_FAILURE.name,
+                }
+            )
 
         return AccountResponseCase.password_reset_mail_sent.create_response()

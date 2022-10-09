@@ -29,4 +29,5 @@ pylint
 pylint-flask
 pylint-flask-sqlalchemy
 flake8
+black
 pre-commit
