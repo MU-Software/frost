@@ -23,12 +23,8 @@ import werkzeug
 T = typing.TypeVar("T")
 
 # ---------- Check and Normalize strings ----------
-char_printable: str = string.ascii_letters + string.digits
-char_printable += string.punctuation  # noqa
-
-char_urlsafe: str = string.ascii_letters + string.digits
-char_urlsafe += "-_"  # noqa
-
+char_printable: str = string.ascii_letters + string.digits + string.punctuation
+char_urlsafe: str = string.ascii_letters + string.digits + "-_"
 char_useridsafe: str = string.ascii_letters + string.digits
 
 
@@ -134,8 +130,8 @@ def elegant_pair(x, y) -> int:
 
 def elegant_unpair(z) -> tuple:
     sqrtz = math.floor(math.sqrt(z))
-    sqz = sqrtz * sqrtz  # noqa
-    return (sqrtz, z - sqz - sqrtz) if (z - sqz) >= sqrtz else (z - sqz, sqrtz)  # noqa
+    sqz = sqrtz * sqrtz
+    return (sqrtz, z - sqz - sqrtz) if (z - sqz) >= sqrtz else (z - sqz, sqrtz)
 
 
 # ---------- Hash calculation function ----------
@@ -157,10 +153,13 @@ def BackendException(
     code=500,
     data="",
     backend_log=None,
-    client_header=[],
+    client_header=None,
     description="Unexpected error happened. " "Contect to Administrator.",
     json_prettier=None,
 ):
+    if client_header is None:
+        client_header = []
+
     # custom_headers should be list,
     # because we cannot make multiple items with same key in dict,
     # and setting Set-Cookie header multiple times is the case.
@@ -193,8 +192,8 @@ def BackendException(
     err.get_body = lambda self, environ=None: body_json
     err.get_headers = lambda self, environ=None: custom_headers
 
-    setattr(err, "backend_log", backend_log)
-    setattr(err, "frost_exception", True)
+    err.backend_log = backend_log
+    err.frost_exception = True
 
     return err
 
@@ -205,12 +204,28 @@ KST = datetime.timezone(datetime.timedelta(hours=9))
 
 
 # ---------- Time Calculator ----------
-utc_desc = lambda a, syntax="%Y/%m/%d %H:%M:%S": time.strftime(syntax, time.gmtime(a))  # noqa: E731
-date_to_time: typing.Callable[[int], int] = lambda x: x * 24 * 60 * 60  # noqa: E731
-hour_to_time: typing.Callable[[int], int] = lambda x: x * 60 * 60  # noqa: E731
-update_rate: typing.Callable[[int], int] = date_to_time(2) - hour_to_time(1)  # noqa: E731
-as_utctime: typing.Callable[[datetime.datetime], datetime.datetime] = lambda x: x.replace(tzinfo=UTC)  # noqa: E731
-as_timestamp: typing.Callable[[datetime.datetime], int] = lambda x: as_utctime(x).timestamp()  # noqa: E731
+def utc_desc(a, syntax="%Y/%m/%d %H:%M:%S"):
+    return time.strftime(syntax, time.gmtime(a))
+
+
+def date_to_time(x):
+    return x * 24 * 60 * 60
+
+
+def hour_to_time(x):
+    return x * 60 * 60
+
+
+def update_rate():
+    return date_to_time(2) - hour_to_time(1)
+
+
+def as_utctime(x: datetime.datetime):
+    return x.replace(tzinfo=UTC)
+
+
+def as_timestamp(x: datetime.datetime):
+    return as_utctime(x).timestamp()
 
 
 # ---------- Cookie Handler ----------

@@ -51,12 +51,12 @@ def IntegrityCaser_sqlite(err_str):
 
     case_data = {
         # https://github.com/sqlite/sqlite/blob/master/src/vdbe.c#L1055
-        "NOT NULL": (IntegrityCase[0], default_column_extractor),  # FAILED_NOT_NULL  # noqa
-        "UNIQUE": (IntegrityCase[1], default_column_extractor),  # FAILED_UNIQUE  # noqa
-        "CHECK": (IntegrityCase[4], default_column_extractor),  # FAILED_CHECK  # noqa
+        "NOT NULL": (IntegrityCase[0], default_column_extractor),  # FAILED_NOT_NULL
+        "UNIQUE": (IntegrityCase[1], default_column_extractor),  # FAILED_UNIQUE
+        "CHECK": (IntegrityCase[4], default_column_extractor),  # FAILED_CHECK
         "FOREIGN KEY": (IntegrityCase[2], lambda x: []),  # FAILED_FOREIGN_KEY
         # https://github.com/openstack/oslo.db/blob/master/oslo_db/sqlalchemy/exc_filters.py#L177
-        "PRIMARY KEY": (IntegrityCase[3],),  # FAILED_PRIMARY_KEY
+        "PRIMARY KEY": (IntegrityCase[3], lambda x: []),  # FAILED_PRIMARY_KEY
     }
 
     for case_substring, column_analyze in case_data.items():
@@ -143,11 +143,11 @@ def init_app(app: flask.Flask):
         db=app.config.get("REDIS_DB"),
     )
 
-    import app.database.board as board  # noqa
-    import app.database.jwt as jwt_module  # noqa
-    import app.database.project_table as project_table  # noqa
-    import app.database.uploaded_file as filedb_module  # noqa
-    import app.database.user as user  # noqa
+    import app.database.board as board  # noqa: F401
+    import app.database.jwt as jwt_module
+    import app.database.project_table as project_table  # noqa: F401
+    import app.database.uploaded_file as filedb_module  # noqa: F401
+    import app.database.user as user  # noqa: F401
 
     # Create all tables only IF NOT EXISTS
     # The reason why I didn't use create_all is,

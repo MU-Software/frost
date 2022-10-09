@@ -89,9 +89,11 @@ def create_response(
     code: int = 200,
     sub_code: str = "",
     message: str = "",
-    data: dict = {},
+    data: dict | None = None,
     header: tuple = (("", ""),),
 ):
+    if data is None:
+        data = {}
 
     # Although we can guess whether request is success or not in status code,
     # the reason why we use success field is because of redirection(302).
@@ -168,11 +170,13 @@ class Response:
         self,
         code: int = None,
         header: tuple[tuple[str]] = (),
-        data: dict = {},
+        data: dict | None = None,
         message: typing.Optional[str] = None,
         template_path: str = "",
         content_type: str = "",
     ) -> ResponseType:
+        if data is None:
+            data = {}
 
         resp_code: int = code if code is not None else self.code
 
@@ -266,7 +270,9 @@ class MethodViewMixin(AutoRegisterClass):
             self.__access_control_expose_headers_cache__ = set()
 
             http_mtd_method = [getattr(self, z) for z in http_mtd_name]
-            http_mtd_docstring: list[str] = [getattr(z, "__doc__") for z in http_mtd_method if hasattr(z, "__doc__")]
+            http_mtd_docstring: list[str] = [
+                getattr(z, "__doc__", "") for z in http_mtd_method if hasattr(z, "__doc__")
+            ]
             http_mtd_resp_cases_name = sum(
                 [yaml.safe_load(z).get("responses", None) for z in http_mtd_docstring if z], []
             )
@@ -476,8 +482,8 @@ class RequestHeader:
             except Exception:
                 return CommonResponseCase.header_invalid.create_response()
 
-            import app.api.account.response_case as account_resp_case  # noqa
-            import app.database.jwt as jwt_module  # noqa
+            import app.api.account.response_case as account_resp_case
+            import app.database.jwt as jwt_module
 
             # Check Authorization
             if self.auth:

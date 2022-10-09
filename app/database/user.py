@@ -134,7 +134,7 @@ class User(db_module.DefaultModelMixin, db.Model):
             else User.email
             if "@" in user_ident and utils.is_email(user_ident)
             else User.id
-        )  # noqa
+        )
         if login_type != User.uuid:
             login_type = db.func.lower(login_type)
 

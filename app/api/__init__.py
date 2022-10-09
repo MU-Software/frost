@@ -35,7 +35,7 @@ def init_app(app: flask.Flask):
         },
     )
 
-    import app.api.request_handler as req_handler  # noqa
+    import app.api.request_handler as req_handler
 
     req_handler.register_request_handler(app)
     if app.config.get("DEBUG", False):
@@ -45,21 +45,23 @@ def init_app(app: flask.Flask):
 
     resource_routes: dict = {}
 
-    import app.api.common.ping as route_ping  # noqa
+    import app.api.common.ping as route_ping
 
     resource_routes.update(route_ping.resource_route)
+
     # Enable file-upload related routes when FILE_MANAGEMENT_ROUTE_ENABLE is True
     if app.config.get("FILE_MANAGEMENT_ROUTE_ENABLE", False):
         import app.api.common.file_manage as route_filemgr
 
         resource_routes.update(route_filemgr.resource_route)
+
     # Disable account related routes only when ACCOUNT_ROUTE_ENABLE is False
     if app.config.get("ACCOUNT_ROUTE_ENABLE", True):
-        import app.api.account as route_account  # noqa
+        import app.api.account as route_account
 
         resource_routes.update(route_account.resource_route)
 
-    import app.api.project_route as project_route  # noqa
+    import app.api.project_route as project_route
 
     resource_routes.update(project_route.project_resource_routes)
 
