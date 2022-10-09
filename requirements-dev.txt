@@ -30,4 +30,5 @@ pylint-flask
 pylint-flask-sqlalchemy
 flake8
 black
+bandit
 pre-commit

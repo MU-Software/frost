@@ -399,7 +399,7 @@ def dict_type_check(
                     elif isinstance(data_v_parsed, expected_type):
                         data[data_k] = expected_type(data_v_parsed)
                         continue
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
             # Field name / Expected type / Type we got

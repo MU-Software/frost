@@ -76,7 +76,7 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
         try:
             if "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions:
                 return True
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return False
 

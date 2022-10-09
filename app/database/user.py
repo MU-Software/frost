@@ -281,7 +281,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
                     .filter(EmailToken.action == EmailTokenAction.EMAIL_PASSWORD_RESET)
                     .all()
                 )
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             if old_mail_tokens:
                 for old_mail_token in old_mail_tokens:

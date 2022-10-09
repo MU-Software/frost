@@ -6,7 +6,7 @@ import urllib.parse
 import urllib.request
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import lxml.html
+import lxml.html  # nosec B410
 
 GOOGLE_ACCOUNTS_BASE_URL = "https://accounts.google.com"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
@@ -49,7 +49,9 @@ def call_authorize_tokens(client_id, client_secret, authorization_code):
     params["grant_type"] = "authorization_code"
     request_url = command_to_url("o/oauth2/token")
     response = (
-        urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode("UTF-8")).read().decode("UTF-8")
+        urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode("UTF-8"))  # nosec: B310
+        .read()
+        .decode("UTF-8")
     )
     return json.loads(response)
 
@@ -62,7 +64,9 @@ def call_refresh_token(client_id, client_secret, refresh_token):
     params["grant_type"] = "refresh_token"
     request_url = command_to_url("o/oauth2/token")
     response = (
-        urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode("UTF-8")).read().decode("UTF-8")
+        urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode("UTF-8"))  # nosec: B310
+        .read()
+        .decode("UTF-8")
     )
     return json.loads(response)
 
@@ -123,7 +127,7 @@ def send_mail(
     msg_alternative = MIMEMultipart("alternative")
     msg.attach(msg_alternative)
     part_text = MIMEText(
-        lxml.html.fromstring(message).text_content().encode("utf-8"), "plain", _charset="utf-8"  # noqa
+        lxml.html.fromstring(message).text_content().encode("utf-8"), "plain", _charset="utf-8"  # nosec B410
     )
     part_html = MIMEText(message.encode("utf-8"), "html", _charset="utf-8")
     msg_alternative.attach(part_text)
@@ -138,8 +142,8 @@ def send_mail(
 
 
 if __name__ == "__main__":
-    GOOGLE_CLIENT_ID = "SET THIS!"
-    GOOGLE_CLIENT_SECRET = "SET THIS!"
+    GOOGLE_CLIENT_ID = "SET THIS!"  # nosec: B105
+    GOOGLE_CLIENT_SECRET = "SET THIS!"  # nosec: B105
     refresh_token, access_token, expires_in = get_authorization(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
     print("Set the following as your GOOGLE_REFRESH_TOKEN:", refresh_token)
     exit()

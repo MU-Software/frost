@@ -138,8 +138,8 @@ def elegant_unpair(z) -> tuple:
 
 
 # ---------- Hash calculation function ----------
-def fileobj_md5(fp) -> str:
-    hash_md5 = hashlib.md5()
+def fileobj_md5(fp: typing.BinaryIO, usedforsecurity: bool) -> str:
+    hash_md5 = hashlib.md5(usedforsecurity=usedforsecurity)
     fp.seek(0)
     for chunk in iter(lambda: fp.read(4096), b""):
         hash_md5.update(chunk)
@@ -147,8 +147,8 @@ def fileobj_md5(fp) -> str:
     return hash_md5.hexdigest()
 
 
-def file_md5(fname: os.PathLike) -> str:
-    return fileobj_md5(open(fname, "rb"))
+def file_md5(fname: os.PathLike, usedforsecurity: bool) -> str:
+    return fileobj_md5(open(fname, "rb"), usedforsecurity=usedforsecurity)
 
 
 # ---------- Custom Exceptions ----------
@@ -459,7 +459,7 @@ def find_free_random_port(port: int = 24000, max_port: int = 34000) -> int:
         if len(range(port, max_port)) == len(tried_ports):
             raise IOError("no free ports")
 
-        port = random.randint(port, max_port)
+        port = random.randint(port, max_port)  # nosec B311
         if port in tried_ports:
             continue
 
