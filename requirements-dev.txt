@@ -29,3 +29,4 @@ pylint
 pylint-flask
 pylint-flask-sqlalchemy
 flake8
+pre-commit
