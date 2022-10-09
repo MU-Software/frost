@@ -1,13 +1,13 @@
+import typing
+
 import flask
 import flask.views
-import typing
 
 import app.api.helper_class as api_class
 import app.database as db_module
 import app.database.jwt as jwt_module
-
-from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
+from app.api.response_case import CommonResponseCase
 
 db = db_module.db
 

@@ -2,7 +2,6 @@
 import datetime
 import email
 import enum
-import flask
 import hashlib
 import json
 import math
@@ -10,12 +9,14 @@ import os
 import random
 import socket
 import string
-import sqlalchemy as sql
-import sqlalchemy.ext.declarative as sqldec
 import time
 import traceback
 import typing
 import unicodedata
+
+import flask
+import sqlalchemy as sql
+import sqlalchemy.ext.declarative as sqldec
 import werkzeug
 
 # ---------- Type hint related variables, NEVER USE OUTSIDE OF THE MODULES! ----------

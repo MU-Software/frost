@@ -1,10 +1,9 @@
 import flask
 import flask_admin as fadmin
 
-import app.common.mailgun as mailgun
 import app.api.helper_class as api_class
+import app.common.mailgun as mailgun
 import app.database as db_module
-
 from app.api.response_case import CommonResponseCase, ResourceResponseCase
 
 db = db_module.db

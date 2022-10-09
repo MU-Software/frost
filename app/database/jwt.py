@@ -1,13 +1,14 @@
 import datetime
-import flask
 import inspect
+import secrets
+import typing
+
+import flask
 import jwt
 import jwt.exceptions
 import redis
-import secrets
 import user_agents as ua
 import user_agents.parsers as ua_parser
-import typing
 
 import app.common.utils as utils
 import app.database as db_module

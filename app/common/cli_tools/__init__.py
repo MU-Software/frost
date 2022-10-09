@@ -1,8 +1,8 @@
 import flask
 
-import app.common.cli_tools.openapi_support as openapi_support
-import app.common.cli_tools.db_operation as db_operation
 import app.common.cli_tools.db_erd_draw as db_erd_draw
+import app.common.cli_tools.db_operation as db_operation
+import app.common.cli_tools.openapi_support as openapi_support
 
 
 def init_app(app: flask.Flask):

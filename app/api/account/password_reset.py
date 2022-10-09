@@ -1,16 +1,16 @@
 import datetime
 import enum
-import flask
-import flask.views
 import typing
 
+import flask
+import flask.views
+
 import app.api.helper_class as api_class
+import app.common.mailgun as mailgun
 import app.database as db_module
 import app.database.user as user_module
-import app.common.mailgun as mailgun
-
-from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
+from app.api.response_case import CommonResponseCase
 
 password_reset_mail_valid_duration: datetime.timedelta = datetime.timedelta(hours=48)
 

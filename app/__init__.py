@@ -1,6 +1,7 @@
-import flask
 import logging
 import os
+
+import flask
 import werkzeug.middleware.proxy_fix as proxy_fix
 
 import app.config as config

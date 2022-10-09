@@ -1,10 +1,11 @@
+import pathlib as pt
+import re
+import typing
+
 import apispec
 import click
 import flask
 import flask.cli
-import pathlib as pt
-import re
-import typing
 import werkzeug.routing
 import yaml
 

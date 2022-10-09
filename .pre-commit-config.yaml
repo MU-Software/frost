@@ -26,3 +26,7 @@ repos:
     rev: '1.7.4'
     hooks:
     - id: bandit
+-   repo: https://github.com/pycqa/isort
+    rev: '5.10.1'
+    hooks:
+      - id: isort

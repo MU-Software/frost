@@ -31,4 +31,5 @@ pylint-flask-sqlalchemy
 flake8
 black
 bandit
+isort
 pre-commit

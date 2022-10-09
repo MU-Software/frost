@@ -1,9 +1,10 @@
 import datetime
 import enum
-import flask
-import jwt
 import secrets
 import typing
+
+import flask
+import jwt
 from passlib.hash import argon2
 
 import app.common.utils as utils

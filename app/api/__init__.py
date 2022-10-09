@@ -1,6 +1,7 @@
+import os
+
 import flask
 import flask_cors
-import os
 
 # I had to get these values from env,
 # because We can initialize these values from flask config only on app context,

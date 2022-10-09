@@ -2,10 +2,9 @@ import flask
 import flask_admin as fadmin
 import jwt
 
+import app.admin.project_modelview as project_modelview
 import app.api.helper_class as api_class
 import app.database.jwt as jwt_module
-import app.admin.project_modelview as project_modelview
-
 from app.admin.response_case import AdminResponseCase
 
 

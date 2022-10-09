@@ -1,5 +1,6 @@
-import flask
 import os
+
+import flask
 
 restapi_version = os.environ.get("RESTAPI_VERSION")
 

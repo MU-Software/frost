@@ -1,4 +1,5 @@
 import flask
+
 import app.common.mailgun.aws_ses as mailgun_aws
 import app.common.mailgun.gmail as mailgun_gmail
 

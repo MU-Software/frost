@@ -2,8 +2,8 @@ import flask
 import werkzeug.exceptions
 
 import app.common.utils as utils
-from app.api.response_case import CommonResponseCase
 from app.api.account.response_case import AccountResponseCase
+from app.api.response_case import CommonResponseCase
 
 
 # Request handler

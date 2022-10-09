@@ -1,7 +1,8 @@
+import pathlib as pt
+
 import click
 import flask
 import flask.cli
-import pathlib as pt
 
 import app.database as db_module
 
@@ -18,6 +19,7 @@ def draw_db_erd():
             return
 
         import codecs
+
         import sadisplay
 
         desc = sadisplay.describe([table_data[1] for table_data in db.metadata.tables.items()])

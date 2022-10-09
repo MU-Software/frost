@@ -1394,7 +1394,7 @@ email = ["email-validator"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "eb5e5d12210c4f41420f866b0d30453c46d2992de2e06eda8bbe58ffd5ce031a"
+content-hash = "a48f0006ceb5696784e01f6ad21b6e8b821642d961f780d22b8ce9cd19afac33"
 
 [metadata.files]
 apispec = [

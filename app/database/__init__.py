@@ -1,16 +1,15 @@
-import flask
-import flask_sqlalchemy as fsql
 import enum
 import re
 import secrets
+
+import flask
+import flask_sqlalchemy as fsql
+import redis  # We'll manage redis here too.
 import sqlalchemy.dialects.mysql as sqldlc_mysql
 import sqlalchemy.dialects.postgresql as sqldlc_psql
 import sqlalchemy.dialects.sqlite as sqldlc_sqlite
 
 import app.common.utils as utils
-
-# We'll manage redis here too.
-import redis
 
 # ---------- REDIS Setup ----------
 redis_db: redis.StrictRedis = None
@@ -144,11 +143,11 @@ def init_app(app: flask.Flask):
         db=app.config.get("REDIS_DB"),
     )
 
-    import app.database.user as user  # noqa
     import app.database.board as board  # noqa
     import app.database.jwt as jwt_module  # noqa
-    import app.database.uploaded_file as filedb_module  # noqa
     import app.database.project_table as project_table  # noqa
+    import app.database.uploaded_file as filedb_module  # noqa
+    import app.database.user as user  # noqa
 
     # Create all tables only IF NOT EXISTS
     # The reason why I didn't use create_all is,

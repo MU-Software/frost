@@ -1,22 +1,22 @@
 import base64
 import datetime
-import flask
-import flask.views
 import imghdr
 import json
-import magic
 import pathlib as pt
-import PIL.Image
 import secrets
 import typing
+
+import flask
+import flask.views
+import magic
+import PIL.Image
 import werkzeug.utils
 
-import app.common.utils as utils
 import app.api.helper_class as api_class
+import app.common.utils as utils
 import app.database as db_module
-import app.database.uploaded_file as filedb_module
 import app.database.jwt as jwt_module
-
+import app.database.uploaded_file as filedb_module
 from app.api.response_case import CommonResponseCase, ResourceResponseCase
 
 db = db_module.db
