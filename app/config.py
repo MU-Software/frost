@@ -25,7 +25,7 @@ class Config:
     REFERER_CHECK = os.environ.get("REFERER_CHECK", True) != "false"
     SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
     DEVELOPMENT_KEY = os.environ.get("DEVELOPMENT_KEY")
-    LOCAL_DEV_CLIENT_PORT = None
+    LOCAL_DEV_CLIENT_PORT: int | None = None
 
     RESTAPI_VERSION = os.environ.get("RESTAPI_VERSION")
     # `ACCOUNT_ROUTE_ENABLE` will be disabled only if $env:ACCOUNT_ROUTE_ENABLE is 'false'

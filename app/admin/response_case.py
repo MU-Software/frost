@@ -5,7 +5,7 @@ import app.common.utils as utils
 
 server_name = os.environ.get("SERVER_NAME")
 restapi_version = os.environ.get("RESTAPI_VERSION")
-https_enable = os.environ.get("HTTPS_ENABLE", True)
+https_enable = bool(os.environ.get("HTTPS_ENABLE", True))
 cookie_samesite = ("None" if https_enable else "Lax") if restapi_version == "dev" else "strict"
 
 admin_token_remover_cookie = utils.delete_cookie(

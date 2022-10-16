@@ -4,7 +4,7 @@ import app.database.user as user_module
 db = db_module.db
 
 
-class Board(db_module.DefaultModelMixin, db.Model):
+class Board(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_BOARD"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_Board_UUID"), primary_key=True, nullable=False)
 
@@ -28,7 +28,7 @@ class Board(db_module.DefaultModelMixin, db.Model):
     posts: list["Post"] = None  # Placeholder for backref
 
 
-class Post(db_module.DefaultModelMixin, db.Model):
+class Post(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_POST"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_Post_UUID"), primary_key=True, nullable=False)
 
@@ -90,7 +90,7 @@ class Post(db_module.DefaultModelMixin, db.Model):
         }
 
 
-class Comment(db_module.DefaultModelMixin, db.Model):
+class Comment(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_COMMENT"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_Comment_UUID"), primary_key=True)
 
@@ -139,13 +139,13 @@ class Comment(db_module.DefaultModelMixin, db.Model):
         }
 
 
-class Tag(db_module.DefaultModelMixin, db.Model):
+class Tag(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_TAG"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_Tag_UUID"), primary_key=True, nullable=False)
     name = db.Column(db.String, unique=True, nullable=False)
 
 
-class PostTagRelation(db.Model):
+class PostTagRelation(db_module.BaseModel):
     __tablename__ = "TB_POST_TAG_RELATION"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_PostTagRelation_UUID"), primary_key=True, nullable=False)
     name = db.Column(db.String, unique=True, nullable=False)
@@ -157,7 +157,7 @@ class PostTagRelation(db.Model):
     tag: "Tag" = db.relationship("Tag", primaryjoin=tag_id == Tag.uuid, backref=db.backref("posts"))
 
 
-class PostLike(db_module.DefaultModelMixin, db.Model):
+class PostLike(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_POST_LIKE"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_PostLike_UUID"), primary_key=True, nullable=False)
 
@@ -174,7 +174,7 @@ class PostLike(db_module.DefaultModelMixin, db.Model):
     )
 
 
-class PostFavorite(db_module.DefaultModelMixin, db.Model):
+class PostFavorite(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_POST_FAVORITE"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_PostFavorite_UUID"), primary_key=True, nullable=False)
 

@@ -5,7 +5,7 @@ import app.database.user as user_module
 db = db_module.db
 
 
-class UploadedFile(db_module.DefaultModelMixin, db.Model):
+class UploadedFile(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_UPLOADED_FILE"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_UploadedFile_UUID"), primary_key=True, nullable=False)
 

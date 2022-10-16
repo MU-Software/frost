@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import datetime
 import email
+import email.utils
 import enum
 import hashlib
 import json
@@ -347,7 +348,7 @@ class Singleton(type):  # Singleton metaclass
             pass
     """
 
-    _instances = {}
+    _instances: dict[str, typing.Type["Singleton"]] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
@@ -449,7 +450,7 @@ def create_dynamic_orm_table(
     engine: sql.engine.base.Engine,
     class_name: str,
     table_name: str,
-    columns: typing.Optional[list[str]] = None,
+    columns: typing.Optional[dict[str, typing.Any]] = None,
     mixins: tuple = (),
 ):
 
@@ -461,7 +462,8 @@ def create_dynamic_orm_table(
             "autoload_with": engine,
         },
     }
-    table_attrs.update(columns if columns else {})
+    if columns:
+        table_attrs.update(columns)
 
     DynamicORMTable = type(class_name, (*mixins, base), table_attrs)
     return DynamicORMTable
@@ -470,7 +472,7 @@ def create_dynamic_orm_table(
 # ---------- Extra tools ----------
 def find_free_random_port(port: int = 24000, max_port: int = 34000) -> int:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tried_ports = list()
+    tried_ports: list[int] = []
     while True:
         if len(range(port, max_port)) == len(tried_ports):
             raise IOError("no free ports")

@@ -36,7 +36,7 @@ class TokenBase:
 
     # Registered Claim
     iss: str = flask.current_app.config.get("SERVER_NAME")  # Token Issuer(Fixed)
-    exp: datetime.datetime = None  # Expiration Unix Time
+    exp: datetime.datetime | int = None  # Expiration Unix Time
     sub: str = ""  # Token name
     jti: int = -1  # JWT token ID
 
@@ -65,7 +65,7 @@ class TokenBase:
 
         current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
 
-        if type(self.exp) == int:
+        if isinstance(self.exp, int):
             token_exp_time = datetime.datetime.fromtimestamp(self.exp, utils.UTC)
         else:
             if self.exp:
@@ -133,7 +133,7 @@ class AccessToken(TokenBase):
         new_token = super().create_token(key, algorithm=algorithm)
 
         # If new token safely issued, then remove revoked history
-        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(self.jti)
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(str(self.jti))
         redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b"revoked":
             redis_db.delete(redis_key)
@@ -145,7 +145,7 @@ class AccessToken(TokenBase):
         parsed_token = super().from_token(jwt_input, key, algorithm)
 
         # Check if token's revoked
-        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(parsed_token.jti)
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(str(parsed_token.jti))
         redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b"revoked":
             raise jwt.exceptions.InvalidTokenError("This token was revoked")
@@ -180,7 +180,7 @@ class AccessToken(TokenBase):
         return new_token
 
 
-class RefreshToken(TokenBase, db.Model, db_module.DefaultModelMixin):
+class RefreshToken(TokenBase, db_module.BaseModel, db_module.DefaultModelMixin):
     __tablename__ = "TB_REFRESH_TOKEN"
 
     # Registered Claim
@@ -285,11 +285,11 @@ class AdminToken(TokenBase):
     _refresh_token: "RefreshToken" = None
 
     @classmethod
-    def from_token(cls, jwt_input: str, key: str, algorithm: str = "HS256") -> "AccessToken":
+    def from_token(cls, jwt_input: str, key: str, algorithm: str = "HS256") -> "AdminToken":
         parsed_token = super().from_token(jwt_input, key, algorithm)
 
         # Check if token's revoked
-        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(parsed_token.jti)
+        redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(str(parsed_token.jti))
         redis_result = redis_db.get(redis_key)
         if redis_result and redis_result == b"revoked":
             raise jwt.exceptions.InvalidTokenError("This token was revoked")
@@ -301,7 +301,7 @@ class AdminToken(TokenBase):
         # Check refresh token exp
         current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
 
-        if type(refresh_token.exp) == int:
+        if isinstance(refresh_token.exp, int):
             token_exp_time = datetime.datetime.fromtimestamp(refresh_token.exp, utils.UTC)
         else:
             if refresh_token.exp:
@@ -396,7 +396,7 @@ def refresh_login_data(
     ip_addr: str,
     key: str,
     algorithm: str = "HS256",
-) -> tuple[list[tuple[str, str]], dict[str, str]]:
+) -> tuple[list[tuple[str, str]], dict[str, dict[str, str]]]:
     restapi_version = flask.current_app.config.get("RESTAPI_VERSION")
     server_name = flask.current_app.config.get("SERVER_NAME")
     https_enable = flask.current_app.config.get("HTTPS_ENABLE", True)

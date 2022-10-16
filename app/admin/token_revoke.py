@@ -78,7 +78,9 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
                 .first()
             )
             if not query_result:
-                return AccountResponseCase.refresh_token_invalid(message="RefreshToken that has such JTI not found")
+                return AccountResponseCase.refresh_token_invalid.create_response(
+                    message="RefreshToken that has such JTI not found"
+                )
 
             redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key(req_body["target_jti"])
             redis_db.set(redis_key, "revoked", datetime.timedelta(weeks=2))

@@ -1,6 +1,7 @@
 import enum
 import re
 import secrets
+import typing
 
 import flask
 import flask_sqlalchemy as fsql
@@ -8,6 +9,7 @@ import redis  # We'll manage redis here too.
 import sqlalchemy.dialects.mysql as sqldlc_mysql
 import sqlalchemy.dialects.postgresql as sqldlc_psql
 import sqlalchemy.dialects.sqlite as sqldlc_sqlite
+import sqlalchemy.inspection as sql_inspect
 
 import app.common.utils as utils
 
@@ -29,6 +31,7 @@ class RedisKeyType(utils.EnumAutoName):
 # ---------- RDB Setup ----------
 # Create db object when module loads, but do not connect to app context yet.
 db: fsql.SQLAlchemy = fsql.SQLAlchemy(session_options={"autoflush": False})
+BaseModel: typing.TypeAlias = db.Model  # type: ignore[name-defined]
 
 # ---------- RDB Type Handler ----------
 PrimaryKeyType = db.BigInteger().with_variant(sqldlc_psql.BIGINT(), "postgresql")
@@ -116,13 +119,16 @@ class DefaultModelMixin:
     commit_id = db.Column(db.String, default=secrets.token_hex, onupdate=secrets.token_hex)
 
     @classmethod
-    def get_by_uuid(cls, uuid: int, return_query: bool = True):
-        if not hasattr(cls, "uuid"):
-            raise NotImplementedError(f"{cls.__name__} does not have uuid attribute")
+    def get_by_pk(cls, pk: int, return_query: bool = True):
+        primary_key_columns = sql_inspect.inspect(cls).primary_key
+        if not primary_key_columns:
+            raise NotImplementedError(f"{cls.__name__} does not have primary key column")
         if not hasattr(cls, "query"):
             raise NotImplementedError(f"{cls.__name__} does not look like a SQLAlchemy table")
 
-        target_query = db.session.query(cls).filter(cls.uuid == uuid)
+        primary_key_column = primary_key_columns[0].name
+
+        target_query = db.session.query(cls).filter(getattr(cls, primary_key_column) == pk)
         if return_query:
             return target_query
         return target_query.first()

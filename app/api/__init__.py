@@ -1,6 +1,7 @@
 import os
 
 import flask
+import flask.views
 import flask_cors
 
 # I had to get these values from env,
@@ -69,14 +70,14 @@ def init_app(app: flask.Flask):
         view_name: str = ""
         view_func = None
         defaults: dict = dict()
-        if type(route_model) == dict:
+        if isinstance(route_model, dict):
             view_name = route_model["view_func"].__name__
             view_func = route_model["view_func"].as_view(view_name)
             base_path = route_model["base_path"]
             defaults = route_model["defaults"]
             app.add_url_rule("/api/" + restapi_version + path, view_func=view_func)
             app.add_url_rule("/api/" + restapi_version + base_path, view_func=view_func, defaults=defaults)
-        elif type(route_model) == flask.views.MethodViewType:
+        elif issubclass(route_model, flask.views.MethodView):
             view_name = route_model.__name__
             view_func = route_model.as_view(view_name)
             app.add_url_rule("/api/" + restapi_version + path, view_func=view_func, defaults=defaults)

@@ -2,6 +2,7 @@ import flask
 import flask.views
 import jwt
 import jwt.exceptions
+import werkzeug.datastructures as werkzeug_struct
 
 import app.api.helper_class as api_class
 import app.database as db_module
@@ -30,7 +31,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
             - email_invalid_html
             - email_not_found_html
         """
-        request_content_type: str = flask.request.accept_mimetypes
+        request_content_type: werkzeug_struct.MIMEAccept = flask.request.accept_mimetypes
 
         if not email_token:
             if "text/html" in request_content_type:

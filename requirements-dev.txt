@@ -32,4 +32,10 @@ flake8
 black
 bandit
 isort
+types-Redis
+types-PyYAML
+types-Flask
+types-Flask-Cors
+types-Flask-SQLAlchemy
+mypy
 pre-commit

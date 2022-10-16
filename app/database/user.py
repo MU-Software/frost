@@ -15,7 +15,7 @@ redis_db = db_module.redis_db
 RedisKeyType = db_module.RedisKeyType
 
 
-class User(db_module.DefaultModelMixin, db.Model):
+class User(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_USER"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_User_UUID"), primary_key=True)
     id = db.Column(db.String(collation="NOCASE"), unique=True, nullable=False)
@@ -49,7 +49,7 @@ class User(db_module.DefaultModelMixin, db.Model):
     posts: list = None  # placeholder for backref
 
     @classmethod
-    def get_by_uuid(cls, uuid: int):
+    def get_by_pk(cls, pk: int, return_query: bool = True):
         raise NotImplementedError("This method must not be called")
 
     def check_password(self, pw: str) -> bool:
@@ -118,7 +118,7 @@ class User(db_module.DefaultModelMixin, db.Model):
             return False, "DB_ERROR"
 
     @classmethod
-    def try_login(cls, user_ident: str, pw: str) -> tuple[typing.Union[bool, "User"], str]:
+    def try_login(cls, user_ident: str, pw: str) -> tuple["User" | typing.Literal[False], str]:
         SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION = flask.current_app.config.get(
             "SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION"
         )
@@ -203,13 +203,13 @@ class EmailAlreadySentOnSpecificHoursException(Exception):
         super().__init__(message)
 
 
-class EmailTokenAction(enum.Enum):
+class EmailTokenAction(utils.EnumAutoName):
     # Add enum cases on RedisAction enum class, too
     EMAIL_VERIFICATION = enum.auto()
     EMAIL_PASSWORD_RESET = enum.auto()
 
 
-class EmailToken(db_module.DefaultModelMixin, db.Model):
+class EmailToken(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_EMAILTOKEN"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_EmailToken_UUID"), primary_key=True)
 
@@ -220,7 +220,7 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
         backref=db.backref("email_tokens", order_by="EmailToken.created_at.desc()"),
     )
 
-    action = db.Column(db.Enum(EmailTokenAction), nullable=False)
+    action: EmailTokenAction = db.Column(db.Enum(EmailTokenAction), nullable=False)
     token = db.Column(db.String, unique=True, nullable=False)
     expired_at = db.Column(db.DateTime, nullable=False)
 
@@ -261,11 +261,11 @@ class EmailToken(db_module.DefaultModelMixin, db.Model):
             raise err
 
     @classmethod
-    def create(cls, target_user: User, action: EmailTokenAction, expiration_delta: datetime.datetime) -> "EmailToken":
+    def create(cls, target_user: User, action: EmailTokenAction, expiration_delta: datetime.timedelta) -> "EmailToken":
         try:
             # Check if any mail sent to this address with this action on 48 hours using redis.
             # This can block attacker from spamming to the mail address user.
-            redis_key = RedisKeyType[action.name].as_redis_key(target_user.uuid)
+            redis_key = RedisKeyType[action.value].as_redis_key(target_user.uuid)
             redis_result = redis_db.get(redis_key)
             if redis_result:
                 raise EmailAlreadySentOnSpecificHoursException(

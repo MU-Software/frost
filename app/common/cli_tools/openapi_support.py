@@ -19,8 +19,8 @@ response_cases_cache: dict[str, api_class.Response] = dict()
 
 
 class FrostRoutePlugin(apispec.BasePlugin):
-    def path_helper(self, path: str, operations: typing.OrderedDict, *, view, app: flask.Flask = None, **kwargs):
-        app: flask.Flask = app or flask.current_app
+    def path_helper(self, path: str, operations: typing.OrderedDict, *, view, app: flask.Flask | None = None, **kwargs):
+        app = app or flask.current_app
         operation_result = dict()
         http_mtd: dict[str, typing.Any] = {k: v for k, v in view.__dict__.items() if k in api_class.http_all_method}
 

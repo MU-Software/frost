@@ -1,6 +1,7 @@
 import flask
 import flask_admin as fadmin
 import jwt
+import werkzeug.datastructures as werkzeug_struct
 
 import app.admin.project_modelview as project_modelview
 import app.api.helper_class as api_class
@@ -8,13 +9,13 @@ import app.database.jwt as jwt_module
 from app.admin.response_case import AdminResponseCase
 
 
-def fadmin_is_accessible_mod(self: fadmin.base.BaseView) -> tuple[bool, api_class.Response]:
+def fadmin_is_accessible_mod(self: fadmin.base.BaseView) -> tuple[bool, api_class.ResponseType]:
     """
     This returns (True, None) if authenticaion succeed,
     else (False, <One of AccountResponseCase>) if it fails to authenticate.
     """
     secret_key = flask.current_app.config.get("SECRET_KEY")
-    request_content_type: str = flask.request.accept_mimetypes
+    request_content_type: werkzeug_struct.MIMEAccept = flask.request.accept_mimetypes
     admin_token: jwt_module.AdminToken = None
     try:
         admin_token_cookie = flask.request.cookies.get("admin_token", type=str, default="")

@@ -5,6 +5,7 @@ import enum
 import functools
 import inspect
 import json
+import types
 import typing
 import unicodedata
 
@@ -13,7 +14,62 @@ import jwt.exceptions
 import werkzeug.datastructures as wz_dt
 import yaml
 
-BASE_TYPE = typing.Type[typing.Union[str, bool, int, float, list, dict]]
+POSSIBLE_DATETIME_FORMAT = [
+    "%d-%b-%Y",
+    "%d-%m-%Y",
+    "%d.%m.%Y",
+    "%d/%m/%Y",
+    "%Y-%m-%d",
+    "%Y.%m.%d",
+    "%Y/%m/%d",
+    "before %b-%Y",
+    "before %Y%m%d",
+    "%Y.%m.%d %H:%M:%S",
+    "%Y%m%d %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S%z",
+    "%Y-%m-%d %H:%M:%S %z",
+    "%Y-%m-%d %H:%M:%S CLST",
+    "%Y-%m-%d %H:%M:%S.%f",
+    "%d.%m.%Y  %H:%M:%S",
+    "%d-%b-%Y %H:%M:%S %Z",
+    "%Y/%m/%d %H:%M:%S (%z)",
+    "%Y/%m/%d %H:%M:%S",
+    "%a %b %d %H:%M:%S %Z %Y",
+    "%a %b %d %Y",
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dt%H:%M:%S.%fz",
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%Y-%m-%dt%H:%M:%S.%f",
+    "%Y-%m-%dt%H:%M:%S",
+    "%Y-%m-%dt%H:%M:%SZ",
+    "%Y-%m-%dt%H:%M:%S.%fz",
+    "%Y-%m-%dt%H:%M:%S%z",
+    "%Y-%m-%dt%H:%M:%S.%f%z",
+    "%Y%m%d",
+    "%Y. %m. %d.",
+    "before %b-%Y",
+    "%a %d %b %Y",
+    "%A %d %b %Y",
+    "%a %d %B %Y",
+    "%A %d %B %Y",
+    "%Y-%m-%d %H:%M:%S (%Z+0:00)",
+    "%d-%m-%Y %H:%M:%S %Z+1",
+    "%B %d %Y",
+    "%Y-%b-%d",
+    "%d/%m/%Y %H:%M:%S",
+    "%m/%d/%Y",
+    "%d %b %Y",
+    "%d-%b-%Y %H:%M:%S",
+    "%Y%m%d%H%M%S",
+    "%Y-%m-%d %H:%M:%S (%Z%z)",
+    "%d %B %Y at %H:%M:%S.%f",
+    "%Y-%m-%d %H:%M:%S.%f %Z",
+]
+BASE_TYPE = typing.Type[typing.Union[str, bool, int, float, list, dict, datetime.datetime]]
+BASE_TYPE_WITHOUT_DATETIME = typing.Type[typing.Union[str, bool, int, float, list, dict]]
 openapi_type_def: dict[BASE_TYPE, str] = {
     str: "string",
     bool: "boolean",
@@ -24,7 +80,7 @@ openapi_type_def: dict[BASE_TYPE, str] = {
     # Below will be automatically converted by jsonify
     datetime.datetime: "string",
 }
-openapi_type_def_inverse: dict[str, BASE_TYPE] = {
+openapi_type_def_inverse: dict[str, BASE_TYPE_WITHOUT_DATETIME] = {
     "string": str,
     "boolean": bool,
     "integer": int,
@@ -33,7 +89,13 @@ openapi_type_def_inverse: dict[str, BASE_TYPE] = {
     "object": dict,
 }
 http_all_method = ["get", "head", "post", "put", "delete", "connect", "options", "trace", "patch"]
-ResponseType = tuple[typing.Any, int, tuple[tuple[str, str]]]
+ResponseType = tuple[typing.Any, int, typing.Iterable[tuple[str]]]
+
+
+class DataclassProtocol(typing.Protocol):
+    __dataclass_fields__: dict
+    __dataclass_params__: dict
+    __post_init__: typing.Optional[typing.Callable]
 
 
 def recursive_dict_to_openapi_obj(in_dict: dict):
@@ -43,16 +105,16 @@ def recursive_dict_to_openapi_obj(in_dict: dict):
             "type": openapi_type_def[type(v)],
         }
         if v:
-            if type(v) == dict:
+            if isinstance(v, dict):
                 result_dict[k]["properties"] = recursive_dict_to_openapi_obj(v)
-            elif type(v) == list:
+            elif isinstance(v, list):
                 result_dict[k]["items"] = {
                     "type": openapi_type_def[type(v[0])],
                 }
-                if type(v[0]) == dict:
+                if isinstance(v[0], dict):
                     result_dict[k]["properties"] = recursive_dict_to_openapi_obj(v[0])
             else:
-                if type(v) is datetime.datetime:
+                if isinstance(v, datetime.datetime):
                     result_dict[k]["enum"] = [
                         v.strftime("%a, %d %b %Y %H:%M:%S GMT"),
                     ]
@@ -65,7 +127,7 @@ def recursive_dict_to_openapi_obj(in_dict: dict):
 
 
 class AutoRegisterClass:
-    _subclasses = list()
+    _subclasses: list[typing.Type["AutoRegisterClass"]] = list()
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -116,10 +178,10 @@ def create_response(
 class Response:
     description: str = ""
     code: int = 500
-    header: tuple[tuple[str, str]] = ()
+    header: typing.Iterable[tuple[str, str]] = ()
     content_type: str = "application/json"
 
-    success: bool = ""
+    success: bool = False
     public_sub_code: str = ""
     private_sub_code: str = ""
 
@@ -169,8 +231,8 @@ class Response:
     def create_response(
         self,
         code: int = None,
-        header: tuple[tuple[str]] = (),
-        data: dict | None = None,
+        header: typing.Iterable[tuple[str, str]] = (),
+        data: dict | list | None = None,
         message: typing.Optional[str] = None,
         template_path: str = "",
         content_type: str = "",
@@ -185,7 +247,7 @@ class Response:
             resp_header_name = [z[0] for z in resp_header]
             resp_header.append(("Access-Control-Expose-Headers", ", ".join(resp_header_name)))
 
-        result_header = wz_dt.MultiDict(
+        result_header: wz_dt.MultiDict = wz_dt.MultiDict(
             (
                 *resp_header,
                 ("Server", flask.current_app.config.get("BACKEND_NAME", "Backend Core")),
@@ -193,7 +255,6 @@ class Response:
         )
 
         resp_data = copy.deepcopy(data)
-        resp_data.update(data)
 
         resp_template_path = template_path or self.template_path
         resp_content_type = content_type or self.content_type
@@ -212,7 +273,11 @@ class Response:
         elif resp_content_type == "text/html":
             if not resp_template_path:
                 raise Exception("template_path must be set when content_type is 'text/html'")
-            return (flask.render_template(resp_template_path, **resp_data), resp_code, result_header)
+            return (
+                flask.render_template(resp_template_path, **(resp_data if isinstance(resp_data, dict) else {})),
+                resp_code,
+                result_header,
+            )
         else:
             raise NotImplementedError(f"Response type {resp_content_type} is not supported.")
 
@@ -223,14 +288,14 @@ class ResponseCaseCollector(AutoRegisterClass):
 
 class ResponseDataModel:
     @classmethod
-    def get_model_openapi_description(cls: typing.Type[dataclasses.dataclass]) -> dict:
+    def get_model_openapi_description(cls: DataclassProtocol) -> dict:
         if not dataclasses.is_dataclass(cls):
             raise TypeError(f"Expected {str(type(cls))} as a dataclass instance, it's not.")
 
         result = dict()
         for name, field in cls.__dataclass_fields__.items():
-            if type(field.type) is typing.GenericAlias:
-                field.type = type(field.type())
+            if isinstance(field.type, types.GenericAlias):
+                field.type = field.type.__origin__
 
             if field.type not in openapi_type_def:
                 raise TypeError(
@@ -307,24 +372,24 @@ def json_list_filter(in_list: list, filter_empty_value: bool = True) -> list:
     result_list: list = list()
 
     for element in in_list:
-        if type(element) is str:
+        if isinstance(element, str):
             res_value = unicodedata.normalize("NFC", element).strip()
             if filter_empty_value and not res_value:
                 continue
             result_list.append(res_value)
-        elif type(element) in (int, float):
+        elif isinstance(element, (int, float)):
             result_list.append(element)
-        elif type(element) is dict:
+        elif isinstance(element, dict):
             res_value = json_dict_filter(element)
             if filter_empty_value and not res_value:
                 continue
             result_list.append(res_value)
-        elif type(element) is list:
+        elif isinstance(element, list):
             res_value = json_list_filter(element)
             if filter_empty_value and not res_value:
                 continue
             result_list.append(res_value)
-        elif type(element) is bool:
+        elif isinstance(element, bool):
             result_list.append(element)
         elif element is None:
             if filter_empty_value:
@@ -350,22 +415,22 @@ def json_dict_filter(in_dict: dict, filter_empty_value: bool = True) -> dict:
 
         res_value = None
         # value can be a string, number, object(dict), array(list), boolean(bool), or null(None)
-        # match case please Python 3.10
-        if type(v) is str:
+        # TODO: Change this logic to use match case on Python 3.10
+        if isinstance(v, str):
             res_value = unicodedata.normalize("NFC", v).strip()
             if filter_empty_value and not res_value:
                 continue
-        elif type(v) in (int, float):
+        elif isinstance(v, (int, float)):
             res_value = v
-        elif type(v) is dict:
+        elif isinstance(v, dict):
             res_value = json_dict_filter(v, filter_empty_value)
             if filter_empty_value and not res_value:
                 continue
-        elif type(v) is list:
+        elif isinstance(v, list):
             res_value = json_list_filter(v, filter_empty_value)
             if filter_empty_value and not res_value:
                 continue
-        elif type(v) is bool:
+        elif isinstance(v, bool):
             res_value = v
         elif v is None:
             res_value = None
@@ -400,9 +465,20 @@ def dict_type_check(
                 # If field's type is str, then at least we can try conversion.
                 try:
                     data_v_parsed = json.loads(data_v)
-                    if expected_type in (int, float) and isinstance(data_v_parsed, (int, float)):
+                    if issubclass(expected_type, (int, float)) and isinstance(data_v_parsed, (int, float)):
                         data[data_k] = expected_type(data_v_parsed)
                         continue
+                    elif isinstance(data_v_parsed, str):
+                        # Try to parse string as datetime.
+                        # This might slow, but I had to do this.
+                        result: str | datetime.datetime = data_v_parsed
+                        for format in POSSIBLE_DATETIME_FORMAT:
+                            try:
+                                result = datetime.datetime.strptime(data_v_parsed, format)
+                                break
+                            except ValueError:
+                                continue
+                        data[data_k] = result
                     elif isinstance(data_v_parsed, expected_type):
                         data[data_k] = expected_type(data_v_parsed)
                         continue

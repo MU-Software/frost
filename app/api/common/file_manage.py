@@ -249,7 +249,7 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
                 },
             )
 
-        alt_data: typing.Optional[str] = None
+        alt_data = None
         if "alt_data" in req_body:
             try:
                 alt_data = json.loads(req_body["alt_data"])

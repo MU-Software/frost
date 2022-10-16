@@ -20,7 +20,9 @@ def json_to_envfiles(output_file: pathlib.Path):
             print("There's no launch.json template file for VS Code.\n" "Place file on template/launch.json")
             template_launch_json_file = None
         else:
-            template_launch_json_file_content: dict[str, object] = json.loads(template_launch_json_file.read_text())
+            template_launch_json_file_content: dict[str, list[dict[str, typing.Any]]] = json.loads(
+                template_launch_json_file.read_text()
+            )
 
         output_docker_file: pathlib.Path = pathlib.Path(output_name + ".env")
         output_bash_file: pathlib.Path = pathlib.Path(output_name + ".sh")
