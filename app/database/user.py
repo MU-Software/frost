@@ -226,7 +226,7 @@ class EmailToken(db_module.DefaultModelMixin, db_module.BaseModel):
 
     @classmethod
     def query_using_token(cls, email_token: str) -> typing.Optional["EmailToken"]:
-        if not email_token or type(email_token) != str:
+        if not email_token or not isinstance(email_token, str):
             raise ValueError("Attribute `email_token` not set or type is not `str`")
 
         current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
@@ -265,7 +265,7 @@ class EmailToken(db_module.DefaultModelMixin, db_module.BaseModel):
         try:
             # Check if any mail sent to this address with this action on 48 hours using redis.
             # This can block attacker from spamming to the mail address user.
-            redis_key = RedisKeyType[action.value].as_redis_key(target_user.uuid)
+            redis_key = RedisKeyType(action.value).as_redis_key(target_user.uuid)
             redis_result = redis_db.get(redis_key)
             if redis_result:
                 raise EmailAlreadySentOnSpecificHoursException(

@@ -10,6 +10,7 @@ from app.api.account.response_case import AccountResponseCase
 from app.api.response_case import CommonResponseCase
 
 db = db_module.db
+AccountFailedReasonType = typing.TypedDict("AccountFailedReasonType", {"field": str, "reason": str})
 
 
 class AccountInformationChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
@@ -59,15 +60,7 @@ class AccountInformationChangeRoute(flask.views.MethodView, api_class.MethodView
             return CommonResponseCase.body_empty.create_response()
 
         did_succeed: bool = True
-        failed_reason: list[
-            typing.TypedDict(
-                "FailedReasonType",
-                {
-                    "field": str,
-                    "reason": str,
-                },
-            )
-        ] = list()
+        failed_reason: list[AccountFailedReasonType] = []
         for field, value in req_body.items():
             if field == "id":
                 result = target_user.change_id("", str(value), True, False)

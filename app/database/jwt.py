@@ -332,7 +332,7 @@ def create_login_data(
     ip_addr: str,
     key: str,
     algorithm: str = "HS256",
-) -> tuple[list[tuple[str, str]], dict[str, str]]:
+) -> tuple[list[tuple[str, str]], dict[str, typing.Any]]:
     restapi_version = flask.current_app.config.get("RESTAPI_VERSION")
     server_name = flask.current_app.config.get("SERVER_NAME")
     https_enable = flask.current_app.config.get("HTTPS_ENABLE", True)

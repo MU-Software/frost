@@ -58,7 +58,7 @@ class EmailActionRoute(flask.views.MethodView, api_class.MethodViewMixin):
         # OK, now we can assumes that email is verified,
         # Do what token says.
         # But first, clear spam-block record
-        redis_key = RedisKeyType[target_token.action.name].as_redis_key(target_token.user_id)
+        redis_key = RedisKeyType(target_token.action.name).as_redis_key(target_token.user_id)
         redis_result = redis_db.get(redis_key)
         if redis_result:
             redis_db.delete(redis_key)

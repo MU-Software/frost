@@ -95,7 +95,7 @@ class PasswordChangeRoute(flask.views.MethodView, api_class.MethodViewMixin):
             is_forced_password_change = True
 
             # Clear spam-block record
-            redis_key = RedisKeyType[target_email_token.action.name].as_redis_key(target_email_token.user_id)
+            redis_key = RedisKeyType(target_email_token.action.name).as_redis_key(target_email_token.user_id)
             redis_result = redis_db.get(redis_key)
             if redis_result:
                 redis_db.delete(redis_key)

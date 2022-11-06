@@ -92,10 +92,17 @@ http_all_method = ["get", "head", "post", "put", "delete", "connect", "options",
 ResponseType = tuple[typing.Any, int, typing.Iterable[tuple[str]]]
 
 
-class DataclassProtocol(typing.Protocol):
-    __dataclass_fields__: dict
-    __dataclass_params__: dict
-    __post_init__: typing.Optional[typing.Callable]
+if typing.TYPE_CHECKING:
+
+    class DataclassProtocol(typing.Protocol):
+        __dataclass_fields__: dict
+        __dataclass_params__: dict
+        __post_init__: typing.Optional[typing.Callable]
+
+else:
+
+    class DataclassProtocol:
+        ...
 
 
 def recursive_dict_to_openapi_obj(in_dict: dict):
@@ -286,9 +293,9 @@ class ResponseCaseCollector(AutoRegisterClass):
     _base_class = "ResponseCaseCollector"
 
 
-class ResponseDataModel:
+class ResponseDataModel(DataclassProtocol):
     @classmethod
-    def get_model_openapi_description(cls: DataclassProtocol) -> dict:
+    def get_model_openapi_description(cls: typing.Type["ResponseDataModel"]) -> dict:
         if not dataclasses.is_dataclass(cls):
             raise TypeError(f"Expected {str(type(cls))} as a dataclass instance, it's not.")
 
@@ -368,8 +375,11 @@ class AuthType(enum.Enum):
     RefreshToken = enum.auto()
 
 
-def json_list_filter(in_list: list, filter_empty_value: bool = True) -> list:
-    result_list: list = list()
+def json_list_filter(
+    in_list: list[int | float | bool | dict | list],
+    filter_empty_value: bool = True,
+) -> list:
+    result_list: list = []
 
     for element in in_list:
         if isinstance(element, str):
@@ -385,7 +395,7 @@ def json_list_filter(in_list: list, filter_empty_value: bool = True) -> list:
                 continue
             result_list.append(res_value)
         elif isinstance(element, list):
-            res_value = json_list_filter(element)
+            res_value = json_list_filter(element)  # type: ignore
             if filter_empty_value and not res_value:
                 continue
             result_list.append(res_value)
@@ -401,7 +411,7 @@ def json_list_filter(in_list: list, filter_empty_value: bool = True) -> list:
     return result_list
 
 
-def json_dict_filter(in_dict: dict, filter_empty_value: bool = True) -> dict:
+def json_dict_filter(in_dict: dict[str, int | float | bool | dict | list], filter_empty_value: bool = True) -> dict:
     if not in_dict:
         return dict()
 
@@ -423,11 +433,11 @@ def json_dict_filter(in_dict: dict, filter_empty_value: bool = True) -> dict:
         elif isinstance(v, (int, float)):
             res_value = v
         elif isinstance(v, dict):
-            res_value = json_dict_filter(v, filter_empty_value)
+            res_value = json_dict_filter(v, filter_empty_value)  # type: ignore
             if filter_empty_value and not res_value:
                 continue
         elif isinstance(v, list):
-            res_value = json_list_filter(v, filter_empty_value)
+            res_value = json_list_filter(v, filter_empty_value)  # type: ignore
             if filter_empty_value and not res_value:
                 continue
         elif isinstance(v, bool):
