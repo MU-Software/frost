@@ -20,7 +20,7 @@ class Admin_TokenRevoke_View(fadmin.BaseView):
     def index(self):
         user_result = db.session.query(user.User).all()
         token_result = db.session.query(jwt_module.RefreshToken).all()
-        revoked_dict = dict()
+        revoked_dict = {}
         redis_key = RedisKeyType.TOKEN_REVOKE.as_redis_key("*")
         for k in redis_db.scan_iter(match=redis_key):
             revoked_dict[k.decode()] = redis_db.get(k.decode()).decode()

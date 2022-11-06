@@ -1,3 +1,4 @@
+import contextlib
 import copy
 import dataclasses
 import datetime
@@ -106,7 +107,7 @@ else:
 
 
 def recursive_dict_to_openapi_obj(in_dict: dict):
-    result_dict: dict = dict()
+    result_dict: dict = {}
     for k, v in in_dict.items():
         result_dict[k] = {
             "type": openapi_type_def[type(v)],
@@ -134,7 +135,7 @@ def recursive_dict_to_openapi_obj(in_dict: dict):
 
 
 class AutoRegisterClass:
-    _subclasses: list[typing.Type["AutoRegisterClass"]] = list()
+    _subclasses: list[typing.Type["AutoRegisterClass"]] = []
 
     @classmethod
     def __init_subclass__(cls, **kwargs):
@@ -145,7 +146,7 @@ class AutoRegisterClass:
 
         # Attributes will be shared with parent classes while inheriting them,
         # so _subclasses attribute must be cleared when new class is created.
-        cls._subclasses = list()
+        cls._subclasses = []
 
         for base_cls in cls.__bases__:
             if base_cls.__name__ == cls._base_class:
@@ -297,9 +298,9 @@ class ResponseDataModel(DataclassProtocol):
     @classmethod
     def get_model_openapi_description(cls: typing.Type["ResponseDataModel"]) -> dict:
         if not dataclasses.is_dataclass(cls):
-            raise TypeError(f"Expected {str(type(cls))} as a dataclass instance, it's not.")
+            raise TypeError(f"Expected {type(cls)} as a dataclass instance, it's not.")
 
-        result = dict()
+        result = {}
         for name, field in cls.__dataclass_fields__.items():
             if isinstance(field.type, types.GenericAlias):
                 field.type = field.type.__origin__
@@ -350,7 +351,7 @@ class MethodViewMixin(AutoRegisterClass):
             )
 
             # FIXME: Cache this so that we don't need to calculate on every first OPTION request.
-            response_cases: dict[str, Response] = dict()
+            response_cases: dict[str, Response] = {}
             for response_case_collection in ResponseCaseCollector._subclasses:
                 response_cases.update(
                     {k: v for k, v in response_case_collection.__dict__.items() if not k.startswith("_")}
@@ -413,9 +414,9 @@ def json_list_filter(
 
 def json_dict_filter(in_dict: dict[str, int | float | bool | dict | list], filter_empty_value: bool = True) -> dict:
     if not in_dict:
-        return dict()
+        return {}
 
-    result_dict: dict = dict()
+    result_dict: dict = {}
     # Check value types and filter a type
     for k, v in in_dict.items():
         # key must be a string
@@ -473,7 +474,7 @@ def dict_type_check(
         elif not isinstance(data_v, expected_type):
             if isinstance(data_v, str):
                 # If field's type is str, then at least we can try conversion.
-                try:
+                with contextlib.suppress(Exception):
                     data_v_parsed = json.loads(data_v)
                     if issubclass(expected_type, (int, float)) and isinstance(data_v_parsed, (int, float)):
                         data[data_k] = expected_type(data_v_parsed)
@@ -492,8 +493,6 @@ def dict_type_check(
                     elif isinstance(data_v_parsed, expected_type):
                         data[data_k] = expected_type(data_v_parsed)
                         continue
-                except Exception:  # nosec B110
-                    pass
 
             # Field name / Expected type / Type we got
             expected_type_openapi_str = openapi_type_def[expected_type]
@@ -510,7 +509,7 @@ class RequestHeader:
         optional_fields: typing.Optional[dict[str, dict[str, str]]] = None,
         auth: typing.Optional[dict[AuthType, bool]] = None,
     ):
-        self.req_header: dict = dict()
+        self.req_header: dict = {}
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
         self.auth: dict[AuthType, bool] = auth or {}
@@ -625,19 +624,19 @@ class RequestHeader:
 
             if self.auth:
                 if "security" not in doc_data:
-                    doc_data["security"] = list()
+                    doc_data["security"] = []
 
                 for auth in self.auth:
                     doc_data["security"].append(
                         {
-                            auth.name + "Auth": list(),
+                            auth.name + "Auth": [],
                         }
                     )
 
             if "parameters" not in doc_data:
                 doc_data["parameters"] = []
 
-            parm_collector: list = list()
+            parm_collector: list = []
             for k, v in self.required_fields.items():
                 # Check if same named field data is already in parm_collector
                 if [z for z in parm_collector if type(z) is dict and z["name"] == k]:
@@ -677,7 +676,7 @@ class RequestHeader:
 
             if self.required_fields:
                 if not doc_data["responses"]:
-                    doc_data["responses"] = list()
+                    doc_data["responses"] = []
                 doc_data["responses"] += ["header_invalid", "header_required_omitted"]
 
             if self.auth:
@@ -713,7 +712,7 @@ class RequestQuery:
         required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
         optional_fields: typing.Optional[dict[str, dict[str, str]]] = None,
     ):
-        self.req_query: dict = dict()
+        self.req_query: dict = {}
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
@@ -769,7 +768,7 @@ class RequestQuery:
             if "parameters" not in doc_data:
                 doc_data["parameters"] = []
 
-            parm_collector: list = list()
+            parm_collector: list = []
             for k, v in self.required_fields.items():
                 field_data = {"in": "query", "name": k, "required": True}
                 if "description" in v:
@@ -799,7 +798,7 @@ class RequestQuery:
 
             if self.required_fields:
                 if not doc_data["responses"]:
-                    doc_data["responses"] = list()
+                    doc_data["responses"] = []
                 doc_data["responses"] += [
                     "path_required_omitted",
                 ]
@@ -816,7 +815,7 @@ class RequestBody:
         required_fields: typing.Optional[dict[str, dict[str, str]]] = None,
         optional_fields: typing.Optional[dict[str, dict[str, str]]] = None,
     ):
-        self.req_body: dict = dict()
+        self.req_body: dict = {}
         self.required_fields: dict[str, dict[str, str]] = required_fields or {}
         self.optional_fields: dict[str, dict[str, str]] = optional_fields or {}
 
@@ -893,8 +892,8 @@ class RequestBody:
                     }
                 }
 
-            properties: dict = dict()
-            required: list = list()
+            properties: dict = {}
+            required: list = []
             for k, v in self.required_fields.items():
                 properties[k] = v
                 required.append(k)
@@ -909,7 +908,7 @@ class RequestBody:
 
             if self.required_fields:
                 if not doc_data["responses"]:
-                    doc_data["responses"] = list()
+                    doc_data["responses"] = []
                 doc_data["responses"] += ["body_required_omitted", "body_empty", "body_invalid"]
 
             func.__doc__ = yaml.safe_dump(doc_data)

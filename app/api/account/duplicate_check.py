@@ -32,7 +32,7 @@ class AccountDuplicateCheckRoute(flask.views.MethodView, api_class.MethodViewMix
             "id": user_module.User.id,
             "nickname": user_module.User.nickname,
         }
-        check_result = list()
+        check_result = []
 
         for field_name, field_value in req_body.items():
             if db.session.query(user_module.User).filter(field_column_map[field_name] == field_value).first():

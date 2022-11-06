@@ -76,7 +76,7 @@ class TokenBase:
         if (not token_exp_time) or (token_exp_time < current_time):
             raise jwt.exceptions.ExpiredSignatureError("Token has reached expiration time")
 
-        result_payload = dict()
+        result_payload = {}
         attrs = inspect.getmembers(self, lambda o: not callable(o))
 
         for attr_name, attr_value in attrs:
@@ -338,8 +338,8 @@ def create_login_data(
     https_enable = flask.current_app.config.get("HTTPS_ENABLE", True)
     cookie_samesite = ("None" if https_enable else "Lax") if restapi_version == "dev" else "strict"
 
-    response_header: list[tuple[str, str]] = list()
-    response_data: dict[str, dict[str, str]] = dict()
+    response_header: list[tuple[str, str]] = []
+    response_data: dict[str, dict[str, str]] = {}
 
     refresh_token = RefreshToken.from_usertable(user_data)
     refresh_token.user_agent = user_agent
@@ -402,8 +402,8 @@ def refresh_login_data(
     https_enable = flask.current_app.config.get("HTTPS_ENABLE", True)
     cookie_samesite = ("None" if https_enable else "Lax") if restapi_version == "dev" else "strict"
 
-    response_header: list[tuple[str, str]] = list()
-    response_data: dict[str, dict[str, str]] = dict()
+    response_header: list[tuple[str, str]] = []
+    response_data: dict[str, dict[str, str]] = {}
 
     refresh_token = RefreshToken.from_token(refresh_token_jwt, key)
 

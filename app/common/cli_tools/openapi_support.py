@@ -14,14 +14,14 @@ import app.api.helper_class as api_class
 RE_URL = re.compile(r"<(?:[^:<>]+:)?([^<>]+)>")
 PATH_PARAM_URL = re.compile(r"<([^:<>]+):?([^<>]+)>")
 
-routes_cache: dict[str, tuple[str, typing.Any]] = dict()
-response_cases_cache: dict[str, api_class.Response] = dict()
+routes_cache: dict[str, tuple[str, typing.Any]] = {}
+response_cases_cache: dict[str, api_class.Response] = {}
 
 
 class FrostRoutePlugin(apispec.BasePlugin):
     def path_helper(self, path: str, operations: typing.OrderedDict, *, view, app: flask.Flask | None = None, **kwargs):
         app = app or flask.current_app
-        operation_result = dict()
+        operation_result = {}
         http_mtd: dict[str, typing.Any] = {k: v for k, v in view.__dict__.items() if k in api_class.http_all_method}
 
         path_tag: str = [z for z in path.split("/") if z][2]
@@ -34,7 +34,7 @@ class FrostRoutePlugin(apispec.BasePlugin):
             "float": "number",
             "bool": "boolean",
         }
-        path_params_data: list[dict] = list()
+        path_params_data: list[dict] = []
         # Add path parameters on doc
         if "{" in path:
             orig_path: str = routes_cache[path][0]
@@ -57,7 +57,7 @@ class FrostRoutePlugin(apispec.BasePlugin):
 
             document: dict[str, typing.Any] = yaml.safe_load(mtd_func.__doc__)
             doc_resps: list[str] = document.pop("responses")
-            openapi_resp: dict = dict()
+            openapi_resp: dict = {}
             for resp in doc_resps:
                 resp_case_obj: api_class.Response = response_cases_cache[resp]
                 if resp_case_obj.code not in openapi_resp:
@@ -86,7 +86,7 @@ class FrostRoutePlugin(apispec.BasePlugin):
             document["responses"] = openapi_resp
 
             if "tags" not in document:
-                document["tags"] = list()
+                document["tags"] = []
             document["tags"].append(path_tag)
 
             if path_params_data:

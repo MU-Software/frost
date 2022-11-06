@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import datetime
 import imghdr
 import json
@@ -73,18 +74,12 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
     @staticmethod
     def is_allowed_file(filename: str) -> bool:
         allowed_extensions: list[str] = flask.current_app.config.get("FILE_UPLOAD_ALLOW_EXTENSION", [])
-        try:
+        with contextlib.suppress(Exception):
             if "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions:
                 return True
-        except Exception:  # nosec B110
-            pass
         return False
 
-    @api_class.RequestHeader(
-        auth={
-            api_class.AuthType.Bearer: False,
-        }
-    )
+    @api_class.RequestHeader(auth={api_class.AuthType.Bearer: False})
     def get(
         self,
         filename: typing.Optional[str] = None,
@@ -146,24 +141,11 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
                     "file": response_body,
                 },
             )
-        else:
-            return flask.send_file(filepath, mimetype=file_db_result.mimetype)
 
-    @api_class.RequestHeader(
-        auth={
-            api_class.AuthType.Bearer: True,
-        }
-    )
-    @api_class.RequestBody(
-        optional_fields={
-            "private": {
-                "type": "boolean",
-            },
-            "alt_data": {
-                "type": "string",
-            },
-        },
-    )
+        return flask.send_file(filepath, mimetype=file_db_result.mimetype)
+
+    @api_class.RequestHeader(auth={api_class.AuthType.Bearer: True})
+    @api_class.RequestBody(optional_fields={"private": {"type": "boolean"}, "alt_data": {"type": "string"}})
     def post(
         self,
         req_header: dict,
@@ -278,11 +260,7 @@ class FileManagementRoute(flask.views.MethodView, api_class.MethodViewMixin):
             },
         )
 
-    @api_class.RequestHeader(
-        auth={
-            api_class.AuthType.Bearer: True,
-        }
-    )
+    @api_class.RequestHeader(auth={api_class.AuthType.Bearer: True})
     def delete(self, req_header: dict, access_token: jwt_module.AccessToken, filename: typing.Optional[str] = None):
         """
         description: Delete file.

@@ -47,7 +47,7 @@ def char_type(s):
 
 
 def get_str_char_types(target_str):
-    str_char_type = list()
+    str_char_type = []
     for target_char in target_str:
         str_char_type.append(char_type(target_char))
     return list(set(str_char_type))
@@ -249,9 +249,8 @@ def cookie_creator(
     if never_expire:
         expires = "Sat, 19 Jan 2038 04:14:07 GMT"
 
-    header_cookie = list()
-    header_cookie.append(f"{name}={data}")
-    header_cookie.append(f"path={path}")
+    header_cookie: list[str] = []
+    header_cookie.extend((f"{name}={data}", f"path={path}"))
 
     if expires:
         header_cookie.append(f"Expires={expires}")
@@ -291,7 +290,7 @@ def delete_cookie(
 
 def cookie_datetime(dt_time: datetime.datetime) -> str:
     if type(dt_time) != datetime.datetime:
-        raise TypeError(f"a datetime object is required (got type {str(type(dt_time))})")
+        raise TypeError(f"a datetime object is required (got type {type(dt_time)})")
 
     dt_time = dt_time.replace(tzinfo=UTC)
     return dt_time.strftime("%a, %d %b %Y %H:%M:%S GMT")

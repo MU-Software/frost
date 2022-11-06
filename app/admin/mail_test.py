@@ -51,5 +51,5 @@ class Admin_MailTest_View(fadmin.BaseView):
 
         if did_sent:
             return ResourceResponseCase.resource_created.create_response()
-        else:
-            return CommonResponseCase.server_error.create_response()
+
+        CommonResponseCase.server_error.create_response()

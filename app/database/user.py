@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import enum
 import secrets
@@ -275,15 +276,13 @@ class EmailToken(db_module.DefaultModelMixin, db_module.BaseModel):
             current_time = datetime.datetime.utcnow().replace(tzinfo=utils.UTC)
 
             # Remove old token if exists
-            try:
+            with contextlib.suppress(Exception):
                 old_mail_tokens = (
                     db.session.query(EmailToken)
                     .filter(EmailToken.user_id == target_user.uuid)
                     .filter(EmailToken.action == EmailTokenAction.EMAIL_PASSWORD_RESET)
                     .all()
                 )
-            except Exception:  # nosec B110
-                pass
             if old_mail_tokens:
                 for old_mail_token in old_mail_tokens:
                     # Do not db.session.commit here (performance issue)

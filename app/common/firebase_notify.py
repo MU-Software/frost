@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import json
 import os
@@ -15,36 +16,18 @@ def firebase_send_notify(
     target_tokens: typing.Union[str, list[str], None] = None,
     condition: str = None,
 ):
-    try:
+    with contextlib.suppress(ValueError):
+        # default_app is already initialized if ValueError raises.
         cred = credentials.Certificate(os.environ.get("FIREBASE_CERTIFICATE"))
         default_app = firebase_admin.initialize_app(cred)  # noqa
-    except ValueError:
-        # default_app is already initialized.
-        pass
 
-    if not any(
-        (
-            all(
-                (
-                    title,
-                    body,
-                ),
-            ),
-            data,
-        ),
-    ):
+    if not any((all((title, body)), data)):
         raise ValueError("At least one of (title, body)|data must be set")
 
-    data = (
-        data
-        if data
-        else {
-            "click_action": "FLUTTER_NOTIFICATION_CLICK",
-        }
-    )
+    data = data or {"click_action": "FLUTTER_NOTIFICATION_CLICK"}
     # All keys and values in data must be a string.
     # We'll try to type casting all values to json compatible string.
-    tmp_dict = dict()
+    tmp_dict = {}
     for k, v in data.items():
         try:
             if isinstance(v, datetime.datetime):
@@ -73,7 +56,7 @@ def firebase_send_notify(
             target_tokens,
         ]
 
-    message_payload = list()
+    message_payload = []
     for target_token in target_tokens:
         message_payload.append(
             messaging.Message(

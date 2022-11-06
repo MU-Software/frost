@@ -86,9 +86,9 @@ def json_to_envfiles(output_file: pathlib.Path):
 
         if template_launch_json_file is not None:
             with output_launch_json_file.open("w") as launch_json_fp:
-                launch_json_env = dict()
+                launch_json_env = {}
                 for k, v in input_env_data.items():
-                    if k.startswith("__comment") or k.startswith("__line_break"):
+                    if k.startswith(("__comment", "__line_break")):
                         continue
                     elif isinstance(v, dict):
                         launch_json_env[k] = v["vscode_launch"].format(**input_env_data)

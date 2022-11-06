@@ -23,8 +23,7 @@ def init_app(app: flask.Flask):
     allowed_origins: list = [f'https://{app.config.get("SERVER_NAME")}']
     local_client_port = app.config.get("LOCAL_DEV_CLIENT_PORT")
     if restapi_version == "dev" and local_client_port:
-        allowed_origins.append(f"http://localhost:{local_client_port}")
-        allowed_origins.append(f"http://127.0.0.1:{local_client_port}")
+        allowed_origins.extend((f"http://localhost:{local_client_port}", f"http://127.0.0.1:{local_client_port}"))
 
     flask_cors.CORS(
         app,
@@ -69,7 +68,7 @@ def init_app(app: flask.Flask):
     for path, route_model in resource_routes.items():
         view_name: str = ""
         view_func = None
-        defaults: dict = dict()
+        defaults: dict = {}
         if isinstance(route_model, dict):
             view_name = route_model["view_func"].__name__
             view_func = route_model["view_func"].as_view(view_name)

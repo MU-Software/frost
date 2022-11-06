@@ -25,7 +25,7 @@ class RedisKeyType(utils.EnumAutoName):
     TOKEN_REVOKE = enum.auto()
 
     def as_redis_key(self, value: str):
-        return f"{self.value}={str(value)}"
+        return f"{self.value}={value}"
 
 
 # ---------- RDB Setup ----------
