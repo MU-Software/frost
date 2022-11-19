@@ -18,6 +18,9 @@ class EnvOutputFileDataType(typing.TypedDict):
     appender: typing.Callable
 
 
+JSON_DOUBLE_QUOTE = '"'
+JSON_ESCAPED_DOUBLE_QUOTE = '\\"'
+
 ENV_DATA_TYPE_HANDLER: dict[EnvOutputFileType, EnvOutputFileDataType] = {
     EnvOutputFileType.docker_dotenv: EnvOutputFileDataType(datatype=str, appender=str.__add__),
     EnvOutputFileType.flask_dotenv: EnvOutputFileDataType(datatype=str, appender=str.__add__),
@@ -36,7 +39,7 @@ ENV_DATA_HANDLER_COLLECTION: dict[EnvOutputFileType, dict[str, typing.Any]] = {
             if isinstance(v, dict)
             else f'{k}="{v}"\n'
             if isinstance(v, str)
-            else f"{k}='{json.dumps(v)}'\n"
+            else f'{k}="{json.dumps(v).replace(JSON_DOUBLE_QUOTE, JSON_ESCAPED_DOUBLE_QUOTE)}"\n'
         ),
     },
     EnvOutputFileType.flask_dotenv: {
@@ -48,7 +51,7 @@ ENV_DATA_HANDLER_COLLECTION: dict[EnvOutputFileType, dict[str, typing.Any]] = {
             if isinstance(v, dict)
             else f'{k}="{v}"\n'
             if isinstance(v, str)
-            else f"{k}='{json.dumps(v)}'\n"
+            else f'{k}="{json.dumps(v).replace(JSON_DOUBLE_QUOTE, JSON_ESCAPED_DOUBLE_QUOTE)}"\n'
         ),
     },
     EnvOutputFileType.shell: {
@@ -60,7 +63,7 @@ ENV_DATA_HANDLER_COLLECTION: dict[EnvOutputFileType, dict[str, typing.Any]] = {
             if isinstance(v, dict)
             else f'{k}="{v}"\n'
             if isinstance(v, str)
-            else f"{k}='{json.dumps(v)}'\n"
+            else f'{k}="{json.dumps(v).replace(JSON_DOUBLE_QUOTE, JSON_ESCAPED_DOUBLE_QUOTE)}"\n'
         ),
     },
     EnvOutputFileType.powershell: {
@@ -72,7 +75,7 @@ ENV_DATA_HANDLER_COLLECTION: dict[EnvOutputFileType, dict[str, typing.Any]] = {
             if isinstance(v, dict)
             else f'{k}="{v}"\n'
             if isinstance(v, str)
-            else f"{k}='{json.dumps(v)}'\n"
+            else f'{k}="{json.dumps(v).replace(JSON_DOUBLE_QUOTE, JSON_ESCAPED_DOUBLE_QUOTE)}"\n'
         ),
     },
     EnvOutputFileType.vscode_launch: {
