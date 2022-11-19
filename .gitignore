@@ -106,6 +106,9 @@ celerybeat.pid
 .venv
 *.env
 *.venv
+.sh
+.ps1
+.flaskenv
 env/
 venv/
 ENV/

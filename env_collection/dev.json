@@ -50,7 +50,9 @@
     "DB_USER" : "db_user",
     "DB_PASSWORD" : "db_password",
     "DB_URL" : {
-        "bash" : "$DB_TYPE+$DB_DRIVER://$DB_USER:$DB_PASSWORD@$DB_ADDRESS:$DB_PORT/$DB_NAME",
+        "env": "{DB_TYPE}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}",
+        "flaskenv": "{DB_TYPE}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}",
+        "shell" : "$DB_TYPE+$DB_DRIVER://$DB_USER:$DB_PASSWORD@$DB_ADDRESS:$DB_PORT/$DB_NAME",
         "powershell" : "$env:DB_TYPE+$env:DB_DRIVER\" + \"://$env:DB_USER\" + \":$env:DB_PASSWORD@$env:DB_ADDRESS\" + \":$env:DB_PORT/$env:DB_NAME",
         "vscode_launch": "{DB_TYPE}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
     },

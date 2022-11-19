@@ -1,124 +1,245 @@
+import enum
 import json
 import pathlib
 import traceback
 import typing
 
 
-def get_traceback_msg(err):
-    return "".join(traceback.format_exception(etype=type(err), value=err, tb=err.__traceback__))
+class EnvOutputFileType(enum.StrEnum):
+    docker_dotenv = "{}.env"
+    flask_dotenv = "{}.flaskenv"
+    shell = "{}.sh"
+    powershell = "{}.ps1"
+    vscode_launch = ".vscode/launch.json"
 
 
-def json_to_envfiles(output_file: pathlib.Path):
+class EnvOutputFileDataType(typing.TypedDict):
+    datatype: type
+    appender: typing.Callable
+
+
+ENV_DATA_TYPE_HANDLER: dict[EnvOutputFileType, EnvOutputFileDataType] = {
+    EnvOutputFileType.docker_dotenv: EnvOutputFileDataType(datatype=str, appender=str.__add__),
+    EnvOutputFileType.flask_dotenv: EnvOutputFileDataType(datatype=str, appender=str.__add__),
+    EnvOutputFileType.shell: EnvOutputFileDataType(datatype=str, appender=str.__add__),
+    EnvOutputFileType.powershell: EnvOutputFileDataType(datatype=str, appender=str.__add__),
+    EnvOutputFileType.vscode_launch: EnvOutputFileDataType(datatype=dict, appender=lambda x, y: {**x, **y}),
+}
+
+ENV_DATA_HANDLER_COLLECTION: dict[EnvOutputFileType, dict[str, typing.Any]] = {
+    EnvOutputFileType.docker_dotenv: {
+        "__shebang": lambda k=None, v=None, d=None: "",
+        "__comment": lambda k, v=None, d=None: f"# {k}\n",
+        "__line_break": lambda k=None, v=None, d=None: "\n",
+        "define_var": lambda k, v, d=None: (
+            f"{k}=\"{v['env'].format(**(d or {}))}\"\n"
+            if isinstance(v, dict)
+            else f'{k}="{v}"\n'
+            if isinstance(v, str)
+            else f"{k}='{json.dumps(v)}'\n"
+        ),
+    },
+    EnvOutputFileType.flask_dotenv: {
+        "__shebang": lambda k=None, v=None, d=None: "",
+        "__comment": lambda k, v=None, d=None: f"# {k}\n",
+        "__line_break": lambda k=None, v=None, d=None: "\n",
+        "define_var": lambda k, v, d=None: (
+            f"{k}=\"{v['flaskenv'].format(**(d or {}))}\"\n"
+            if isinstance(v, dict)
+            else f'{k}="{v}"\n'
+            if isinstance(v, str)
+            else f"{k}='{json.dumps(v)}'\n"
+        ),
+    },
+    EnvOutputFileType.shell: {
+        "__shebang": lambda k=None, v=None, d=None: "#!/usr/bin/env bash\n",
+        "__comment": lambda k, v=None, d=None: f"# {k}\n",
+        "__line_break": lambda k=None, v=None, d=None: "\n",
+        "define_var": lambda k, v, d=None: (
+            f"{k}=\"{v['shell'].format(**(d or {}))}\"\n"
+            if isinstance(v, dict)
+            else f'{k}="{v}"\n'
+            if isinstance(v, str)
+            else f"{k}='{json.dumps(v)}'\n"
+        ),
+    },
+    EnvOutputFileType.powershell: {
+        "__shebang": lambda k=None, v=None, d=None: "#!/usr/bin/env pwsh\n",
+        "__comment": lambda k, v=None, d=None: f"# {k}\n",
+        "__line_break": lambda k=None, v=None, d=None: "\n",
+        "define_var": lambda k, v, d=None: (
+            f"{k}=\"{v['powershell'].format(**(d or {}))}\"\n"
+            if isinstance(v, dict)
+            else f'{k}="{v}"\n'
+            if isinstance(v, str)
+            else f"{k}='{json.dumps(v)}'\n"
+        ),
+    },
+    EnvOutputFileType.vscode_launch: {
+        "__shebang": lambda k=None, v=None, d=None: {},
+        "__comment": lambda k=None, v=None, d=None: {},
+        "__line_break": lambda k=None, v=None, d=None: {},
+        "define_var": lambda k, v, d=None: (
+            {k: v["vscode_launch"].format(**(d or {}))}
+            if isinstance(v, dict)
+            else {k: v.format(d or {})}
+            if isinstance(v, str)
+            else {k: json.dumps(v)}
+        ),
+    },
+}
+
+VSCODE_LAUNCH_DEFAULT_DATA = {
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Frost",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {},
+            "args": ["run"],
+            "jinja": True,
+        }
+    ],
+}
+
+
+def handler(input_file: pathlib.Path, base_filename: str | None = None, overwrite_all: bool = False):  # noqa: C901
     try:
-        output_name: str = output_file.stem
+        output_base_name = (
+            input_file.stem if base_filename == "true" else "" if base_filename is None else base_filename
+        )
+        output_file_name = {e: e.value.format(output_base_name) for e in EnvOutputFileType}
 
-        input_env_file_content: str = output_file.read_text()
+        input_env_file_content: str = input_file.read_text()
         input_env_data: dict[str, typing.Union[str, dict[str, str]]] = json.loads(input_env_file_content)
 
-        template_launch_json_file: typing.Optional[pathlib.Path] = pathlib.Path("template/launch.json")
-        if not template_launch_json_file.exists():
-            print("There's no launch.json template file for VS Code.\n" "Place file on template/launch.json")
-            template_launch_json_file = None
+        output_files: dict[EnvOutputFileType, pathlib.Path] = {e: pathlib.Path(n) for e, n in output_file_name.items()}
+
+        # Backup vscode launch.json data if possible
+        # We need these data as launch.json does not only contain env data,
+        # but also contains another variables related to launch.
+        if output_files[EnvOutputFileType.vscode_launch].exists():
+            vscode_launch_data = json.loads(output_files[EnvOutputFileType.vscode_launch].read_text())
         else:
-            template_launch_json_file_content: dict[str, list[dict[str, typing.Any]]] = json.loads(
-                template_launch_json_file.read_text()
-            )
+            vscode_launch_data = VSCODE_LAUNCH_DEFAULT_DATA
 
-        output_docker_file: pathlib.Path = pathlib.Path(output_name + ".env")
-        output_bash_file: pathlib.Path = pathlib.Path(output_name + ".sh")
-        output_ps_file: pathlib.Path = pathlib.Path(output_name + ".ps1")
-        output_launch_json_file: pathlib.Path = pathlib.Path("../.vscode/launch.json")
+        for e in output_files:
+            if not overwrite_all:
+                if output_files[e].exists():
+                    while True:
+                        check_yn = input(
+                            f'"{output_files[e].name}" file exists, ' "do you want to overwrite? [y/N] "
+                        ).strip()
 
-        output_docker_file.unlink(missing_ok=True)
-        output_bash_file.unlink(missing_ok=True)
-        output_ps_file.unlink(missing_ok=True)
-
-        if template_launch_json_file is not None:
-            if not output_launch_json_file.parent.exists():
-                output_launch_json_file.parent.mkdir()
-            output_launch_json_file.unlink(missing_ok=True)
-
-        with output_docker_file.open("w") as docker_fp, output_bash_file.open("w") as bash_fp, output_ps_file.open(
-            "w"
-        ) as ps_fp:
-
-            # Add Shebang
-            bash_fp.write("#!/usr/bin/env bash\n")
-            ps_fp.write("#!/usr/bin/env pwsh\n")
-
-            for env_name, env_value in input_env_data.items():
-                if env_name.startswith("__comment"):
-                    comment_line = f"# {env_value}\n"
-                    docker_fp.write(comment_line)
-                    bash_fp.write(comment_line)
-                    ps_fp.write(comment_line)
-                    continue
-                elif env_name.startswith("__line_break"):
-                    docker_fp.write("\n")
-                    bash_fp.write("\n")
-                    ps_fp.write("\n")
-                    continue
-
-                docker_line = f"{env_name}="
-                bash_line = f"export {env_name}="
-                ps_line = f"$env:{env_name}="
-
-                # We'll change all values to json-competable strings,
-                # as bash variables don't have types and those are just string type,
-                # and python's os.environ returns all values as string.
-                if isinstance(env_value, dict):
-                    bash_line += f'"{env_value["bash"]}"\n'
-                    ps_line += f'"{env_value["powershell"]}"\n'
-                    docker_line += f'"{env_value["vscode_launch"].format(**input_env_data)}"\n'
+                        if check_yn.lower() in ("y", "yes"):
+                            if e == EnvOutputFileType.vscode_launch:
+                                vscode_launch_backup = output_files[e].with_suffix(".json.bak")
+                                vscode_launch_backup.unlink(missing_ok=True)
+                                pathlib.Path(output_files[e]).rename(vscode_launch_backup)
+                            output_files[e].unlink(missing_ok=True)
+                        elif check_yn.lower() in ("n", "no"):
+                            output_files[e] = None
+                        else:
+                            continue
+                        break
                 else:
-                    value_str = env_value
-                    if not isinstance(value_str, str):
-                        value_str = json.dumps(value_str)
-                    value_str = json.dumps(value_str) + "\n"
+                    output_files[e].parent.mkdir(parents=True, exist_ok=True)
 
-                    bash_line += value_str
-                    ps_line += value_str
-                    docker_line += value_str
+            elif overwrite_all:
+                output_files[e].parent.mkdir(parents=True, exist_ok=True)
+                output_files[e].unlink(missing_ok=True)
 
-                docker_fp.write(docker_line)
-                bash_fp.write(bash_line)
-                ps_fp.write(ps_line)
+        # Generate environment files data
+        output_files_data: dict[EnvOutputFileType, str | dict] = {
+            e: ENV_DATA_TYPE_HANDLER[e]["datatype"]() for e in EnvOutputFileType
+        }
 
-        if template_launch_json_file is not None:
-            with output_launch_json_file.open("w") as launch_json_fp:
-                launch_json_env = {}
-                for k, v in input_env_data.items():
-                    if k.startswith(("__comment", "__line_break")):
-                        continue
-                    elif isinstance(v, dict):
-                        launch_json_env[k] = v["vscode_launch"].format(**input_env_data)
-                    else:
-                        launch_json_env[k] = v
+        # Add shebang first
+        for e in EnvOutputFileType:
+            appender = ENV_DATA_TYPE_HANDLER[e]["appender"]
+            output_files_data[e] = appender(output_files_data[e], ENV_DATA_HANDLER_COLLECTION[e]["__shebang"]())
 
-                template_launch_json_file_content["configurations"][0]["env"] = launch_json_env
-                launch_json_fp.write(json.dumps(template_launch_json_file_content, indent=4))
-    except Exception as e:
+        # Handle JSON file
+        for env_name, env_value in input_env_data.items():
+            for e in EnvOutputFileType:
+                appender = ENV_DATA_TYPE_HANDLER[e]["appender"]
+
+                if env_name.startswith("__comment"):
+                    output_files_data[e] = appender(
+                        output_files_data[e], ENV_DATA_HANDLER_COLLECTION[e]["__comment"](env_value)
+                    )
+                elif env_name.startswith("__line_break"):
+                    output_files_data[e] = appender(
+                        output_files_data[e], ENV_DATA_HANDLER_COLLECTION[e]["__line_break"](env_value)
+                    )
+                else:
+                    # We'll change all values to json-competable strings,
+                    # as bash variables don't have types and those are just string type,
+                    # and python's os.environ returns all values as string.
+                    output_files_data[e] = appender(
+                        output_files_data[e],
+                        ENV_DATA_HANDLER_COLLECTION[e]["define_var"](
+                            env_name, env_value, output_files_data[EnvOutputFileType.vscode_launch]
+                        ),
+                    )
+
+        for e, p in output_files.items():
+            if not p:
+                continue
+
+            with p.open("w") as fp:
+
+                if e == EnvOutputFileType.vscode_launch:
+                    vscode_launch_data["configurations"][0]["env"] = output_files_data[e]
+                    data = json.dumps(vscode_launch_data, indent=4)
+                else:
+                    data = str(output_files_data[e])
+
+                fp.write(data)
+
+    except Exception as exc:
         print("Exception raised!")
-        print(get_traceback_msg(e))
+        print("".join(traceback.format_exception(exc)))
 
 
 if __name__ == "__main__":
+    import argparse
     import os
-    import sys
 
-    if len(sys.argv) <= 1:
-        print("Need to specify target environment variables collection file(.json)")
-        os._exit(1)
+    parser = argparse.ArgumentParser(description="Environment file builder for Frost")
+    parser.add_argument(
+        "json_path",
+        help="JSON file that describes environment variables.",
+    )
+    parser.add_argument(
+        "-n",
+        "--name",
+        help=(
+            "Set name of output files. "
+            "default name will be set if not specified, "
+            'and filename will be used if argument is set to "true".'
+        ),
+    )
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        action="store_true",
+        help='Overwrite files if exists, Defaults to "false".',
+    )
+    args = parser.parse_args()
 
-    target_file = pathlib.Path(sys.argv[1]).absolute()
+    target_file = pathlib.Path(args.json_path).absolute()
     if not target_file.exists():
         # Ignore just now. We'll retry this after changing paths
         target_file = None
 
     os.chdir(pathlib.Path(__file__).parents[0])
     if target_file is None:
-        target_file = pathlib.Path(sys.argv[1]).absolute()
+        target_file = pathlib.Path(args.json_path).absolute()
         if not target_file.exists():
             raise FileNotFoundError()
 
-    json_to_envfiles(target_file)
+    os.chdir(pathlib.Path(__file__).parents[1])
+    handler(input_file=target_file, base_filename=args.name, overwrite_all=args.overwrite)
