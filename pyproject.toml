@@ -28,9 +28,10 @@ Flask-Cors = "^3.0.10"
 Flask-SQLAlchemy = "^2.5.1"
 Flask-Admin = "^1.6.0"
 Flask-Limiter = {extras = ["redis"], version = "^2.6.3"}
-gunicorn = "^20.1.0"
 celery = "^5.2.7"
 python-dotenv = "^0.21.0"
+eventlet = "^0.33.2"
+gunicorn = {git = "https://github.com/benoitc/gunicorn.git", rev = "933b210"}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.20.0"
