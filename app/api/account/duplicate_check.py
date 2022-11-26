@@ -2,8 +2,10 @@ import typing
 
 import flask
 import flask.views
+import sqlalchemy as sql
 
 import app.api.helper_class as api_class
+import app.common.utils as utils
 import app.database as db_module
 import app.database.user as user_module
 from app.api.account.response_case import AccountResponseCase
@@ -35,7 +37,12 @@ class AccountDuplicateCheckRoute(flask.views.MethodView, api_class.MethodViewMix
         check_result = []
 
         for field_name, field_value in req_body.items():
-            if db.session.query(user_module.User).filter(field_column_map[field_name] == field_value).first():
+            input_value = utils.normalize(field_value.strip()).lower()
+            if (
+                db.session.query(user_module.User)
+                .filter(sql.func.lower(field_column_map[field_name]) == input_value)
+                .first()
+            ):
                 check_result.append(field_name)
 
         if check_result:

@@ -19,13 +19,13 @@ RedisKeyType = db_module.RedisKeyType
 class User(db_module.DefaultModelMixin, db_module.BaseModel):
     __tablename__ = "TB_USER"
     uuid = db.Column(db_module.PrimaryKeyType, db.Sequence("SQ_User_UUID"), primary_key=True)
-    id = db.Column(db.String(collation="NOCASE"), unique=True, nullable=False)
-    nickname = db.Column(db.String(collation="NOCASE"), unique=True, nullable=False)
+    id = db.Column(db.String, unique=True, nullable=False)
+    nickname = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, unique=False, nullable=False)
     pw_changed_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
 
     # No, We won't support multiple account
-    email = db.Column(db.String(254, collation="NOCASE"), nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     email_secret = db.Column(db.String, nullable=True)
 
@@ -124,7 +124,7 @@ class User(db_module.DefaultModelMixin, db_module.BaseModel):
             "SIGNIN_POSSIBLE_AFTER_MAIL_VERIFICATION"
         )
 
-        user_ident = utils.normalize(user_ident.strip())
+        user_ident = utils.normalize(user_ident.strip()).lower()
         pw = utils.normalize(pw.strip())
         # We won't support UUID login,
         # because we won't show UUID to users

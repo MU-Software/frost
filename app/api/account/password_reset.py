@@ -4,6 +4,7 @@ import typing
 
 import flask
 import flask.views
+import sqlalchemy as sql
 
 import app.api.helper_class as api_class
 import app.common.mailgun as mailgun
@@ -44,7 +45,11 @@ class PasswordResetRoute(flask.views.MethodView, api_class.MethodViewMixin):
         # Find target user
         target_user: user_module.User = None
         try:
-            target_user = db.session.query(user_module.User).filter(user_module.User.email == req_body["email"]).first()
+            target_user = (
+                db.session.query(user_module.User)
+                .filter(sql.func.lower(user_module.User.email) == sql.func.lower(req_body["email"]))
+                .first()
+            )
         except Exception:
             return CommonResponseCase.db_error.create_response()
         if not target_user:
