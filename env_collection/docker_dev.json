@@ -45,7 +45,7 @@
 
     "DB_TYPE" : "postgresql",
     "DB_DRIVER" : "psycopg2",
-    "DB_ADDRESS" : "127.0.0.1",
+    "DB_ADDRESS" : "host.docker.internal",
     "DB_PORT" : 5432,
     "DB_NAME" : "db_name",
     "DB_USER" : "db_user",
@@ -59,7 +59,7 @@
     },
     "__line_break_4" : true,
 
-    "REDIS_HOST" : "127.0.0.1",
+    "REDIS_HOST" : "host.docker.internal",
     "REDIS_PORT" : 6379,
     "REDIS_DB" : 0,
     "REDIS_PASSWORD" : "redis_password0!",
