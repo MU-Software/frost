@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
+  <title>Welcome to FROST!</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <style>
+    :root {
+      --color: #2979ff;
+      --line-height: normal;
+    }
+
+    html {
+      -webkit-user-select: none;
+      user-select: none;
+      font-size: 75%;
+    }
+
+    body {
+      padding: 0;
+      margin: 0;
+      line-height: normal;
+    }
+
+    section aside {
+      min-width: 27vw;
+      width: unset;
+      height: -moz-fit-content;
+      height: fit-content;
+      text-align: center;
+      background-color: #f7f7f7;
+      border: 1px solid #7af;
+    }
+
+    .container_container {
+      overflow-x: scroll;
+    }
+
+    .container {
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: normal;
+      align-self: safe center;
+      align-items: center;
+      /* align-content: flex-start; */
+      /* I don't know why, I don't want to know why,
+         I shouldn't have to wonder why, but for whatever reason
+         this stupid card isn't laying out correctly
+         unless we do this terribleness */
+      height: calc(100vh - 3.4em - 48px);
+    }
+
+    .item::before {
+      counter-increment: items;
+    }
+
+    /* Re-order items into 3 rows */
+    .item:nth-child(3n+1) {
+      order: 1;
+    }
+
+    .item:nth-child(3n+2) {
+      order: 2;
+    }
+
+    .item:nth-child(3n) {
+      order: 3;
+    }
+
+    h3 {
+      margin-top: 0;
+      min-width: 100;
+      text-align: center;
+    }
+    p {
+      width: 100%;
+      text-align: start;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container_container">
+    <section class="container">
+      <aside class="item">
+        <h3>Welcome to FROST!</h3>
+
+        <p>If you see this page, the FROST API server is successfully installed and working.</p>
+        <p>
+          To show your frontend instead of this page,<br/>
+          please replace files in <code>{PROJECT_DIR}/docker/nginx/frontend</code> to yours.<br/>
+          For online documentation and support please refer to
+          <a href="https:/github.com/MU-Software/frost/">FROST repository</a>.<br/>
+        </p>
+        <p><strong>Thank you for using FROST.</strong></p>
+
+        <br/><p><em>And also thanks to nginx for giving me an idea of this nice index page.</em></p>
+      </aside>
+    </section>
+  </div>
+</body>
+
+</html>
