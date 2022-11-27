@@ -64,7 +64,7 @@ docker-rm: goto-frost-dir docker-stop
 		--env-file ${PROJECT_DIR}.env \
 		rm
 
-docker-up: ENV_JSON_FILE = docker_dev.json
+docker-build: ENV_JSON_FILE = docker_dev.json
 docker-build: goto-frost-dir env-generate
 	docker build \
 		--target runtime \
@@ -72,7 +72,7 @@ docker-build: goto-frost-dir env-generate
 		-t $(IMAGE_NAME) \
 		$(PROJECT_DIR)
 
-docker-up: ENV_JSON_FILE = docker_dev.json
+docker-build-debug: ENV_JSON_FILE = docker_dev.json
 docker-build-debug: goto-frost-dir env-generate
 	docker build \
 		--progress=plain \
@@ -83,16 +83,16 @@ docker-build-debug: goto-frost-dir env-generate
 
 # DB management related (not released yet)
 # db-makemigrations: goto-frost-dir
-# 	poetry run alembic revision --autogenerate -m $(MIGRATION_MESSAGE)
+# 	poetry run flask db revision --autogenerate -m $(MIGRATION_MESSAGE)
 
 # db-upgrade: goto-frost-dir
-# 	poetry run alembic upgrade $(UPGRADE_VERSION)
+# 	poetry run flask db upgrade $(UPGRADE_VERSION)
 
 # db-downgrade: goto-frost-dir
-# 	poetry run alembic downgrade $(DOWNGRADE_VERSION)
+# 	poetry run flask db downgrade $(DOWNGRADE_VERSION)
 
 # db-reset: goto-frost-dir
-# 	poetry run alembic downgrade base
+# 	poetry run flask db downgrade base
 
 db-erd-export: goto-frost-dir
 	poetry run flask draw-db-erd
@@ -111,13 +111,13 @@ dep-export: goto-frost-dir
 	poetry export -f requirements.txt --without-hashes --without=dev --output requirements.txt
 	poetry export -f requirements.txt --without-hashes --output requirements-dev.txt
 
-build: goto-frost-dir deps-install hooks-install docker-up db-upgrade
+build: goto-frost-dir dep-install hooks-install docker-up db-upgrade
 
 # Runserver related
-runserver-flask: goto-frost-dir deps-install docker-up
+runserver-flask: goto-frost-dir dep-install docker-up
 	poetry run flask run
 
-runserver-gunicorn: goto-frost-dir deps-install docker-up
+runserver-gunicorn: goto-frost-dir dep-install docker-up
 	poetry run gunicorn --host $(HOST) --port $(PORT) --reload app.main:app
 
 runserver: goto-frost-dir runserver-flask
@@ -142,5 +142,5 @@ env-generate: goto-frost-dir
 		poetry run python ./env_collection/env_creator.py -o "$(ENV_JSON_FILE)"; \
 	fi
 
-# test: goto-frost-dir deps-install docker-up
+# test: goto-frost-dir dep-install docker-up
 # 	poetry run pytest
