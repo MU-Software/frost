@@ -17,6 +17,9 @@ IMAGE_NAME := $(if $(IMAGE_NAME),$(IMAGE_NAME),frost_image)
 ifeq (env-generate,$(firstword $(MAKECMDGOALS)))
   ENV_JSON_FILE := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(ENV_JSON_FILE):;@:)
+else ifeq (env-force-generate,$(firstword $(MAKECMDGOALS)))
+  ENV_JSON_FILE := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(ENV_JSON_FILE):;@:)
 endif
 ENV_JSON_FILE := $(if $(ENV_JSON_FILE),$(ENV_JSON_FILE),dev.json)
 
@@ -55,7 +58,7 @@ docker-stop: goto-frost-dir
 		--env-file ${PROJECT_DIR}.env \
 		stop
 
-docker-rm: goto-frost-dir
+docker-rm: goto-frost-dir docker-stop
 	docker-compose \
 		--project-directory ${PROJECT_DIR}docker \
 		--env-file ${PROJECT_DIR}.env \
@@ -130,7 +133,7 @@ openapi-export: goto-frost-dir
 	poetry run flask create-openapi-doc
 
 env-force-generate: goto-frost-dir
-	poetry run python ./env_collection/env_creator.py -o $(ENV_JSON_FILE)
+	poetry run python ./env_collection/env_creator.py -o "$(ENV_JSON_FILE)";
 
 env-generate: goto-frost-dir
 	@if test -f .env; then \
