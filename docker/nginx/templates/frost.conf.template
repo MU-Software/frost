@@ -30,7 +30,7 @@ server {
 
         proxy_redirect off;
         proxy_pass_header Server;
-        proxy_set_header Host mudev.cc;
+        proxy_set_header Host ${SERVER_NAME};
         proxy_set_header X-Real-IP $realip_remote_addr;
         proxy_set_header X-Scheme $scheme;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -44,7 +44,7 @@ server {
 
         proxy_redirect off;
         proxy_pass_header Server;
-        proxy_set_header Host mudev.cc;
+        proxy_set_header Host ${SERVER_NAME};
         proxy_set_header X-Real-IP $realip_remote_addr;
         proxy_set_header X-Scheme $scheme;
         proxy_set_header X-Forwarded-Proto $scheme;
