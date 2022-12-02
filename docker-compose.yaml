@@ -1,39 +1,41 @@
 version: "3.8"
 
+name: frost
+
 volumes:
-  frost-service-volume:
+  frost-db-data-volume:
 
 networks:
   frost-network:
     driver: bridge
 
 services:
-  db:
+  frost-db:
     image: postgres:latest
     container_name: frost-db-dev
     restart: unless-stopped
     networks:
       - frost-network
     ports:
-      - 5432:5432
+      - 5432
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME:?Please create .env file on project root and set DB_NAME}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?Please create .env file on project root and set DB_PASSWORD}
     volumes:
-      - frost-service-volume:/var/lib/postgresql/data/
+      - frost-db-data-volume:/var/lib/postgresql/data/
     healthcheck:
-      test: pg_isready -U postgres
+      test: pg_isready -U ${DB_USER:-postgres}
 
-  redis:
+  frost-redis:
     image: redis:latest
     container_name: frost-redis-dev
     networks:
       - frost-network
     ports:
-      - 6379:6379
+      - 6379
     command: >
-      --requirepass ${REDIS_PASSWORD}
+      --requirepass ${REDIS_PASSWORD:?Please create .env file on project root and set REDIS_PASSWORD}
     healthcheck:
       # FROM https://stackoverflow.com/a/71504657/5702135
       test: ["CMD-SHELL", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping", "|", "grep", "PONG"]
@@ -41,23 +43,13 @@ services:
       timeout: 3s
       retries: 5
 
-  api-server:
+  frost-api-server:
     build:
       context: ../
       dockerfile: docker/Dockerfile
       target: runtime
-    container_name: frost-api-dev
-    command:
-      - python3
-      - -m
-      - gunicorn
-      - -k
-      - eventlet
-      - --log-level
-      - INFO
-      - -b
-      - 0.0.0.0:8808
-      - 'app:create_app()'
+    container_name: frost-api-server-dev
+    command: ["python3",  "-m", "gunicorn",  "-k",  "eventlet", "--log-level", "INFO", "-b", "0.0.0.0:8808", "app:create_app()"]
     env_file:
       - ../.env
     tty: true
@@ -65,19 +57,19 @@ services:
     networks:
       - frost-network
     ports:
-      - 8808:8808
+      - 8808
     depends_on:
-      db:
+      frost-db:
         condition: service_healthy
-      redis:
+      frost-redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl --max-time 5 http://localhost:8808/ping"]
+      test: ["CMD", "curl", "-sf", "--header", "Host: ${SERVER_NAME}", "--max-time", "5", "http://localhost:8808/api/dev/ping"]
       interval: 1s
-      timeout: 3s
+      timeout: 6s
       retries: 5
 
-  nginx:
+  frost-nginx:
     image: nginx:latest
     container_name: frost-nginx-dev
     networks:
@@ -86,9 +78,8 @@ services:
       - 80:80
       - 443:443
     depends_on:
-      - api-server
-      # api-server:
-      #   condition: service_healthy
+      frost-api-server:
+        condition: service_healthy
     env_file:
       - ../.env
     volumes:
