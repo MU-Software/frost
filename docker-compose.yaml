@@ -4,6 +4,7 @@ name: frost
 
 volumes:
   frost-db-data-volume:
+  frost-swagger-docs:
 
 networks:
   frost-network:
@@ -49,7 +50,12 @@ services:
       dockerfile: docker/Dockerfile
       target: runtime
     container_name: frost-api-server-dev
-    command: ["python3",  "-m", "gunicorn",  "-k",  "eventlet", "--log-level", "INFO", "-b", "0.0.0.0:8808", "app:create_app()"]
+    command:
+      - "/bin/sh"
+      - "-c"
+      - |
+        flask create-openapi-doc
+        gunicorn -k eventlet --log-level INFO -b 0.0.0.0:8808 "app:create_app()"
     env_file:
       - ../.env
     tty: true
@@ -68,6 +74,9 @@ services:
       interval: 1s
       timeout: 6s
       retries: 5
+    volumes:
+      - frost-swagger-docs:/swagger_ui_dist
+      - frost-swagger-docs:/docs
 
   frost-nginx:
     image: nginx:latest
@@ -87,3 +96,5 @@ services:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/templates/:/etc/nginx/templates/
       - ./nginx/frontend/:/var/www/
+      - frost-swagger-docs:/swagger_ui_dist:ro
+      - frost-swagger-docs:/docs:ro
