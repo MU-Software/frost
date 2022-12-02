@@ -41,13 +41,16 @@ RUN set -eux; \
         cron \
         supervisor
 
-COPY ../.env /.env
-COPY ../app/ /app
 COPY --from=builder /usr/local/bin/celery /usr/local/bin/celery
 COPY --from=builder /usr/local/bin/dotenv /usr/local/bin/dotenv
 COPY --from=builder /usr/local/bin/flask /usr/local/bin/flask
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 COPY --from=builder /usr/local/lib/python3.11/lib-dynload /usr/local/lib/python3.11/lib-dynload
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY ../swagger_ui_dist /swagger_ui_dist
 
-EXPOSE 8808
+# Make docker to always copy app directory so that source code can be refreshed.
+ARG INVALIDATE_CACHE_DATE=unknown
+RUN echo INVALIDATE_CACHE_DATE
+
+COPY ../app/ /app
