@@ -1,6 +1,7 @@
 import enum
 import re
 import secrets
+import sys
 import typing
 
 import flask
@@ -12,6 +13,12 @@ import sqlalchemy.dialects.sqlite as sqldlc_sqlite
 import sqlalchemy.inspection as sql_inspect
 
 import app.common.utils as utils
+
+# ---------- ENV DETECTION --------
+# Detect if this context is app or server
+CMDLINE = " ".join(sys.argv)
+IS_ENV_RUNSERVER = ("flask run" in CMDLINE) or ("gunicorn" in CMDLINE)
+
 
 # ---------- REDIS Setup ----------
 redis_db: redis.StrictRedis = None
@@ -137,37 +144,39 @@ class DefaultModelMixin:
 def init_app(app: flask.Flask):
     # Connect to app context
     db.init_app(app)
-    # Dummy query for checking connection to DB
-    db.session.execute("select 1")
 
-    global redis_db
+    if IS_ENV_RUNSERVER:
+        # Dummy query for checking connection to DB
+        db.session.execute("select 1")
 
-    redis_db = redis.StrictRedis(
-        password=app.config.get("REDIS_PASSWORD"),
-        host=app.config.get("REDIS_HOST"),
-        port=app.config.get("REDIS_PORT"),
-        db=app.config.get("REDIS_DB"),
-    )
+        global redis_db
 
-    import app.database.board as board  # noqa: F401
-    import app.database.jwt as jwt_module
-    import app.database.project_table as project_table  # noqa: F401
-    import app.database.uploaded_file as filedb_module  # noqa: F401
-    import app.database.user as user  # noqa: F401
+        redis_db = redis.StrictRedis(
+            password=app.config.get("REDIS_PASSWORD"),
+            host=app.config.get("REDIS_HOST"),
+            port=app.config.get("REDIS_PORT"),
+            db=app.config.get("REDIS_DB"),
+        )
 
-    # Create all tables only IF NOT EXISTS
-    # The reason why I didn't use create_all is,
-    # checkfirst isn't supported on create_all.
-    for table in db.get_tables_for_bind():
-        table.create(checkfirst=True, bind=db.engine)
+        import app.database.board as board  # noqa: F401
+        import app.database.jwt as jwt_module
+        import app.database.project_table as project_table  # noqa: F401
+        import app.database.uploaded_file as filedb_module  # noqa: F401
+        import app.database.user as user  # noqa: F401
 
-    if app.config.get("RESTAPI_VERSION") == "dev" and app.config.get("DROP_ALL_REFRESH_TOKEN_ON_LOAD", True):
-        # Drop some DB tables when on dev mode
-        # db.drop_all()
-        db.session.query(jwt_module.RefreshToken).delete()
-        db.session.commit()
-        # Also, flush all keys in redis DB
-        redis_db.flushdb()  # no asynchronous
+        # Create all tables only IF NOT EXISTS
+        # The reason why I didn't use create_all is,
+        # checkfirst isn't supported on create_all.
+        for table in db.get_tables_for_bind():
+            table.create(checkfirst=True, bind=db.engine)
+
+        if app.config.get("RESTAPI_VERSION") == "dev" and app.config.get("DROP_ALL_REFRESH_TOKEN_ON_LOAD", True):
+            # Drop some DB tables when on dev mode
+            # db.drop_all()
+            db.session.query(jwt_module.RefreshToken).delete()
+            db.session.commit()
+            # Also, flush all keys in redis DB
+            redis_db.flushdb()  # no asynchronous
 
     # init_app must return app
     return app
