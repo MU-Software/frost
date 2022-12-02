@@ -164,6 +164,9 @@ id_rsa
 
 # We won't commit OpenAPI document,
 # Instead, we'll create documents on live server
+swagger_ui_dist/
+swagger_ui_dist/*
+docs/
 docs/*
 
 # We don't want to commit service files
