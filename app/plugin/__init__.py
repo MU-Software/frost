@@ -5,6 +5,11 @@
 import flask
 import flask_limiter
 import flask_limiter.util
+import flask_migrate
+
+import app.database as db_module
+
+db = db_module.db
 
 
 def init_app(app: flask.Flask):
@@ -24,6 +29,9 @@ def init_app(app: flask.Flask):
         default_limits=["3 per second"],
         storage_uri=limiter_storage_url,
     )
+
+    # Migrate database
+    migrate = flask_migrate.Migrate(runable_app, db)  # noqa: F841
 
     # init_app must return app
     return runable_app
