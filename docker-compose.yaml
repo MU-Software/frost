@@ -44,6 +44,54 @@ services:
       timeout: 3s
       retries: 5
 
+  frost-celery:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      target: runtime
+    container_name: frost-celery-dev
+    # command: ["celery", "-A", "app.worker", "worker", "--loglevel=INFO"]
+    command: ["supervisord", "-n"]
+    env_file:
+      - ../.env
+    working_dir: /
+    networks:
+      - frost-network
+    depends_on:
+      frost-db:
+        condition: service_healthy
+      frost-redis:
+        condition: service_healthy
+    healthcheck:
+      # test: ["CMD-SHELL", "celery", "inspect", "ping", "-A", "app.worker"]
+      test: ["CMD-SHELL", "supervisorctl", "status", "celery", "|", "grep", "RUNNING"]
+      interval: 10s
+      timeout: 6s
+      retries: 5
+
+  frost-cron:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      target: runtime
+    container_name: frost-cron-dev
+    command: ["bash", "/usr/local/bin/cron_setup.sh"]
+    env_file:
+      - ../.env
+    working_dir: /
+    networks:
+      - frost-network
+    depends_on:
+      frost-db:
+        condition: service_healthy
+      frost-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgrep", "-l", "cron"]
+      interval: 1s
+      timeout: 6s
+      retries: 5
+
   frost-api-server:
     build:
       context: ../
@@ -69,6 +117,10 @@ services:
         condition: service_healthy
       frost-redis:
         condition: service_healthy
+      frost-celery:
+        condition: service_healthy
+      frost-cron:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-sf", "--header", "Host: ${SERVER_NAME}", "--max-time", "5", "http://localhost:8808/api/dev/ping"]
       interval: 1s
@@ -84,8 +136,8 @@ services:
     networks:
       - frost-network
     ports:
-      - 80:80
-      - 443:443
+      - 80:8080
+      - 443:8443
     depends_on:
       frost-api-server:
         condition: service_healthy
