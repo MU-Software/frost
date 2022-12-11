@@ -38,19 +38,36 @@ RUN set -eux; \
         ca-certificates \
         gnupg \
         lsb-release \
-        cron \
-        supervisor
+        cron
 
+COPY --from=builder /usr/local/bin/supervisord /usr/local/bin/supervisord
+COPY --from=builder /usr/local/bin/supervisorctl /usr/local/bin/supervisorctl
 COPY --from=builder /usr/local/bin/celery /usr/local/bin/celery
 COPY --from=builder /usr/local/bin/dotenv /usr/local/bin/dotenv
 COPY --from=builder /usr/local/bin/flask /usr/local/bin/flask
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
-COPY --from=builder /usr/local/lib/python3.11/lib-dynload /usr/local/lib/python3.11/lib-dynload
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/lib/python3.11/lib-dynload /usr/local/lib/python3.11/lib-dynload/
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages/
 COPY ../swagger_ui_dist /swagger_ui_dist
+
+RUN set -eux; \
+    mkdir -p /var/log/supervisor; \
+    mkdir -p /var/log/celery; \
+    mkdir -p /var/log/cron; \
+    mkdir -p /var/log/gunicorn; \
+    mkdir -p /var/log/frost
 
 # Make docker to always copy app directory so that source code can be refreshed.
 ARG INVALIDATE_CACHE_DATE=unknown
 RUN echo INVALIDATE_CACHE_DATE
 
+# Main App
 COPY ../app/ /app
+
+# Crontab
+COPY ../batch_task/cron.d /etc/cron.d/
+COPY ../batch_task/cron_setup.sh /usr/local/bin/cron_setup.sh
+
+# Supervisor & Celery
+COPY ../docker/supervisord.ini /etc/supervisor/supervisord.conf
+COPY ../docker/celery/celery.ini /etc/supervisor/conf.d/celery.conf
