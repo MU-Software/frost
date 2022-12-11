@@ -1,0 +1,1 @@
+*/5 * * * * python3 -c 'print("CRON RUN")'
