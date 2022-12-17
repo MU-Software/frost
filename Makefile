@@ -112,17 +112,17 @@ docker-shell: goto-frost-dir docker-shell-bash
 docker-sp: goto-frost-dir docker-shell-plus
 
 # DB management related (not released yet)
-# db-makemigrations: goto-frost-dir
-# 	poetry run flask db revision --autogenerate -m $(MIGRATION_MESSAGE)
+db-makemigrations: goto-frost-dir
+	poetry run flask db revision --autogenerate -m $(MIGRATION_MESSAGE)
 
-# db-upgrade: goto-frost-dir
-# 	poetry run flask db upgrade $(UPGRADE_VERSION)
+db-upgrade: goto-frost-dir
+	poetry run flask db upgrade $(UPGRADE_VERSION)
 
-# db-downgrade: goto-frost-dir
-# 	poetry run flask db downgrade $(DOWNGRADE_VERSION)
+db-downgrade: goto-frost-dir
+	poetry run flask db downgrade $(DOWNGRADE_VERSION)
 
-# db-reset: goto-frost-dir
-# 	poetry run flask db downgrade base
+db-reset: goto-frost-dir
+	poetry run flask db downgrade base
 
 db-erd-export: goto-frost-dir
 	poetry run flask draw-db-erd
