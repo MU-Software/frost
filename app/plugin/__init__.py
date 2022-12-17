@@ -31,7 +31,11 @@ def init_app(app: flask.Flask):
     )
 
     # Migrate database
-    migrate = flask_migrate.Migrate(runable_app, db)  # noqa: F841
+    migrate = flask_migrate.Migrate(  # noqa: F841
+        runable_app,
+        db,
+        directory="app/database/migrations",
+    )
 
     # init_app must return app
     return runable_app
